@@ -33,7 +33,7 @@ import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 import com.orange.network.game.protocol.message.GameMessageProtos.GeneralNotification;
 import com.orange.network.game.protocol.message.GameMessageProtos.JoinGameRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.SendDrawDataRequest;
-import com.orange.network.game.protocol.model.GameBasicProtos.PBDraw;
+import com.orange.network.game.protocol.model.DrawProtos.PBDraw;
 import com.orange.network.game.protocol.model.GameBasicProtos.PBDrawAction;
 import com.orange.network.game.protocol.model.GameBasicProtos.PBGameUser;
 
