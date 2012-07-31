@@ -15,7 +15,7 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
-import com.orange.game.traffic.messagehandler.JoinGameRequestHandler;
+import com.orange.game.traffic.messagehandler.room.JoinGameRequestHandler;
 import com.orange.game.traffic.server.GameServerHandler;
 import com.orange.network.game.protocol.message.GameMessageProtos;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
