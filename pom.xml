@@ -275,7 +275,7 @@
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>./lib/</classpathPrefix>
 							<mainClass>
-								com.orange.gameserver.draw.server.DiceTrafficServer
+								com.orange.game.dice.server.DiceGameServer
 							</mainClass>
 						</manifest>
 					</archive>
