@@ -12,6 +12,7 @@ import com.orange.game.dice.statemachine.state.GameState;
 import com.orange.game.dice.statemachine.state.GameStateKey;
 import com.orange.game.traffic.statemachine.CommonGameAction;
 import com.orange.game.traffic.statemachine.CommonGameCondition;
+import com.orange.game.traffic.statemachine.CommonGameState;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceBeginNotificationRequest;
 
@@ -19,7 +20,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 
 	// thread-safe singleton implementation
     private static DiceGameStateMachineBuilder builder = new DiceGameStateMachineBuilder();
-    public static final State INIT_STATE = new State(GameStateKey.CREATE);
+    public static final State INIT_STATE = new CommonGameState(GameStateKey.CREATE);
     
     private DiceGameStateMachineBuilder(){		
 	} 	
@@ -128,9 +129,9 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			});
 		
 		sm.addState(new GameState(GameStateKey.ROLL_DICE_BEGIN))
-			.addAction(setRollDiceBeginTimer)
-			.addAction(startPlayGame)
 			.addAction(broadcastRollDiceBegin)
+			.addAction(startPlayGame)
+			.addAction(setRollDiceBeginTimer)
 			.addTransition(GameCommandType.LOCAL_PLAY_USER_QUIT, GameStateKey.PLAY_USER_QUIT)
 			.addTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT, GameStateKey.CHECK_USER_COUNT)	
 			.addEmptyTransition(GameCommandType.LOCAL_OTHER_USER_QUIT)

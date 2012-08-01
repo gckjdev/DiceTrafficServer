@@ -1,10 +1,16 @@
 package com.orange.game.dice.statemachine.action;
 
 import com.orange.common.statemachine.Action;
+import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.server.GameEventExecutor;
+import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCompleteReason;
+import com.orange.network.game.protocol.message.GameMessageProtos;
+import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
+import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceBeginNotificationRequest;
+import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceEndNotificationRequest;
 
 public class DiceGameAction{
 
@@ -59,8 +65,8 @@ public class DiceGameAction{
 
 		@Override
 		public void execute(Object context) {
-			// TODO Auto-generated method stub
-
+			DiceGameSession session = (DiceGameSession)context;
+			NotificationUtils.broadcastNotification(session, null, GameCommandType.NEXT_PLAYER_START_NOTIFICATION_REQUEST);			
 		}
 
 	}
@@ -68,8 +74,8 @@ public class DiceGameAction{
 
 		@Override
 		public void execute(Object context) {
-			// TODO Auto-generated method stub
-
+			GameSession session = (GameSession)context;
+			NotificationUtils.broadcastNotification(session, null, GameCommandType.ROLL_DICE_BEGIN_NOTIFICATION_REQUEST);
 		}
 
 	}
@@ -77,8 +83,23 @@ public class DiceGameAction{
 
 		@Override
 		public void execute(Object context) {
-			// TODO Auto-generated method stub
-
+			DiceGameSession session = (DiceGameSession)context;
+			
+			session.rollDice();
+			
+			// send notification for the user
+			RollDiceEndNotificationRequest notification =RollDiceEndNotificationRequest.newBuilder()
+				.addAllUserDice(session.getUserDices())
+				.build();
+			
+			GameMessageProtos.GameMessage message = GameMessageProtos.GameMessage.newBuilder()
+				.setCommand(GameCommandType.ROLL_DICE_END_NOTIFICATION_REQUEST)
+				.setMessageId(GameEventExecutor.getInstance().generateMessageId())
+				.setSessionId(session.getSessionId())
+				.setRollDiceEndNotificationRequest(notification)							
+				.build();
+			
+			NotificationUtils.broadcastNotification(session, null, message);
 		}
 
 	}
