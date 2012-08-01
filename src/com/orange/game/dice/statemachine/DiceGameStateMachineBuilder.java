@@ -43,7 +43,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action startPlayGame = new CommonGameAction.StartGame();
 		Action completeGame = new CommonGameAction.CompleteGame();
 		Action selectPlayUser = new CommonGameAction.SelectPlayUser();
-//		Action kickDrawUser = new GameAction.KickDrawUser();
+		Action kickPlayUser = new CommonGameAction.KickPlayUser();
 //		Action playGame = new GameAction.PlayGame();
 //		Action prepareRobot = new GameAction.PrepareRobot();
 		Action rollDiceAndBroadcast = new DiceGameAction.RollDiceAndBroadcast();
@@ -92,10 +92,10 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addAction(setOneUserWaitTimer)
 //			.addAction(prepareRobot)
 			.addTransition(GameCommandType.LOCAL_NEW_USER_JOIN, GameStateKey.CHECK_USER_COUNT)
-			.addTransition(GameCommandType.LOCAL_PLAY_USER_QUIT, GameStateKey.CREATE)
-			.addTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT, GameStateKey.CREATE)	
-			.addTransition(GameCommandType.LOCAL_OTHER_USER_QUIT, GameStateKey.CREATE)
-			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.KICK_DRAW_USER)	
+			.addTransition(GameCommandType.LOCAL_PLAY_USER_QUIT, GameStateKey.KICK_PLAY_USER)
+			.addTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT, GameStateKey.KICK_PLAY_USER)	
+			.addTransition(GameCommandType.LOCAL_OTHER_USER_QUIT, GameStateKey.KICK_PLAY_USER)
+			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.KICK_PLAY_USER)	
 			.addAction(clearTimer);
 //			.addAction(clearRobotTimer);				
 		
@@ -109,6 +109,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addAction(clearTimer);
 		
 		sm.addState(new GameState(GameStateKey.PLAY_USER_QUIT))
+			.addAction(kickPlayUser)
 			.addAction(selectPlayUser)
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
@@ -116,6 +117,15 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 					return GameStateKey.CHECK_USER_COUNT;	// goto check user count state directly
 				}
 			});				
+		
+		sm.addState(new GameState(GameStateKey.KICK_PLAY_USER))
+			.addAction(kickPlayUser)
+			.setDecisionPoint(new DecisionPoint(null){
+				@Override
+				public Object decideNextState(Object context){
+					return GameStateKey.CHECK_USER_COUNT;	// goto check user count state directly
+				}
+			});
 		
 		sm.addState(new GameState(GameStateKey.ROLL_DICE_BEGIN))
 			.addAction(setRollDiceBeginTimer)

@@ -14,16 +14,15 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
+import com.orange.common.log.ServerLog;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
 import com.orange.game.traffic.messagehandler.room.JoinGameRequestHandler;
+import com.orange.game.traffic.model.dao.GameSession;
+import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.GameServerHandler;
-import com.orange.network.game.protocol.message.GameMessageProtos;
-import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
-import com.orange.network.game.protocol.constants.GameConstantsProtos;
+import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
-import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
-
-
+import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 
 public class DiceGameServerHandler extends GameServerHandler {
 	private static final Logger logger = Logger.getLogger(DiceGameServerHandler.class.getName());
@@ -48,10 +47,36 @@ public class DiceGameServerHandler extends GameServerHandler {
 	}
 
 	@Override
-	public void processDisconnectChannel(Channel channel,
-			DisconnectReason reason) {
-		// TODO Auto-generated method stub
+	public void userQuitSession(String userId,
+			GameSession session, boolean needFireEvent) {
+				
+		int sessionId = session.getSessionId();
+		ServerLog.info(sessionId, "user "+userId+" quit");
+
+		session.takeOverUser(userId);
 		
-	} 
+		GameCommandType command = null;		
+		if (session.isCurrentPlayUser(userId)){
+			command = GameCommandType.LOCAL_PLAY_USER_QUIT;			
+//			session.setCompleteReason(GameCompleteReason.REASON_DRAW_USER_QUIT);			
+		}
+		else if (session.getUserCount() <= 2){
+			command = GameCommandType.LOCAL_ALL_OTHER_USER_QUIT;			
+//			session.setCompleteReason(GameCompleteReason.REASON_ONLY_ONE_USER);			
+		}
+		else {
+			command = GameCommandType.LOCAL_OTHER_USER_QUIT;						
+//			updateCurrentPlayer(session);			
+		}			
+		
+		// broadcast user exit message to all other users
+		NotificationUtils.broadcastUserStatusChangeNotification(session, userId);			
+		
+		// fire message
+		if (needFireEvent){
+			GameEventExecutor.getInstance().fireAndDispatchEvent(command, sessionId, userId);
+		}
+		
+	}
 	
 }

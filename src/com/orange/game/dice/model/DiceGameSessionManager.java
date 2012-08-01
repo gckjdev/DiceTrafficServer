@@ -10,5 +10,11 @@ public class DiceGameSessionManager extends GameSessionManager {
 		return new DiceGameSession(sessionId, name);
 	}
 
+	@Override
+	public void userQuitSession(GameSession session, String userId) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	
 }
