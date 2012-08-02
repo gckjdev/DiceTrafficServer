@@ -6,6 +6,7 @@ import com.orange.common.statemachine.DecisionPoint;
 import com.orange.common.statemachine.State;
 import com.orange.common.statemachine.StateMachine;
 import com.orange.common.statemachine.StateMachineBuilder;
+import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.dice.statemachine.action.DiceGameAction;
 import com.orange.game.dice.statemachine.action.GameCondition;
 import com.orange.game.dice.statemachine.state.GameState;
@@ -42,7 +43,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		
 		Action initGame = new CommonGameAction.InitGame();
 		Action startPlayGame = new CommonGameAction.StartGame();
-		Action completeGame = new CommonGameAction.CompleteGame();
+		Action completeGame = new DiceGameAction.CompleteGame();
 		Action selectPlayUser = new CommonGameAction.SelectPlayUser();
 		Action kickPlayUser = new CommonGameAction.KickPlayUser();
 //		Action playGame = new GameAction.PlayGame();
@@ -50,6 +51,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action rollDiceAndBroadcast = new DiceGameAction.RollDiceAndBroadcast();
 		Action broadcastRollDiceBegin = new DiceGameAction.BroadcastRollDiceBegin();
 		Action broadcastNextPlayerNotification = new DiceGameAction.BroadcastNextPlayerNotification();
+		Action directOpenDice = new DiceGameAction.DirectOpenDice();
 //		
 		Action setOneUserWaitTimer = new CommonGameAction.SetOneUserWaitTimer();
 		Action setStartGameTimer = new CommonGameAction.CommonTimer(START_GAME_TIMEOUT, DiceTimerType.START);
@@ -174,7 +176,13 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
-					return GameStateKey.WAIT_NEXT_PLAYER_PLAY;	// goto check user count state directly
+					DiceGameSession session = (DiceGameSession)context;
+					if (session.canContinueCall()){
+						return GameStateKey.WAIT_NEXT_PLAYER_PLAY;	// goto check user count state directly						
+					}
+					else{
+						return GameStateKey.DIRECT_OPEN_DICE;
+					}
 				}
 			});			
 		
@@ -187,6 +195,16 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 					return GameStateKey.WAIT_NEXT_PLAYER_PLAY;	// goto check user count state directly
 				}
 			});	
+		
+		sm.addState(new GameState(GameStateKey.DIRECT_OPEN_DICE))
+			.addAction(directOpenDice)
+			.setDecisionPoint(new DecisionPoint(null){
+				@Override
+				public Object decideNextState(Object context){
+					return GameStateKey.COMPLETE_GAME;	// goto check user count state directly
+				}
+			});			
+
 		
 		sm.addState(new GameState(GameStateKey.CHECK_OPEN_DICE))
 //			.addAction(calculateCoins)

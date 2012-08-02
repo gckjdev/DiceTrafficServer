@@ -15,6 +15,8 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.orange.common.log.ServerLog;
+import com.orange.game.dice.messagehandler.CallDiceRequestHandler;
+import com.orange.game.dice.messagehandler.OpenDiceRequestHandler;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
 import com.orange.game.traffic.messagehandler.room.JoinGameRequestHandler;
 import com.orange.game.traffic.model.dao.GameSession;
@@ -37,10 +39,10 @@ public class DiceGameServerHandler extends GameServerHandler {
 			return new JoinGameRequestHandler(messageEvent);
 			
 		case CALL_DICE_REQUEST:
-			break;
+			return new CallDiceRequestHandler(messageEvent);
 			
 		case OPEN_DICE_REQUEST:
-			break;
+			return new OpenDiceRequestHandler(messageEvent);
 		}
 		
 		return null;

@@ -9,58 +9,22 @@ import com.orange.network.game.protocol.constants.GameConstantsProtos.GameComman
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCompleteReason;
 import com.orange.network.game.protocol.message.GameMessageProtos;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
+import com.orange.network.game.protocol.message.GameMessageProtos.GameOverNotificationRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceBeginNotificationRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceEndNotificationRequest;
+import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
 
 public class DiceGameAction{
 
-//	public static class BroadcastDrawUserChange implements Action {
-	//
-	//		@Override
-	//		public void execute(Object context) {
-	//			GameSession session = (GameSession)context;
-	//			GameNotification.broadcastDrawUserChangeNotification(session);
-	//		}
-	//
-	//	}
-	//
-	//	public static class SelectDrawUserIfNone implements Action {
-	//
-	//		@Override
-	//		public void execute(Object context) {
-	//			GameSession session = (GameSession)context;
-	//			if (session.getCurrentPlayUser() == null){
-	//				sessionManager.selectCurrentPlayer(session);
-	//			}
-	//		}
-	//
-	//	}
-	//
-	//	public static class ClearRobotTimer implements Action {
-	//
-	//		@Override
-	//		public void execute(Object context) {
-	//			GameSession session = (GameSession)context;
-	//			session.clearRobotTimer();
-	//		}
-	//
-	//	}
-	//
-	//	public static class CalculateDrawUserCoins implements Action {
-	//
-	//		@Override
-	//		public void execute(Object context) {
-	//			GameSession session = (GameSession)context;
-	//			session.calculateDrawUserCoins();
-	//		}
-	//
-	//	}
-	//
-	//	public static final GameSessionUserManager sessionUserManager = GameSessionUserManager.getInstance();
-	//	public static final GameSessionManager sessionManager = GameSessionManager.getInstance();
-	//
+	public static class DirectOpenDice implements Action {
 
+		@Override
+		public void execute(Object context) {
+			DiceGameSession session = (DiceGameSession)context;
+			session.openDice(session.getCurrentPlayUserId());
+		}
 
+	}
 	public static class BroadcastNextPlayerNotification implements Action {
 
 		@Override
@@ -103,134 +67,49 @@ public class DiceGameAction{
 		}
 
 	}
+	
+	public static class CompleteGame implements Action {
 
-//
-//	public static class PrepareRobot implements Action {
-//
-//		@Override
-//		public void execute(Object context) {
-//			GameSession session = (GameSession)context;
-//			sessionManager.prepareRobotTimer(session);
-//		}
-//
-//	}
-//	
-//	public static class StartGame implements Action {
-//
-//		@Override
-//		public void execute(Object context) {
-//			GameSession session = (GameSession)context;
-//			session.startGame();
-//		}
-//
-//	}
-//
-//
-//	public static class CompleteGame implements Action {
-//
-//		@Override
-//		public void execute(Object context) {
-//			GameSession session = (GameSession)context;
-//			sessionUserManager.clearUserPlaying(session);
-//			session.completeTurn();			
-//			GameNotification.broadcastNotification(session, null, GameCommandType.GAME_TURN_COMPLETE_NOTIFICATION_REQUEST);
-//
-//			sessionManager.adjustSessionSetForTurnComplete(session);			
-//		}
-//
-//	}	
-//
-//	public static class KickDrawUser implements Action {
-//
-//		@Override
-//		public void execute(Object context) {
-//			GameSession session = (GameSession)context;
-//			com.orange.gameserver.draw.dao.User user = session.getCurrentPlayUser();
-//			if (user != null){
-//				GameSessionManager.getInstance().userQuitSession(user.getUserId(), session, false);
-//				ChannelUserManager.getInstance().processDisconnectChannel(user.getChannel());
-//			}
-//		}
-//
-//	}
-//	
-//
-//
-//
-//
-//	public static class PlayGame implements Action {
-//
-//		@Override
-//		public void execute(Object context) {
-//			GameSession session = (GameSession)context;
-//			
-//			// TODO think about it
-//		}
-//
-//	}
-//	public static class ClearTimer implements Action {
-//
-//		@Override
-//		public void execute(Object context) {
-//			GameSession session = (GameSession)context;
-//			session.clearTimer();
-//		}
-//
-//	}
-//
-//	public static class SetWaitPickWordTimer implements Action {
-//
-//		@Override
-//		public void execute(Object context) {
-//			GameSession session = (GameSession)context;
-//			GameService.getInstance().startTimer(session, 
-//					PICK_WORD_TIMEOUT, GameSession.TimerType.PICK_WORD);
-//		}
-//
-//	}
-//
+		@Override
+		public void execute(Object context) {
+			DiceGameSession session = (DiceGameSession)context;
+			
+			
+			// make all user not playing
+			session.getUserList().clearAllUserPlaying();
 
-//
-//	public static class SetOneUserWaitTimer implements Action {
-//
-//		@Override
-//		public void execute(Object context) {
-//			GameSession session = (GameSession)context;
-//			GameService.getInstance().startTimer(session, 
-//					USER_WAIT_TIMEOUT, GameSession.TimerType.USER_WAIT);
-//		}
-//
-//	}
-//	
-//	public static class SetDrawGuessTimer implements Action {
-//
-//		@Override
-//		public void execute(Object context) {
-//			GameSession session = (GameSession)context;
-//			GameService.getInstance().startTimer(session, 
-//					DRAW_GUESS_TIMEOUT, GameSession.TimerType.DRAW_GUESS);
-//		}
-//
-//	}
-//
-//	public static class SelectDrawUser implements Action {
-//
-//		@Override
-//		public void execute(Object context) {
-//			GameSession session = (GameSession)context;
-//			GameSessionManager.getInstance().selectCurrentPlayer(session);
-//		}
-//
-//	}
+			// calcuate user gain conins
+			session.calculateCoins();
+			
+			// broadcast complete complete with result
+			PBDiceGameResult result = PBDiceGameResult.newBuilder()
+				.addAllUserResult(session.getUserResults())
+				.build();
+				
+			GameOverNotificationRequest notification = GameOverNotificationRequest.newBuilder()
+				.setGameResult(result)
+				.build();
+			
+			GameMessageProtos.GameMessage.Builder builder = GameMessageProtos.GameMessage.newBuilder()
+				.setCommand(GameCommandType.GAME_OVER_NOTIFICATION_REQUEST)
+				.setMessageId(GameEventExecutor.getInstance().generateMessageId())
+				.setSessionId(session.getSessionId())
+				.setGameOverNotificationRequest(notification);				
+			
+			if (session.getCurrentPlayUserId() != null){
+				builder.setCurrentPlayUserId(session.getCurrentPlayUserId());
+			}
+		
+			GameMessage message = builder.build();
+			NotificationUtils.broadcastNotification(session, null, message);
 
-//	public static class InitGame implements Action{
-//
-//		@Override
-//		public void execute(Object context) {
-//			GameSession session = (GameSession)context;
-//			session.resetGame();
-//		}
-//		
-//	}
+			// kick all user which are taken over
+			GameEventExecutor.getInstance().kickTakenOverUser(session);
+			
+			// TODO 
+			// sessionManager.adjustSessionSetForTurnComplete(session);			
+		}
+
+	}		
 
 }

@@ -1,12 +1,14 @@
 package com.orange.game.dice.model;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jetty.security.PropertyUserStore.UserListener;
 
+import com.orange.common.log.ServerLog;
 import com.orange.common.utils.RandomUtil;
 import com.orange.game.dice.statemachine.DiceGameStateMachineBuilder;
 import com.orange.game.dice.statemachine.state.GameStateKey;
@@ -14,6 +16,8 @@ import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.network.game.protocol.model.DiceProtos.PBDice;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserDice;
+import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
+import com.orange.network.game.protocol.model.GameBasicProtos.PBGameUser;
 
 public class DiceGameSession extends GameSession {
 
@@ -23,7 +27,20 @@ public class DiceGameSession extends GameSession {
 	public static final int DICE_1 = 1;
 	public static final int DICE_6 = 6;
 	
+	public static final int DICE_OPEN_TYPE_NORMAL = 0;
+	public static final int DICE_OPEN_TYPE_QUICK = 1;
+
+	private static final int WIN_COINS = 200;
+	
 	ConcurrentHashMap<String, PBUserDice> userDices = new ConcurrentHashMap<String, PBUserDice>();
+	ConcurrentHashMap<String, PBUserResult> userResults = new ConcurrentHashMap<String, PBUserResult>(); 
+	
+	volatile int currentDiceNum = -1;
+	volatile int currentDice = -1;
+	volatile boolean isWilds = false;
+	String callDiceUserId;	
+	String openDiceUserId;
+	volatile int openType = DICE_OPEN_TYPE_NORMAL;
 	
 	public DiceGameSession(int sessionId, String name) {
 		super(sessionId, name);
@@ -35,8 +52,20 @@ public class DiceGameSession extends GameSession {
 	public void resetGame(){
 		super.resetGame();
 		userDices.clear();
+		userResults.clear();
+		clearCallDice();		
+		
+		isWilds = false;
+		openDiceUserId = null;
+		openType = DICE_OPEN_TYPE_NORMAL;
 	}
 	
+	private void clearCallDice() {
+		callDiceUserId = null;
+		currentDice = -1;
+		currentDiceNum = -1;
+	}
+
 	public void rollDice() {
 		
 		userDices.clear();
@@ -71,5 +100,103 @@ public class DiceGameSession extends GameSession {
 		return userDices.values();
 	}
 
+	public void callDice(String userId, int num, int dice) {
+		if (userId == null){
+			ServerLog.warn(sessionId, "<callDice> but userId is null");
+			return;
+		}
+		
+		synchronized (currentPlayUserId) {
+			if (!userId.equals(currentPlayUserId)){
+				ServerLog.warn(sessionId, "<callDice> but userId "+userId + " is not currentUserId "+currentPlayUserId);
+				return;
+			}			
+
+			this.callDiceUserId = currentPlayUserId;
+		}
+		
+		this.currentDice = dice;
+		this.currentDiceNum = num;
+		
+		ServerLog.info(sessionId, "<callDice> "+num+" X "+dice);
+	}
+
+	public void openDice(String userId) {
+		ServerLog.info(sessionId, "<openDice> userId="+userId);
+		this.openDiceUserId = userId;
+		
+		if (currentPlayUserId.equals(openDiceUserId)){
+			openType = DICE_OPEN_TYPE_NORMAL;
+		}
+		else {
+			openType = DICE_OPEN_TYPE_NORMAL;
+		}
+	}
+
+	public boolean canContinueCall() {
+		if (currentDice == -1)
+			return true;
+		
+		int playUserCount = getPlayUserCount();		
+
+		// TODO check if can continue call 
+		
+		return true;
+	}
+
+	private void addUserResult(String userId, int gainCoins, boolean isWon){
+		PBUserResult result = PBUserResult.newBuilder().
+		setWin(isWon).
+		setUserId(userId).
+		setGainCoins(gainCoins).
+		build();
+	
+		userResults.put(userId, result);		
+	}
+	
+	public void calculateCoins() {
+		Collection<PBUserDice> allUserDices = userDices.values();
+		
+		int resultCount = 0;
+		for (PBUserDice userDice : allUserDices){
+			List<PBDice> diceList = userDice.getDicesList();
+			if (diceList == null)
+				continue;
+			
+			for (PBDice dice : diceList){
+				int number = dice.getDice();
+				if (number == 1 && isWilds == false){
+					resultCount ++;
+				}
+				else if (number == currentDice){
+					resultCount ++;
+				}				
+			}
+		}
+		
+		ServerLog.info(sessionId, "<result> total "+resultCount + " "+currentDice);
+		
+		// clear user results
+		userResults.clear();
+		
+		int winCoins = WIN_COINS;
+		int lostCoins = -winCoins;
+		
+		// now check who wins			
+		if (resultCount >= currentDiceNum){
+			// call dice wins
+			addUserResult(callDiceUserId, winCoins, true);
+			addUserResult(openDiceUserId, lostCoins, false);
+		}
+		else{
+			// open dice wins
+			addUserResult(openDiceUserId, winCoins, true);
+			addUserResult(callDiceUserId, lostCoins, false);
+		}
+	}
+
+	public Collection<PBUserResult> getUserResults(){
+		return userResults.values();
+	}
 	
 }
