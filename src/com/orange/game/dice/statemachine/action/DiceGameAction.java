@@ -16,6 +16,24 @@ import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
 
 public class DiceGameAction{
 
+	public static class ClearRobotTimer implements Action {
+
+		@Override
+		public void execute(Object context) {
+			GameSession session = (GameSession)context;
+			session.clearRobotTimer();
+		}
+
+	}
+	public static class PrepareRobot implements Action {
+
+		@Override
+		public void execute(Object context) {
+			GameSession session = (GameSession)context;
+			GameEventExecutor.getInstance().prepareRobotTimer(session);
+		}
+
+	}
 	public static class DirectOpenDice implements Action {
 
 		@Override

@@ -47,7 +47,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action selectPlayUser = new CommonGameAction.SelectPlayUser();
 		Action kickPlayUser = new CommonGameAction.KickPlayUser();
 //		Action playGame = new GameAction.PlayGame();
-//		Action prepareRobot = new GameAction.PrepareRobot();
+		Action prepareRobot = new DiceGameAction.PrepareRobot();
 		Action rollDiceAndBroadcast = new DiceGameAction.RollDiceAndBroadcast();
 		Action broadcastRollDiceBegin = new DiceGameAction.BroadcastRollDiceBegin();
 		Action broadcastNextPlayerNotification = new DiceGameAction.BroadcastNextPlayerNotification();
@@ -58,7 +58,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action setRollDiceBeginTimer = new CommonGameAction.CommonTimer(ROLL_DICE_TIMEOUT, DiceTimerType.ROLL_DICE);
 		Action setWaitClaimTimer = new CommonGameAction.CommonTimer(WAIT_CLAIM_TIMEOUT, DiceTimerType.WAIT_CLAIM);
 		Action clearTimer = new CommonGameAction.ClearTimer();
-//		Action clearRobotTimer = new GameAction.ClearRobotTimer();
+		Action clearRobotTimer = new DiceGameAction.ClearRobotTimer();
 //		Action broadcastDrawUserChange = new GameAction.BroadcastDrawUserChange();
 
 		Condition checkUserCount = new CommonGameCondition.CheckUserCount();
@@ -93,14 +93,14 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		
 		sm.addState(new GameState(GameStateKey.ONE_USER_WAITING))
 			.addAction(setOneUserWaitTimer)
-//			.addAction(prepareRobot)
+			.addAction(prepareRobot)
 			.addTransition(GameCommandType.LOCAL_NEW_USER_JOIN, GameStateKey.CHECK_USER_COUNT)
 			.addTransition(GameCommandType.LOCAL_PLAY_USER_QUIT, GameStateKey.KICK_PLAY_USER)
 			.addTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT, GameStateKey.KICK_PLAY_USER)	
 			.addTransition(GameCommandType.LOCAL_OTHER_USER_QUIT, GameStateKey.KICK_PLAY_USER)
 			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.KICK_PLAY_USER)	
-			.addAction(clearTimer);
-//			.addAction(clearRobotTimer);				
+			.addAction(clearTimer)
+			.addAction(clearRobotTimer);				
 		
 		sm.addState(new GameState(GameStateKey.WAIT_FOR_START_GAME))
 			.addAction(setStartGameTimer)

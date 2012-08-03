@@ -95,9 +95,8 @@ public class RobotManager {
     		return;
     	}
     	
-//    	synchronized(allocLock){
-    		freeSet.add(index);
-    		allocSet.remove(index);
+		freeSet.add(index);
+		allocSet.remove(index);
     	
     	ServerLog.info(0, "dealloc robot, index="+index + ", active robot count = "+allocSet.size());
     }
