@@ -30,7 +30,7 @@ public class DiceGameAction{
 		@Override
 		public void execute(Object context) {
 			GameSession session = (GameSession)context;
-			GameEventExecutor.getInstance().prepareRobotTimer(session);
+//			GameEventExecutor.getInstance().prepareRobotTimer(session, null);
 		}
 
 	}
