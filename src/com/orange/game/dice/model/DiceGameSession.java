@@ -121,7 +121,7 @@ public class DiceGameSession extends GameSession {
 		this.currentDice = dice;
 		this.currentDiceNum = num;
 		
-		ServerLog.info(sessionId, "<callDice> "+num+" X "+dice);
+		ServerLog.info(sessionId, "<callDice> userId=" +userId + " "+num+" X "+dice);
 	}
 
 	public GameResultCode openDice(String userId) {
