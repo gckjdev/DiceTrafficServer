@@ -16,5 +16,10 @@ public class DiceGameSessionManager extends GameSessionManager {
 		
 	}
 
+	@Override
+	public String getGameId() {
+		return DiceGameConstant.DICE_GAME_ID;
+	}
+
 	
 }
