@@ -14,6 +14,7 @@ import com.orange.game.dice.statemachine.DiceGameStateMachineBuilder;
 import com.orange.game.dice.statemachine.state.GameStateKey;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.model.dao.GameUser;
+import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
 import com.orange.network.game.protocol.model.DiceProtos.PBDice;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserDice;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
@@ -123,7 +124,13 @@ public class DiceGameSession extends GameSession {
 		ServerLog.info(sessionId, "<callDice> "+num+" X "+dice);
 	}
 
-	public void openDice(String userId) {
+	public GameResultCode openDice(String userId) {
+		
+		if (openDiceUserId != null){
+			ServerLog.info(sessionId, "<openDice> but open user exists, userId="+openDiceUserId);
+			return GameResultCode.ERROR_DICE_ALREADY_OPEN;
+		}
+		
 		ServerLog.info(sessionId, "<openDice> userId="+userId);
 		this.openDiceUserId = userId;
 		
@@ -133,6 +140,8 @@ public class DiceGameSession extends GameSession {
 		else {
 			openType = DICE_OPEN_TYPE_NORMAL;
 		}
+		
+		return GameResultCode.SUCCESS;
 	}
 
 	public boolean canContinueCall() {

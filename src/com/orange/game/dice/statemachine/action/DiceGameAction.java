@@ -3,6 +3,7 @@ package com.orange.game.dice.statemachine.action;
 import com.orange.common.statemachine.Action;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.traffic.model.dao.GameSession;
+import com.orange.game.traffic.robot.client.RobotService;
 import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
@@ -30,7 +31,7 @@ public class DiceGameAction{
 		@Override
 		public void execute(Object context) {
 			GameSession session = (GameSession)context;
-//			GameEventExecutor.getInstance().prepareRobotTimer(session, null);
+			GameEventExecutor.getInstance().prepareRobotTimer(session, RobotService.getInstance());
 		}
 
 	}
