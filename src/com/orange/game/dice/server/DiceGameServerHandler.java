@@ -1,23 +1,14 @@
 package com.orange.game.dice.server;
 
-import java.nio.channels.ClosedChannelException;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
-import org.apache.log4j.Logger;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelEvent;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.orange.common.log.ServerLog;
 import com.orange.game.dice.messagehandler.CallDiceRequestHandler;
 import com.orange.game.dice.messagehandler.OpenDiceRequestHandler;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
+import com.orange.game.traffic.messagehandler.room.CreateRoomRequestHandler;
+import com.orange.game.traffic.messagehandler.room.EnterRoomRequestHandler;
+import com.orange.game.traffic.messagehandler.room.GetRoomRequestHandler;
 import com.orange.game.traffic.messagehandler.room.JoinGameRequestHandler;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.server.GameEventExecutor;
@@ -27,7 +18,7 @@ import com.orange.network.game.protocol.constants.GameConstantsProtos.GameComman
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 
 public class DiceGameServerHandler extends GameServerHandler {
-	private static final Logger logger = Logger.getLogger(DiceGameServerHandler.class.getName());
+//	private static final Logger logger = Logger.getLogger(DiceGameServerHandler.class.getName());
 
 	@Override
 	public AbstractMessageHandler getMessageHandler(MessageEvent messageEvent) {
@@ -35,14 +26,23 @@ public class DiceGameServerHandler extends GameServerHandler {
 		GameMessage message = (GameMessage)messageEvent.getMessage();
 		
 		switch (message.getCommand()){
-		case JOIN_GAME_REQUEST:
-			return new JoinGameRequestHandler(messageEvent);
-			
-		case CALL_DICE_REQUEST:
-			return new CallDiceRequestHandler(messageEvent);
-			
-		case OPEN_DICE_REQUEST:
-			return new OpenDiceRequestHandler(messageEvent);
+			case CREATE_ROOM_REQUEST:
+				return new CreateRoomRequestHandler(messageEvent);
+				
+			case GET_ROOMS_REQUEST:
+				return new GetRoomRequestHandler(messageEvent);
+				
+			case ENTER_ROOM_REQUEST:
+				return new EnterRoomRequestHandler(messageEvent);
+				
+			case JOIN_GAME_REQUEST:
+				return new JoinGameRequestHandler(messageEvent);
+				
+			case CALL_DICE_REQUEST:
+				return new CallDiceRequestHandler(messageEvent);
+
+			case OPEN_DICE_REQUEST:
+				return new OpenDiceRequestHandler(messageEvent);
 		}
 		
 		return null;

@@ -18,8 +18,7 @@ public class DiceGameSessionManager extends GameSessionManager {
 
 	@Override
 	public String getGameId() {
-		// TODO Auto-generated method stub
-		return "Dice";
+		return DiceGameConstant.DICE_GAME_ID;
 	}
 
 	
