@@ -78,6 +78,8 @@ public class DiceGameSession extends GameSession {
 				userDices.put(user.getUserId(), userDice);
 			}
 		}
+		
+		ServerLog.info(sessionId, "<rollDice> result="+userDices.toString());
 	}
 
 	// roll dice for specific user
