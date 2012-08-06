@@ -14,12 +14,37 @@ import com.orange.network.game.protocol.message.GameMessageProtos;
 import com.orange.network.game.protocol.message.GameMessageProtos.CallDiceRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameOverNotificationRequest;
+import com.orange.network.game.protocol.message.GameMessageProtos.OpenDiceRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceBeginNotificationRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceEndNotificationRequest;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
 
 public class DiceGameAction{
 
+	public static class SelectLoserAsCurrentPlayerUser implements Action {
+
+		@Override
+		public void execute(Object context) {
+			DiceGameSession session = (DiceGameSession)context;
+			String loserUserId = session.getLoserUserId();
+			if (loserUserId == null){
+				session.selectPlayerUser();
+			}
+			else{
+				ServerLog.info(session.getSessionId(), "try to set loser "+loserUserId+" as current play user");
+				int loserUserIndex = session.getUserIndex(loserUserId);
+				if (loserUserIndex == -1){
+					// loser user doesn't exist
+					session.selectPlayerUser();
+				}
+				else{
+					session.setCurrentPlayUser(loserUserId, loserUserIndex);
+				}
+			}
+			
+		}
+
+	}
 	public static class ClearRobotTimer implements Action {
 
 		@Override
@@ -79,11 +104,14 @@ public class DiceGameAction{
 				resultCode = session.openDice(currentPlayUserId);
 				if (resultCode == GameResultCode.SUCCESS){
 					
+					OpenDiceRequest request = OpenDiceRequest.newBuilder().setOpenType(0).build();
+					
 					GameMessageProtos.GameMessage.Builder builder = GameMessageProtos.GameMessage.newBuilder()
 						.setCommand(GameCommandType.OPEN_DICE_REQUEST)
 						.setMessageId(GameEventExecutor.getInstance().generateMessageId())
 						.setSessionId(session.getSessionId())
-						.setUserId(currentPlayUserId);
+						.setUserId(currentPlayUserId)
+						.setOpenDiceRequest(request);
 
 					NotificationUtils.broadcastNotification(session, builder.build());
 				}
@@ -176,6 +204,7 @@ public class DiceGameAction{
 			}
 		
 			GameMessage message = builder.build();
+			ServerLog.info(session.getSessionId(), "send game over="+message.toString());
 			NotificationUtils.broadcastNotification(session, null, message);
 
 			// kick all user which are taken over
@@ -185,6 +214,16 @@ public class DiceGameAction{
 			// sessionManager.adjustSessionSetForTurnComplete(session);			
 		}
 
+	}
+
+	public static class RestartGame implements Action {
+
+		@Override
+		public void execute(Object context) {
+			DiceGameSession session = (DiceGameSession)context;
+			session.restartGame();
+			return;
+		}
 	}		
 
 }

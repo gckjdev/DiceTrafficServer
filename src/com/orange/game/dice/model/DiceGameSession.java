@@ -52,13 +52,16 @@ public class DiceGameSession extends GameSession {
 
 	public void resetGame(){
 		super.resetGame();
+	}
+	
+	public void restartGame(){	
+		clearTimer();
 		userDices.clear();
 		userResults.clear();
-		clearCallDice();		
-		
+		clearCallDice();				
 		isWilds = false;
 		openDiceUserId = null;
-		openType = DICE_OPEN_TYPE_NORMAL;
+		openType = DICE_OPEN_TYPE_NORMAL;		
 	}
 	
 	private void clearCallDice() {
@@ -245,6 +248,17 @@ public class DiceGameSession extends GameSession {
 	public void setCurrentDice(int currentDice) {
 		this.currentDice = currentDice;
 	}
+
+	public String getLoserUserId(){
+		for (PBUserResult result : userResults.values()){
+			if (result.getWin() == false){
+				return result.getUserId();
+			}
+		}
+		
+		return null;
+	}
+
 
 	
 }

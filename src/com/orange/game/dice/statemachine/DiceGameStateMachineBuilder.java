@@ -61,6 +61,9 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action setWaitClaimTimer = new CommonGameAction.CommonTimer(WAIT_CLAIM_TIMEOUT, DiceTimerType.WAIT_CLAIM);
 		Action clearTimer = new CommonGameAction.ClearTimer();
 		Action clearRobotTimer = new DiceGameAction.ClearRobotTimer();
+		
+		Action restartGame = new DiceGameAction.RestartGame();
+		Action selectLoserAsCurrentPlayerUser = new DiceGameAction.SelectLoserAsCurrentPlayerUser();
 //		Action broadcastDrawUserChange = new GameAction.BroadcastDrawUserChange();
 
 		Condition checkUserCount = new CommonGameCondition.CheckUserCount();
@@ -230,7 +233,9 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 				public Object decideNextState(Object context){
 					return GameStateKey.CHECK_USER_COUNT;	// goto check user count state directly
 				}
-			});
+			})
+			.addAction(selectLoserAsCurrentPlayerUser)
+			.addAction(restartGame);
 		
 		sm.printStateMachine();		
 		return sm;
