@@ -11,6 +11,7 @@ import com.orange.game.dice.statemachine.action.DiceGameAction;
 import com.orange.game.dice.statemachine.action.GameCondition;
 import com.orange.game.dice.statemachine.state.GameState;
 import com.orange.game.dice.statemachine.state.GameStateKey;
+import com.orange.game.traffic.model.manager.GameSessionAllocationManager;
 import com.orange.game.traffic.statemachine.CommonGameAction;
 import com.orange.game.traffic.statemachine.CommonGameCondition;
 import com.orange.game.traffic.statemachine.CommonGameState;
@@ -52,6 +53,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action broadcastRollDiceBegin = new DiceGameAction.BroadcastRollDiceBegin();
 		Action broadcastNextPlayerNotification = new DiceGameAction.BroadcastNextPlayerNotification();
 		Action directOpenDice = new DiceGameAction.DirectOpenDice();
+		Action autoCallOrOpen = new DiceGameAction.AutoCallOrOpen();
 //		
 		Action setOneUserWaitTimer = new CommonGameAction.SetOneUserWaitTimer();
 		Action setStartGameTimer = new CommonGameAction.CommonTimer(START_GAME_TIMEOUT, DiceTimerType.START);
@@ -187,12 +189,18 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			});			
 		
 		sm.addState(new GameState(GameStateKey.AUTO_ROLL_DICE))
-//			.addAction(autoRollDiceForCurrentPlayer)
+			.addAction(autoCallOrOpen)
 			.addAction(selectPlayUser)
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
-					return GameStateKey.WAIT_NEXT_PLAYER_PLAY;	// goto check user count state directly
+					DiceGameSession session = (DiceGameSession)context;
+					if (session.isOpen()){
+						return GameStateKey.COMPLETE_GAME;
+					}
+					else{
+						return GameStateKey.WAIT_NEXT_PLAYER_PLAY;	// goto check user count state directly
+					}
 				}
 			});	
 		

@@ -79,6 +79,8 @@ public class DiceGameServerHandler extends GameServerHandler {
 			GameEventExecutor.getInstance().fireAndDispatchEvent(command, sessionId, userId);
 		}
 		
+		GameEventExecutor.getInstance().kickTakenOverUser(session);
+		
 	}
 	
 }

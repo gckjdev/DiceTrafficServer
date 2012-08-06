@@ -10,6 +10,7 @@ import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
+import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
 import com.orange.network.game.protocol.message.GameMessageProtos;
 import com.orange.network.game.protocol.message.GameMessageProtos.CallDiceRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
@@ -37,7 +38,14 @@ public class CallDiceRequestHandler extends AbstractMessageHandler {
 		int dice = request.getDice();
 
 		DiceGameSession diceSession = (DiceGameSession)session;
-		diceSession.callDice(userId, num, dice);
+		GameResultCode resultCode = diceSession.callDice(userId, num, dice);
+		
+		GameMessage response = GameMessage.newBuilder()
+			.setCommand(GameCommandType.CALL_DICE_RESPONSE)
+			.setMessageId(message.getMessageId())
+			.setResultCode(resultCode)
+			.build();
+		sendResponse(response);
 		
 		// broadcast call dice		
 		NotificationUtils.broadcastCallDiceNotification(session, request);

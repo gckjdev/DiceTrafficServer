@@ -1,5 +1,6 @@
 package com.orange.game.dice.statemachine.action;
 
+import com.orange.common.log.ServerLog;
 import com.orange.common.statemachine.Action;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.traffic.model.dao.GameSession;
@@ -8,7 +9,9 @@ import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCompleteReason;
+import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
 import com.orange.network.game.protocol.message.GameMessageProtos;
+import com.orange.network.game.protocol.message.GameMessageProtos.CallDiceRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameOverNotificationRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceBeginNotificationRequest;
@@ -35,6 +38,59 @@ public class DiceGameAction{
 		}
 
 	}
+	
+	public static class AutoCallOrOpen implements Action{
+		
+		@Override
+		public void execute(Object context) {
+			DiceGameSession session = (DiceGameSession)context;
+			
+			String currentPlayUserId = session.getCurrentPlayUserId();
+			String callDiceUserId = session.getCallDiceUserId();
+			int currentDiceNum = session.getCurrentDiceNum();
+			int currentDice = session.getCurrentDice();			
+			int sessionId = session.getSessionId();
+			
+			if (currentPlayUserId == null){
+				ServerLog.warn(sessionId, "<autoCallOrOpen> but current play user Id is null");
+				return;
+			}
+			
+			if (callDiceUserId != null && callDiceUserId.equals(currentPlayUserId)){
+				ServerLog.warn(sessionId, "<autoCallOrOpen> but callDiceUserId is already current user");
+				return;			
+			}
+			
+			GameResultCode resultCode = GameResultCode.SUCCESS;
+			if (session.canContinueCall()){			
+				resultCode = session.callDice(currentPlayUserId, currentDiceNum+1, currentDice);
+				
+				// TODO here maybe increase currentDice instead of currentDiceNum
+				
+				if (resultCode == GameResultCode.SUCCESS){		
+					CallDiceRequest request = CallDiceRequest.newBuilder()
+						.setDice(session.getCurrentDice())
+						.setNum(session.getCurrentDiceNum())
+						.build();
+					NotificationUtils.broadcastCallDiceNotification(session, request);
+				}
+			}
+			else if (session.canOpen(currentPlayUserId)){
+				resultCode = session.openDice(currentPlayUserId);
+				if (resultCode == GameResultCode.SUCCESS){
+					
+					GameMessageProtos.GameMessage.Builder builder = GameMessageProtos.GameMessage.newBuilder()
+						.setCommand(GameCommandType.OPEN_DICE_REQUEST)
+						.setMessageId(GameEventExecutor.getInstance().generateMessageId())
+						.setSessionId(session.getSessionId())
+						.setUserId(currentPlayUserId);
+
+					NotificationUtils.broadcastNotification(session, builder.build());
+				}
+			}				
+		}
+	}
+	
 	public static class DirectOpenDice implements Action {
 
 		@Override

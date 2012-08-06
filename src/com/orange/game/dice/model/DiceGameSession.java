@@ -103,16 +103,16 @@ public class DiceGameSession extends GameSession {
 		return userDices.values();
 	}
 
-	public void callDice(String userId, int num, int dice) {
+	public GameResultCode callDice(String userId, int num, int dice) {
 		if (userId == null){
 			ServerLog.warn(sessionId, "<callDice> but userId is null");
-			return;
+			return GameResultCode.ERROR_USERID_NULL;
 		}
 		
 		synchronized (currentPlayUserId) {
 			if (!userId.equals(currentPlayUserId)){
 				ServerLog.warn(sessionId, "<callDice> but userId "+userId + " is not currentUserId "+currentPlayUserId);
-				return;
+				return GameResultCode.ERROR_USER_NOT_CURRENT_PLAY_USER;
 			}			
 
 			this.callDiceUserId = currentPlayUserId;
@@ -122,6 +122,7 @@ public class DiceGameSession extends GameSession {
 		this.currentDiceNum = num;
 		
 		ServerLog.info(sessionId, "<callDice> userId=" +userId + " "+num+" X "+dice);
+		return GameResultCode.SUCCESS;
 	}
 
 	public GameResultCode openDice(String userId) {
@@ -154,6 +155,14 @@ public class DiceGameSession extends GameSession {
 		
 		return true;
 	}
+	
+	// whether given userId can open current call dice user Id
+	public boolean canOpen(String userId) {
+
+		// TODO Auto-generated method stub
+		return true;
+	}
+
 
 	private void addUserResult(String userId, int gainCoins, boolean isWon){
 		PBUserResult result = PBUserResult.newBuilder().
@@ -209,5 +218,33 @@ public class DiceGameSession extends GameSession {
 	public Collection<PBUserResult> getUserResults(){
 		return userResults.values();
 	}
+
+	public void autoCallOrOpen() {
+	}
+	
+	public boolean isOpen(){
+		return (openDiceUserId != null);
+	}
+
+	public String getCallDiceUserId() {
+		return callDiceUserId;
+	}
+
+	public int getCurrentDiceNum() {
+		return currentDiceNum;
+	}
+
+	public void setCurrentDiceNum(int currentDiceNum) {
+		this.currentDiceNum = currentDiceNum;
+	}
+
+	public int getCurrentDice() {
+		return currentDice;
+	}
+
+	public void setCurrentDice(int currentDice) {
+		this.currentDice = currentDice;
+	}
+
 	
 }
