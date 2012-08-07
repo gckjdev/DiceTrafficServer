@@ -155,7 +155,10 @@ public class DiceGameSession extends GameSession {
 		
 		int playUserCount = getPlayUserCount();		
 
-		// TODO check if can continue call 
+		int maxCallCount = playUserCount * 5;
+		if (currentDiceNum >= maxCallCount){
+			return false;
+		}
 		
 		return true;
 	}
