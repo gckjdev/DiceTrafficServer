@@ -21,6 +21,15 @@ import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
 
 public class DiceGameAction{
 
+	public class CallDiceForTakenOverUser implements Action {
+
+		@Override
+		public void execute(Object context) {
+			// TODO Auto-generated method stub
+
+		}
+
+	}
 	public static class ClearAllUserPlaying implements Action {
 
 		@Override
@@ -84,6 +93,24 @@ public class DiceGameAction{
 
 	}
 	
+	private static void openDiceAndBroadcast(DiceGameSession session,
+			String userId) {
+		GameResultCode resultCode = session.openDice(userId);
+		if (resultCode == GameResultCode.SUCCESS){
+			
+			OpenDiceRequest request = OpenDiceRequest.newBuilder().setOpenType(0).build();
+			
+			GameMessageProtos.GameMessage.Builder builder = GameMessageProtos.GameMessage.newBuilder()
+				.setCommand(GameCommandType.OPEN_DICE_REQUEST)
+				.setMessageId(GameEventExecutor.getInstance().generateMessageId())
+				.setSessionId(session.getSessionId())
+				.setUserId(userId)
+				.setOpenDiceRequest(request);
+
+			NotificationUtils.broadcastNotification(session, builder.build());
+		}
+	}
+	
 	public static class AutoCallOrOpen implements Action{
 		
 		@Override
@@ -121,20 +148,8 @@ public class DiceGameAction{
 				}
 			}
 			else if (session.canOpen(currentPlayUserId)){
-				resultCode = session.openDice(currentPlayUserId);
-				if (resultCode == GameResultCode.SUCCESS){
-					
-					OpenDiceRequest request = OpenDiceRequest.newBuilder().setOpenType(0).build();
-					
-					GameMessageProtos.GameMessage.Builder builder = GameMessageProtos.GameMessage.newBuilder()
-						.setCommand(GameCommandType.OPEN_DICE_REQUEST)
-						.setMessageId(GameEventExecutor.getInstance().generateMessageId())
-						.setSessionId(session.getSessionId())
-						.setUserId(currentPlayUserId)
-						.setOpenDiceRequest(request);
-
-					NotificationUtils.broadcastNotification(session, builder.build());
-				}
+				
+				openDiceAndBroadcast(session, currentPlayUserId);				
 			}				
 		}
 	}
@@ -144,7 +159,7 @@ public class DiceGameAction{
 		@Override
 		public void execute(Object context) {
 			DiceGameSession session = (DiceGameSession)context;
-			session.openDice(session.getCurrentPlayUserId());
+			openDiceAndBroadcast(session, session.getCurrentPlayUserId());
 		}
 
 	}
@@ -222,7 +237,6 @@ public class DiceGameAction{
 			GameMessage message = builder.build();
 			ServerLog.info(session.getSessionId(), "send game over="+message.toString());
 			NotificationUtils.broadcastNotification(session, null, message);
-
 			
 			// TODO 
 			// sessionManager.adjustSessionSetForTurnComplete(session);			

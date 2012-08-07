@@ -11,6 +11,7 @@ import com.orange.game.dice.statemachine.action.DiceGameAction;
 import com.orange.game.dice.statemachine.action.GameCondition;
 import com.orange.game.dice.statemachine.state.GameState;
 import com.orange.game.dice.statemachine.state.GameStateKey;
+import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.game.traffic.model.manager.GameSessionAllocationManager;
 import com.orange.game.traffic.statemachine.CommonGameAction;
 import com.orange.game.traffic.statemachine.CommonGameCondition;
@@ -68,6 +69,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action selectLoserAsCurrentPlayerUser = new DiceGameAction.SelectLoserAsCurrentPlayerUser();
 		Action kickTakenOverUser = new DiceGameAction.KickTakenOverUser();
 		Action clearAllUserPlaying = new DiceGameAction.ClearAllUserPlaying();
+//		Action callDiceForTakenOverUser = new DiceGameAction.CallDiceForTakenOverUser();
 //		Action broadcastDrawUserChange = new GameAction.BroadcastDrawUserChange();
 
 		Condition checkUserCount = new CommonGameCondition.CheckUserCount();
@@ -149,26 +151,34 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addEmptyTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT)
 			.addEmptyTransition(GameCommandType.LOCAL_OTHER_USER_QUIT)
 			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)
-			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.ROLL_DICE_END)				
-			.addAction(clearTimer);
+			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.CHECK_NEXT_PLAYER_PLAY)				
+			.addAction(clearTimer)
+			.addAction(rollDiceAndBroadcast);
 		
-		sm.addState(new GameState(GameStateKey.ROLL_DICE_END))
-			.addAction(rollDiceAndBroadcast)
-			.setDecisionPoint(new DecisionPoint(checkUserCount){
+		sm.addState(new GameState(GameStateKey.CHECK_NEXT_PLAYER_PLAY))
+			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
-					int userCount = condition.decide(context);
-					if (userCount == 0){
-						return GameStateKey.CREATE;
-					}
-					else if (userCount == 1){ // only one user
-						return GameStateKey.ONE_USER_WAITING;
-					}
-					else{ // more than one user
+					DiceGameSession session = (DiceGameSession)context;
+					GameUser user = session.getCurrentPlayUser();
+					if (user == null || user.isTakenOver() == false){
 						return GameStateKey.WAIT_NEXT_PLAYER_PLAY;
+					}
+					else{
+						return GameStateKey.AUTO_ROLL_DICE;
 					}
 				}
 			});				
+
+		
+//		sm.addState(new GameState(GameStateKey.CALL_DICE_FOR_TAKEOVER_USER))
+//			.addAction(autoCallOrOpen)
+//			.setDecisionPoint(new DecisionPoint(null){
+//				@Override
+//				public Object decideNextState(Object context){
+//					return GameStateKey.CHECK_NEXT_PLAYER_PLAY;
+//				}
+//			});			
 		
 		sm.addState(new GameState(GameStateKey.WAIT_NEXT_PLAYER_PLAY))
 			.addAction(broadcastNextPlayerNotification)
@@ -189,7 +199,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 				public Object decideNextState(Object context){
 					DiceGameSession session = (DiceGameSession)context;
 					if (session.canContinueCall()){
-						return GameStateKey.WAIT_NEXT_PLAYER_PLAY;						
+						return GameStateKey.CHECK_NEXT_PLAYER_PLAY;						
 					}
 					else{
 						return GameStateKey.DIRECT_OPEN_DICE;
@@ -211,7 +221,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 						return GameStateKey.COMPLETE_GAME;
 					}
 					else{
-						return GameStateKey.WAIT_NEXT_PLAYER_PLAY;	// goto check user count state directly
+						return GameStateKey.CHECK_NEXT_PLAYER_PLAY;	// goto check user count state directly
 					}
 				}
 			});	

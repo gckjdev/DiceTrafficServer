@@ -269,6 +269,12 @@ public class DiceGameSession extends GameSession {
 		return null;
 	}
 
+	public GameUser getCurrentPlayUser() {
+		if (currentPlayUserId == null)
+			return null;
+		return getUser(currentPlayUserId);
+	}
+
 
 
 	
