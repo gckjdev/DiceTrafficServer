@@ -54,6 +54,7 @@ public class DiceGameSession extends GameSession {
 		super.resetGame();
 	}
 	
+	@Override
 	public void restartGame(){	
 		clearTimer();
 		userDices.clear();
@@ -168,6 +169,12 @@ public class DiceGameSession extends GameSession {
 
 
 	private void addUserResult(String userId, int gainCoins, boolean isWon){
+		
+		if (userId == null){
+			ServerLog.warn(sessionId, "<addUserResult> but userId is null");
+			return;
+		}
+		
 		PBUserResult result = PBUserResult.newBuilder().
 		setWin(isWon).
 		setUserId(userId).
@@ -258,6 +265,7 @@ public class DiceGameSession extends GameSession {
 		
 		return null;
 	}
+
 
 
 	

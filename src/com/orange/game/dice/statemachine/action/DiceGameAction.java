@@ -21,6 +21,26 @@ import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
 
 public class DiceGameAction{
 
+	public static class ClearAllUserPlaying implements Action {
+
+		@Override
+		public void execute(Object context) {
+			// make all user not playing
+			DiceGameSession session = (DiceGameSession)context;
+			session.getUserList().clearAllUserPlaying();
+		}
+
+	}
+	public static class KickTakenOverUser implements Action {
+
+		@Override
+		public void execute(Object context) {
+			// kick all user which are taken over
+			DiceGameSession session = (DiceGameSession)context;
+			GameEventExecutor.getInstance().kickTakenOverUser(session);
+		}
+
+	}
 	public static class SelectLoserAsCurrentPlayerUser implements Action {
 
 		@Override
@@ -176,11 +196,7 @@ public class DiceGameAction{
 		@Override
 		public void execute(Object context) {
 			DiceGameSession session = (DiceGameSession)context;
-			
-			
-			// make all user not playing
-			session.getUserList().clearAllUserPlaying();
-
+						
 			// calcuate user gain conins
 			session.calculateCoins();
 			
@@ -207,8 +223,6 @@ public class DiceGameAction{
 			ServerLog.info(session.getSessionId(), "send game over="+message.toString());
 			NotificationUtils.broadcastNotification(session, null, message);
 
-			// kick all user which are taken over
-			GameEventExecutor.getInstance().kickTakenOverUser(session);
 			
 			// TODO 
 			// sessionManager.adjustSessionSetForTurnComplete(session);			

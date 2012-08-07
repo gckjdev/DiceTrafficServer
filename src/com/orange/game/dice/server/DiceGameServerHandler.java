@@ -11,6 +11,7 @@ import com.orange.game.traffic.messagehandler.room.EnterRoomRequestHandler;
 import com.orange.game.traffic.messagehandler.room.GetRoomRequestHandler;
 import com.orange.game.traffic.messagehandler.room.JoinGameRequestHandler;
 import com.orange.game.traffic.model.dao.GameSession;
+import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.GameServerHandler;
 import com.orange.game.traffic.server.NotificationUtils;
@@ -55,7 +56,12 @@ public class DiceGameServerHandler extends GameServerHandler {
 		int sessionId = session.getSessionId();
 		ServerLog.info(sessionId, "user "+userId+" quit");
 
-		session.takeOverUser(userId);
+		GameUser user = session.findUser(userId);
+		boolean removeUser = (user.isPlaying() == false);
+		
+		if (!removeUser){
+			session.takeOverUser(userId);
+		}
 		
 		GameCommandType command = null;		
 		if (session.isCurrentPlayUser(userId)){
@@ -79,7 +85,10 @@ public class DiceGameServerHandler extends GameServerHandler {
 			GameEventExecutor.getInstance().fireAndDispatchEvent(command, sessionId, userId);
 		}
 		
-//		GameEventExecutor.getInstance().kickTakenOverUser(session);
+		if (removeUser){
+			GameEventExecutor.getInstance().removeUser(session, userId);
+		}
+		
 		
 	}
 	
