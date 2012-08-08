@@ -54,6 +54,7 @@ public class DiceGameSession extends GameSession {
 		super.resetGame();
 	}
 	
+	@Override
 	public void restartGame(){	
 		clearTimer();
 		userDices.clear();
@@ -154,7 +155,10 @@ public class DiceGameSession extends GameSession {
 		
 		int playUserCount = getPlayUserCount();		
 
-		// TODO check if can continue call 
+		int maxCallCount = playUserCount * 5;
+		if (currentDiceNum >= maxCallCount){
+			return false;
+		}
 		
 		return true;
 	}
@@ -168,6 +172,12 @@ public class DiceGameSession extends GameSession {
 
 
 	private void addUserResult(String userId, int gainCoins, boolean isWon){
+		
+		if (userId == null){
+			ServerLog.warn(sessionId, "<addUserResult> but userId is null");
+			return;
+		}
+		
 		PBUserResult result = PBUserResult.newBuilder().
 		setWin(isWon).
 		setUserId(userId).
@@ -258,6 +268,13 @@ public class DiceGameSession extends GameSession {
 		
 		return null;
 	}
+
+	public GameUser getCurrentPlayUser() {
+		if (currentPlayUserId == null)
+			return null;
+		return getUser(currentPlayUserId);
+	}
+
 
 
 	

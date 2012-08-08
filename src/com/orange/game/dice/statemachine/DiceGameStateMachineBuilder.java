@@ -11,6 +11,7 @@ import com.orange.game.dice.statemachine.action.DiceGameAction;
 import com.orange.game.dice.statemachine.action.GameCondition;
 import com.orange.game.dice.statemachine.state.GameState;
 import com.orange.game.dice.statemachine.state.GameStateKey;
+import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.game.traffic.model.manager.GameSessionAllocationManager;
 import com.orange.game.traffic.statemachine.CommonGameAction;
 import com.orange.game.traffic.statemachine.CommonGameCondition;
@@ -35,7 +36,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 	};
 	
 	static final int START_GAME_TIMEOUT = 3;			// 36 seconds, 20 for start, 10 for result, 6 for reserved
-	static final int WAIT_CLAIM_TIMEOUT = 20;
+	static final int WAIT_CLAIM_TIMEOUT = 17;
 	static final int ROLL_DICE_TIMEOUT = 3;
 	static final int SHOW_RESULT_TIMEOUT = 10;
     	
@@ -66,6 +67,9 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		
 		Action restartGame = new DiceGameAction.RestartGame();
 		Action selectLoserAsCurrentPlayerUser = new DiceGameAction.SelectLoserAsCurrentPlayerUser();
+		Action kickTakenOverUser = new DiceGameAction.KickTakenOverUser();
+		Action clearAllUserPlaying = new DiceGameAction.ClearAllUserPlaying();
+//		Action callDiceForTakenOverUser = new DiceGameAction.CallDiceForTakenOverUser();
 //		Action broadcastDrawUserChange = new GameAction.BroadcastDrawUserChange();
 
 		Condition checkUserCount = new CommonGameCondition.CheckUserCount();
@@ -102,9 +106,9 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addAction(setOneUserWaitTimer)
 			.addAction(prepareRobot)
 			.addTransition(GameCommandType.LOCAL_NEW_USER_JOIN, GameStateKey.CHECK_USER_COUNT)
-			.addTransition(GameCommandType.LOCAL_PLAY_USER_QUIT, GameStateKey.KICK_PLAY_USER)
-			.addTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT, GameStateKey.KICK_PLAY_USER)	
-			.addTransition(GameCommandType.LOCAL_OTHER_USER_QUIT, GameStateKey.KICK_PLAY_USER)
+			.addTransition(GameCommandType.LOCAL_PLAY_USER_QUIT, GameStateKey.CREATE)
+			.addTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT, GameStateKey.CREATE)	
+			.addTransition(GameCommandType.LOCAL_OTHER_USER_QUIT, GameStateKey.CREATE)
 			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.KICK_PLAY_USER)	
 			.addAction(clearTimer)
 			.addAction(clearRobotTimer);				
@@ -138,33 +142,43 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			});
 		
 		sm.addState(new GameState(GameStateKey.ROLL_DICE_BEGIN))
-			.addAction(broadcastRollDiceBegin)
 			.addAction(startPlayGame)
+			.addAction(broadcastRollDiceBegin)
 			.addAction(setRollDiceBeginTimer)
-			.addTransition(GameCommandType.LOCAL_PLAY_USER_QUIT, GameStateKey.PLAY_USER_QUIT)
-			.addTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT, GameStateKey.CHECK_USER_COUNT)	
+//			.addTransition(GameCommandType.LOCAL_PLAY_USER_QUIT, GameStateKey.PLAY_USER_QUIT)
+//			.addTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT, GameStateKey.CHECK_USER_COUNT)	
+			.addEmptyTransition(GameCommandType.LOCAL_PLAY_USER_QUIT)
+			.addEmptyTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT)
 			.addEmptyTransition(GameCommandType.LOCAL_OTHER_USER_QUIT)
 			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)
-			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.ROLL_DICE_END)				
-			.addAction(clearTimer);
+			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.CHECK_NEXT_PLAYER_PLAY)				
+			.addAction(clearTimer)
+			.addAction(rollDiceAndBroadcast);
 		
-		sm.addState(new GameState(GameStateKey.ROLL_DICE_END))
-			.addAction(rollDiceAndBroadcast)
-			.setDecisionPoint(new DecisionPoint(checkUserCount){
+		sm.addState(new GameState(GameStateKey.CHECK_NEXT_PLAYER_PLAY))
+			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
-					int userCount = condition.decide(context);
-					if (userCount == 0){
-						return GameStateKey.CREATE;
-					}
-					else if (userCount == 1){ // only one user
-						return GameStateKey.ONE_USER_WAITING;
-					}
-					else{ // more than one user
+					DiceGameSession session = (DiceGameSession)context;
+					GameUser user = session.getCurrentPlayUser();
+					if (user == null || user.isTakenOver() == false){
 						return GameStateKey.WAIT_NEXT_PLAYER_PLAY;
+					}
+					else{
+						return GameStateKey.AUTO_ROLL_DICE;
 					}
 				}
 			});				
+
+		
+//		sm.addState(new GameState(GameStateKey.CALL_DICE_FOR_TAKEOVER_USER))
+//			.addAction(autoCallOrOpen)
+//			.setDecisionPoint(new DecisionPoint(null){
+//				@Override
+//				public Object decideNextState(Object context){
+//					return GameStateKey.CHECK_NEXT_PLAYER_PLAY;
+//				}
+//			});			
 		
 		sm.addState(new GameState(GameStateKey.WAIT_NEXT_PLAYER_PLAY))
 			.addAction(broadcastNextPlayerNotification)
@@ -185,7 +199,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 				public Object decideNextState(Object context){
 					DiceGameSession session = (DiceGameSession)context;
 					if (session.canContinueCall()){
-						return GameStateKey.WAIT_NEXT_PLAYER_PLAY;	// goto check user count state directly						
+						return GameStateKey.CHECK_NEXT_PLAYER_PLAY;						
 					}
 					else{
 						return GameStateKey.DIRECT_OPEN_DICE;
@@ -200,11 +214,14 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 				@Override
 				public Object decideNextState(Object context){
 					DiceGameSession session = (DiceGameSession)context;
-					if (session.isOpen()){
+					if (session.isAllUserTakenOver()){
+						return GameStateKey.COMPLETE_GAME;
+					}
+					else if (session.isOpen()){
 						return GameStateKey.COMPLETE_GAME;
 					}
 					else{
-						return GameStateKey.WAIT_NEXT_PLAYER_PLAY;	// goto check user count state directly
+						return GameStateKey.CHECK_NEXT_PLAYER_PLAY;	// goto check user count state directly
 					}
 				}
 			});	
@@ -214,17 +231,16 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
-					return GameStateKey.COMPLETE_GAME;	// goto check user count state directly
+					return GameStateKey.COMPLETE_GAME;	
 				}
 			});			
 
 		
 		sm.addState(new GameState(GameStateKey.CHECK_OPEN_DICE))
-//			.addAction(calculateCoins)
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
-					return GameStateKey.COMPLETE_GAME;	// goto check user count state directly
+					return GameStateKey.COMPLETE_GAME;	
 				}
 			});			
 		
@@ -233,16 +249,21 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
-					return GameStateKey.CHECK_USER_COUNT;	// goto check user count state directly
+					return GameStateKey.SHOW_RESULT;	// goto check user count state directly
 				}
-			})
-			.addAction(selectLoserAsCurrentPlayerUser)
-			.addAction(restartGame);
+			});
 		
 		sm.addState(new GameState(GameStateKey.SHOW_RESULT))
 			.addAction(setShowResultTimer)
-			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.CHECK_USER_COUNT);
-			
+			.addEmptyTransition(GameCommandType.LOCAL_PLAY_USER_QUIT)
+			.addEmptyTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT)
+			.addEmptyTransition(GameCommandType.LOCAL_OTHER_USER_QUIT)
+			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)			
+			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.CHECK_USER_COUNT)
+			.addAction(kickTakenOverUser)
+			.addAction(clearAllUserPlaying)
+			.addAction(selectLoserAsCurrentPlayerUser)
+			.addAction(restartGame);
 		
 		sm.printStateMachine();		
 		return sm;
