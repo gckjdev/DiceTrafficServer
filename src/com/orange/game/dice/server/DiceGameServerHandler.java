@@ -11,6 +11,7 @@ import com.orange.game.traffic.messagehandler.room.EnterRoomRequestHandler;
 import com.orange.game.traffic.messagehandler.room.GetRoomRequestHandler;
 import com.orange.game.traffic.messagehandler.room.JoinGameRequestHandler;
 import com.orange.game.traffic.messagehandler.room.RegisterRoomsRequestHandler;
+import com.orange.game.traffic.messagehandler.room.UnRegisterRoomsRequestHandler;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.game.traffic.server.GameEventExecutor;
@@ -50,7 +51,7 @@ public class DiceGameServerHandler extends GameServerHandler {
 				return new RegisterRoomsRequestHandler(messageEvent);
 				
 			case UNREGISTER_ROOMS_NOTIFICATION_REQUEST:
-				return new RegisterRoomsRequestHandler(messageEvent);
+				return new UnRegisterRoomsRequestHandler(messageEvent);
 		}
 		
 		return null;
