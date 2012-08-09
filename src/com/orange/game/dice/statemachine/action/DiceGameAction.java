@@ -67,7 +67,7 @@ public class DiceGameAction{
 					session.selectPlayerUser();
 				}
 				else{
-					session.setCurrentPlayUser(loserUserId, loserUserIndex);
+					session.setCurrentPlayUser(loserUserIndex);
 				}
 			}
 			
@@ -135,9 +135,21 @@ public class DiceGameAction{
 			
 			GameResultCode resultCode = GameResultCode.SUCCESS;
 			if (session.canContinueCall()){			
-				resultCode = session.callDice(currentPlayUserId, currentDiceNum+1, currentDice);
 				
-				// TODO here maybe increase currentDice instead of currentDiceNum
+				if (callDiceUserId == null){
+					resultCode = session.callDice(currentPlayUserId, session.getPlayUserCount(), DiceGameSession.DICE_1); 
+				}				
+				else if (session.reachMaxDice(currentDiceNum)){
+					if (currentDice == DiceGameSession.DICE_6){
+						resultCode = session.callDice(currentPlayUserId, currentDiceNum, DiceGameSession.DICE_1);
+					}
+					else{
+						resultCode = session.callDice(currentPlayUserId, currentDiceNum, currentDice+1);
+					}															
+				}
+				else{
+					resultCode = session.callDice(currentPlayUserId, currentDiceNum+1, currentDice);					
+				}				
 				
 				if (resultCode == GameResultCode.SUCCESS){		
 					CallDiceRequest request = CallDiceRequest.newBuilder()

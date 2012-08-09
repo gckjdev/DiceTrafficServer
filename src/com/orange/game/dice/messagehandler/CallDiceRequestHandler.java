@@ -47,11 +47,13 @@ public class CallDiceRequestHandler extends AbstractMessageHandler {
 			.build();
 		sendResponse(response);
 		
-		// broadcast call dice		
-		NotificationUtils.broadcastCallDiceNotification(session, request);
-		
-		// fire event
-		GameEventExecutor.getInstance().fireAndDispatchEvent(GameCommandType.LOCAL_CALL_DICE, session.getSessionId(), userId);
+		if (resultCode == GameResultCode.SUCCESS){
+			// broadcast call dice		
+			NotificationUtils.broadcastCallDiceNotification(session, request);
+			
+			// fire event
+			GameEventExecutor.getInstance().fireAndDispatchEvent(GameCommandType.LOCAL_CALL_DICE, session.getSessionId(), userId);
+		}
 	}
 
 	@Override

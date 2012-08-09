@@ -113,11 +113,16 @@ public class DiceGameSession extends GameSession {
 			return GameResultCode.ERROR_USERID_NULL;
 		}
 		
+		String currentPlayUserId = getCurrentPlayUserId();		
 		synchronized (currentPlayUserId) {
 			if (!userId.equals(currentPlayUserId)){
 				ServerLog.warn(sessionId, "<callDice> but userId "+userId + " is not currentUserId "+currentPlayUserId);
 				return GameResultCode.ERROR_USER_NOT_CURRENT_PLAY_USER;
-			}			
+			}
+			else if (callDiceUserId != null && callDiceUserId.equals(userId)){
+				ServerLog.warn(sessionId, "<callDice> but userId "+userId + " already call dice");
+				return GameResultCode.ERROR_USER_ALREADY_CALL_DICE;				
+			}
 
 			this.callDiceUserId = currentPlayUserId;
 		}
@@ -139,6 +144,7 @@ public class DiceGameSession extends GameSession {
 		ServerLog.info(sessionId, "<openDice> userId="+userId);
 		this.openDiceUserId = userId;
 		
+		String currentPlayUserId = getCurrentPlayUserId();
 		if (currentPlayUserId.equals(openDiceUserId)){
 			openType = DICE_OPEN_TYPE_NORMAL;
 		}
@@ -156,7 +162,10 @@ public class DiceGameSession extends GameSession {
 		int playUserCount = getPlayUserCount();		
 
 		int maxCallCount = playUserCount * 5;
-		if (currentDiceNum >= maxCallCount){
+		if (currentDiceNum > maxCallCount){
+			return false;
+		}
+		else if (currentDiceNum == maxCallCount && currentDice == DICE_1){
 			return false;
 		}
 		
@@ -269,10 +278,19 @@ public class DiceGameSession extends GameSession {
 		return null;
 	}
 
-	public GameUser getCurrentPlayUser() {
-		if (currentPlayUserId == null)
-			return null;
-		return getUser(currentPlayUserId);
+	public boolean reachMaxDice(int diceNum) {
+		int playUserCount = getPlayUserCount();		
+
+		int maxCallCount = playUserCount * 5;
+		if (diceNum >= maxCallCount){
+			return true;
+		}
+		
+		return false;
+	}
+
+	public void setCurrentPlayUser(int index) {
+		userList.selectCurrentPlayUser(index);
 	}
 
 
