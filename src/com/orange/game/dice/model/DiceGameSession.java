@@ -198,6 +198,9 @@ public class DiceGameSession extends GameSession {
 	
 	public void calculateCoins() {
 		Collection<PBUserDice> allUserDices = userDices.values();
+		if (allUserDices.size() < 2){
+			
+		}
 		
 		int resultCount = 0;
 		for (PBUserDice userDice : allUserDices){
