@@ -21,6 +21,27 @@ import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
 
 public class DiceGameAction{
 
+	public enum DiceTimerType{
+		START, ROLL_DICE, WAIT_CLAIM, SHOW_RESULT
+	};
+	
+	public static class SetShowResultTimer implements Action {
+
+		private static final int SHOW_RESULT_SECONDS_PER_USER = 4;
+		private static final int SHOW_COINS_SECONDS = 3;
+		private static final int EXTRA_SECONDS = 0;
+
+		@Override
+		public void execute(Object context) {
+			// TODO Auto-generated method stub
+			DiceGameSession session = (DiceGameSession)context;
+			int timeOut = session.getPlayUserCount()*SHOW_RESULT_SECONDS_PER_USER + SHOW_COINS_SECONDS + EXTRA_SECONDS;
+			GameEventExecutor.getInstance().startTimer(session, 
+					timeOut, DiceTimerType.SHOW_RESULT);
+
+		}
+
+	}
 	public class CallDiceForTakenOverUser implements Action {
 
 		@Override

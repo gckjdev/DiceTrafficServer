@@ -198,8 +198,9 @@ public class DiceGameSession extends GameSession {
 	
 	public void calculateCoins() {
 		Collection<PBUserDice> allUserDices = userDices.values();
-		if (allUserDices.size() < 2){
-			
+		if (allUserDices.size() < 2 || (callDiceUserId == null || openDiceUserId == null)){
+			ServerLog.info(sessionId, "<calculateCoins> but user dice count="+allUserDices.size()+" callDiceUserId="+callDiceUserId+", openDiceUserId"+openDiceUserId);
+			return;
 		}
 		
 		int resultCount = 0;
@@ -219,7 +220,7 @@ public class DiceGameSession extends GameSession {
 			}
 		}
 		
-		ServerLog.info(sessionId, "<result> total "+resultCount + " "+currentDice);
+		ServerLog.info(sessionId, "<calculateCoins> result = total "+resultCount + " "+currentDice);
 		
 		// clear user results
 		userResults.clear();

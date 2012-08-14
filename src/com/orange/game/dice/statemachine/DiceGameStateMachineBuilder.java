@@ -31,9 +31,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
     	return builder; 
     } 
     
-	enum DiceTimerType{
-		START, ROLL_DICE, WAIT_CLAIM, SHOW_RESULT
-	};
+
 	
 	static final int START_GAME_TIMEOUT = 3;			// 36 seconds, 20 for start, 10 for result, 6 for reserved
 	static final int WAIT_CLAIM_TIMEOUT = 17;
@@ -58,10 +56,10 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action autoCallOrOpen = new DiceGameAction.AutoCallOrOpen();
 //		
 		Action setOneUserWaitTimer = new CommonGameAction.SetOneUserWaitTimer();
-		Action setStartGameTimer = new CommonGameAction.CommonTimer(START_GAME_TIMEOUT, DiceTimerType.START);
-		Action setRollDiceBeginTimer = new CommonGameAction.CommonTimer(ROLL_DICE_TIMEOUT, DiceTimerType.ROLL_DICE);
-		Action setWaitClaimTimer = new CommonGameAction.CommonTimer(WAIT_CLAIM_TIMEOUT, DiceTimerType.WAIT_CLAIM);
-		Action setShowResultTimer = new CommonGameAction.CommonTimer(SHOW_RESULT_TIMEOUT, DiceTimerType.SHOW_RESULT);		
+		Action setStartGameTimer = new CommonGameAction.CommonTimer(START_GAME_TIMEOUT, DiceGameAction.DiceTimerType.START);
+		Action setRollDiceBeginTimer = new CommonGameAction.CommonTimer(ROLL_DICE_TIMEOUT, DiceGameAction.DiceTimerType.ROLL_DICE);
+		Action setWaitClaimTimer = new CommonGameAction.CommonTimer(WAIT_CLAIM_TIMEOUT, DiceGameAction.DiceTimerType.WAIT_CLAIM);
+		Action setShowResultTimer = new DiceGameAction.SetShowResultTimer();		
 		Action clearTimer = new CommonGameAction.ClearTimer();
 		Action clearRobotTimer = new DiceGameAction.ClearRobotTimer();
 		
