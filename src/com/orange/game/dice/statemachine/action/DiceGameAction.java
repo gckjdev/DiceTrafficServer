@@ -23,7 +23,7 @@ import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
 public class DiceGameAction{
 
 	public enum DiceTimerType{
-		START, ROLL_DICE, WAIT_CLAIM, SHOW_RESULT
+		START, ROLL_DICE, WAIT_CLAIM, SHOW_RESULT, TAKEN_OVER_USER_WAIT
 	};
 	
 	public static class SetShowResultTimer implements Action {
