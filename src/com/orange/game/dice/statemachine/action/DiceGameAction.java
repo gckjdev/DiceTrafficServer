@@ -7,6 +7,7 @@ import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.robot.client.RobotService;
 import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.NotificationUtils;
+import com.orange.game.traffic.service.SessionUserService;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCompleteReason;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
@@ -67,7 +68,7 @@ public class DiceGameAction{
 		public void execute(Object context) {
 			// kick all user which are taken over
 			DiceGameSession session = (DiceGameSession)context;
-			GameEventExecutor.getInstance().kickTakenOverUser(session);
+			SessionUserService.getInstance().kickTakenOverUser(session);
 		}
 
 	}
@@ -156,32 +157,32 @@ public class DiceGameAction{
 			
 			GameResultCode resultCode = GameResultCode.SUCCESS;
 			if (session.canContinueCall()){			
-				
+				boolean wilds = session.getIsWilds();
 				if (callDiceUserId == null){
-					resultCode = session.callDice(currentPlayUserId, session.getPlayUserCount(), DiceGameSession.DICE_1); 
+					resultCode = session.callDice(currentPlayUserId, session.getPlayUserCount(), DiceGameSession.DICE_1, true); 
 				}				
 				else if (session.reachMaxDice(currentDiceNum)){
 					if (currentDice == DiceGameSession.DICE_6){
-						resultCode = session.callDice(currentPlayUserId, currentDiceNum, DiceGameSession.DICE_1);
+						resultCode = session.callDice(currentPlayUserId, currentDiceNum, DiceGameSession.DICE_1, true);
 					}
 					else{
-						resultCode = session.callDice(currentPlayUserId, currentDiceNum, currentDice+1);
+						resultCode = session.callDice(currentPlayUserId, currentDiceNum, currentDice+1, wilds);
 					}															
 				}
 				else{
-					resultCode = session.callDice(currentPlayUserId, currentDiceNum+1, currentDice);					
+					resultCode = session.callDice(currentPlayUserId, currentDiceNum+1, currentDice, wilds);					
 				}				
 				
 				if (resultCode == GameResultCode.SUCCESS){		
 					CallDiceRequest request = CallDiceRequest.newBuilder()
 						.setDice(session.getCurrentDice())
 						.setNum(session.getCurrentDiceNum())
+						.setWilds(session.getIsWilds())
 						.build();
 					NotificationUtils.broadcastCallDiceNotification(session, request);
 				}
 			}
-			else if (session.canOpen(currentPlayUserId)){
-				
+			else if (session.canOpen(currentPlayUserId)){				
 				openDiceAndBroadcast(session, currentPlayUserId);				
 			}				
 		}
