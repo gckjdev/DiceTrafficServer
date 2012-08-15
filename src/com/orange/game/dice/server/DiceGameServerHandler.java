@@ -16,6 +16,7 @@ import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.GameServerHandler;
 import com.orange.game.traffic.server.NotificationUtils;
+import com.orange.game.traffic.service.SessionUserService;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 
@@ -33,8 +34,7 @@ public class DiceGameServerHandler extends GameServerHandler {
 				
 			case GET_ROOMS_REQUEST:
 				return new GetRoomRequestHandler(messageEvent);
-				
-				
+
 			case JOIN_GAME_REQUEST:
 				return new JoinGameRequestHandler(messageEvent);
 				
@@ -91,7 +91,7 @@ public class DiceGameServerHandler extends GameServerHandler {
 		}
 		
 		if (removeUser){
-			GameEventExecutor.getInstance().removeUser(session, userId);
+			SessionUserService.getInstance().removeUser(session, userId);
 		}
 		
 		

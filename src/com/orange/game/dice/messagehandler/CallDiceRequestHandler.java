@@ -36,9 +36,10 @@ public class CallDiceRequestHandler extends AbstractMessageHandler {
 		CallDiceRequest request = message.getCallDiceRequest();
 		int num = request.getNum();
 		int dice = request.getDice();
+		boolean isWild = request.getWilds();
 
 		DiceGameSession diceSession = (DiceGameSession)session;
-		GameResultCode resultCode = diceSession.callDice(userId, num, dice);
+		GameResultCode resultCode = diceSession.callDice(userId, num, dice, isWild);
 		
 		GameMessage response = GameMessage.newBuilder()
 			.setCommand(GameCommandType.CALL_DICE_RESPONSE)

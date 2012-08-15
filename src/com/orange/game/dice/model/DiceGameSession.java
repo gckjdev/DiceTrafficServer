@@ -107,7 +107,7 @@ public class DiceGameSession extends GameSession {
 		return userDices.values();
 	}
 
-	public GameResultCode callDice(String userId, int num, int dice) {
+	public GameResultCode callDice(String userId, int num, int dice, boolean wilds) {
 		if (userId == null){
 			ServerLog.warn(sessionId, "<callDice> but userId is null");
 			return GameResultCode.ERROR_USERID_NULL;
@@ -129,8 +129,9 @@ public class DiceGameSession extends GameSession {
 		
 		this.currentDice = dice;
 		this.currentDiceNum = num;
+		this.isWilds = wilds;
 		
-		ServerLog.info(sessionId, "<callDice> userId=" +userId + " "+num+" X "+dice);
+		ServerLog.info(sessionId, "<callDice> userId=" +userId + " "+num+" X "+dice + " Wilds="+isWilds);
 		return GameResultCode.SUCCESS;
 	}
 
@@ -295,6 +296,10 @@ public class DiceGameSession extends GameSession {
 
 	public void setCurrentPlayUser(int index) {
 		userList.selectCurrentPlayUser(index);
+	}
+
+	public boolean getIsWilds() {
+		return isWilds;
 	}
 
 

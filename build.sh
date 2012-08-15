@@ -1,9 +1,10 @@
+#!/bin/bash
 
-cd ../Common_Java
+cd ../Common_Java &&
 mvn clean install
 
 cd ../Common_Java_Game
-mvn clean install
+mvn clean install 
 
-cd ../GameServer
+cd ../DiceTrafficServer
 mvn clean install

@@ -37,6 +37,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 	static final int WAIT_CLAIM_TIMEOUT = 17;
 	static final int ROLL_DICE_TIMEOUT = 3;
 	static final int SHOW_RESULT_TIMEOUT = 10;
+	static final int TAKEN_OVER_USER_WAIT_TIMEOUT = 1;
     	
     @Override
 	public StateMachine buildStateMachine() {
@@ -59,6 +60,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action setStartGameTimer = new CommonGameAction.CommonTimer(START_GAME_TIMEOUT, DiceGameAction.DiceTimerType.START);
 		Action setRollDiceBeginTimer = new CommonGameAction.CommonTimer(ROLL_DICE_TIMEOUT, DiceGameAction.DiceTimerType.ROLL_DICE);
 		Action setWaitClaimTimer = new CommonGameAction.CommonTimer(WAIT_CLAIM_TIMEOUT, DiceGameAction.DiceTimerType.WAIT_CLAIM);
+		Action setTakenOverUserWaitTimer = new CommonGameAction.CommonTimer(TAKEN_OVER_USER_WAIT_TIMEOUT, DiceGameAction.DiceTimerType.TAKEN_OVER_USER_WAIT);
 		Action setShowResultTimer = new DiceGameAction.SetShowResultTimer();		
 		Action clearTimer = new CommonGameAction.ClearTimer();
 		Action clearRobotTimer = new DiceGameAction.ClearRobotTimer();
@@ -163,11 +165,19 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 						return GameStateKey.WAIT_NEXT_PLAYER_PLAY;
 					}
 					else{
-						return GameStateKey.AUTO_ROLL_DICE;
+						return GameStateKey.TAKEN_OVER_USER_WAIT;
 					}
 				}
 			});				
 
+		sm.addState(new GameState(GameStateKey.TAKEN_OVER_USER_WAIT))
+			.addAction(setTakenOverUserWaitTimer)
+			.addEmptyTransition(GameCommandType.LOCAL_PLAY_USER_QUIT)
+			.addEmptyTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT)
+			.addEmptyTransition(GameCommandType.LOCAL_OTHER_USER_QUIT)
+			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)
+			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.AUTO_ROLL_DICE)
+			.addAction(clearTimer);
 		
 //		sm.addState(new GameState(GameStateKey.CALL_DICE_FOR_TAKEOVER_USER))
 //			.addAction(autoCallOrOpen)
