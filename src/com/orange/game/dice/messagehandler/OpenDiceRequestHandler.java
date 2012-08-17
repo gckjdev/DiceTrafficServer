@@ -36,7 +36,7 @@ public class OpenDiceRequestHandler extends AbstractMessageHandler {
 		OpenDiceRequest request = message.getOpenDiceRequest();
 
 		DiceGameSession diceSession = (DiceGameSession)session;
-		GameResultCode result = diceSession.openDice(userId); 
+		GameResultCode result = diceSession.openDice(userId, request.getOpenType(), request.getMultiple()); 
 		
 		GameMessage response = GameMessage.newBuilder()
 			.setCommand(GameCommandType.OPEN_DICE_RESPONSE)
@@ -46,8 +46,8 @@ public class OpenDiceRequestHandler extends AbstractMessageHandler {
 		sendResponse(response);
 		
 		if (result == GameResultCode.SUCCESS){		
-			// broadcast call dice		
-			NotificationUtils.broadcastNotification(diceSession, userId, GameCommandType.OPEN_DICE_REQUEST);
+			// broadcast open dice		
+			NotificationUtils.broadcastNotification(diceSession, userId, message);
 		
 			// fire event
 			GameEventExecutor.getInstance().fireAndDispatchEvent(GameCommandType.LOCAL_OPEN_DICE, session.getSessionId(), userId);

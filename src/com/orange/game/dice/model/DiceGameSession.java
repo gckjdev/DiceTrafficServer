@@ -41,10 +41,11 @@ public class DiceGameSession extends GameSession {
 	volatile boolean isWilds = false;
 	String callDiceUserId;	
 	String openDiceUserId;
-	volatile int openType = DICE_OPEN_TYPE_NORMAL;
+	volatile int openDiceMultiple = 1;	
+	volatile int openDiceType = DICE_OPEN_TYPE_NORMAL;
 	
-	public DiceGameSession(int sessionId, String name) {
-		super(sessionId, name);
+	public DiceGameSession(int sessionId, String name, boolean createByUser) {
+		super(sessionId, name, createByUser);
 		
 		// init state
 		this.currentState = DiceGameStateMachineBuilder.INIT_STATE;
@@ -59,16 +60,21 @@ public class DiceGameSession extends GameSession {
 		clearTimer();
 		userDices.clear();
 		userResults.clear();
-		clearCallDice();				
 		isWilds = false;
-		openDiceUserId = null;
-		openType = DICE_OPEN_TYPE_NORMAL;		
+		clearCallDice();				
+		clearOpenDice();
 	}
 	
 	private void clearCallDice() {
 		callDiceUserId = null;
 		currentDice = -1;
 		currentDiceNum = -1;
+	}
+	
+	private void clearOpenDice(){
+		openDiceUserId = null;
+		openDiceType = DICE_OPEN_TYPE_NORMAL;		
+		openDiceMultiple = 1;
 	}
 
 	public void rollDice() {
@@ -113,6 +119,11 @@ public class DiceGameSession extends GameSession {
 			return GameResultCode.ERROR_USERID_NULL;
 		}
 		
+		if (this.openDiceUserId != null){
+			ServerLog.warn(sessionId, "<callDice> from user"+userId+" but dice has been open, cannot call");
+			return GameResultCode.ERROR_DICE_ALREADY_OPEN;			
+		}
+		
 		String currentPlayUserId = getCurrentPlayUserId();		
 		synchronized (currentPlayUserId) {
 			if (!userId.equals(currentPlayUserId)){
@@ -135,7 +146,7 @@ public class DiceGameSession extends GameSession {
 		return GameResultCode.SUCCESS;
 	}
 
-	public GameResultCode openDice(String userId) {
+	public GameResultCode openDice(String userId, int openType, int multiple) {
 		
 		if (openDiceUserId != null){
 			ServerLog.info(sessionId, "<openDice> but open user exists, userId="+openDiceUserId);
@@ -144,13 +155,15 @@ public class DiceGameSession extends GameSession {
 		
 		ServerLog.info(sessionId, "<openDice> userId="+userId);
 		this.openDiceUserId = userId;
+		this.openDiceType = openType;
+		this.openDiceMultiple = multiple;
 		
 		String currentPlayUserId = getCurrentPlayUserId();
 		if (currentPlayUserId.equals(openDiceUserId)){
-			openType = DICE_OPEN_TYPE_NORMAL;
+			openDiceType = DICE_OPEN_TYPE_NORMAL;
 		}
 		else {
-			openType = DICE_OPEN_TYPE_NORMAL;
+			openDiceType = DICE_OPEN_TYPE_NORMAL;
 		}
 		
 		return GameResultCode.SUCCESS;
@@ -221,25 +234,27 @@ public class DiceGameSession extends GameSession {
 			}
 		}
 		
-		ServerLog.info(sessionId, "<calculateCoins> result = total "+resultCount + " "+currentDice);
+		ServerLog.info(sessionId, "<calculateCoins> result = total "+resultCount + " X "+currentDice);
 		
 		// clear user results
 		userResults.clear();
 		
-		int winCoins = WIN_COINS;
+		int winCoins = WIN_COINS * this.openDiceMultiple;
 		int lostCoins = -winCoins;
 		
 		// now check who wins			
 		if (resultCount >= currentDiceNum){
 			// call dice wins
 			addUserResult(callDiceUserId, winCoins, true);
-			addUserResult(openDiceUserId, lostCoins, false);
+			addUserResult(openDiceUserId, lostCoins, false);		
 		}
 		else{
 			// open dice wins
 			addUserResult(openDiceUserId, winCoins, true);
 			addUserResult(callDiceUserId, lostCoins, false);
 		}
+		
+		ServerLog.info(sessionId, "<calculateCoins> user result="+userResults.toString());
 	}
 
 	public Collection<PBUserResult> getUserResults(){
@@ -300,6 +315,12 @@ public class DiceGameSession extends GameSession {
 
 	public boolean getIsWilds() {
 		return isWilds;
+	}
+
+	public PBUserDice rollDiceAgain(String userId) {		
+		PBUserDice userDice = randomRollDice(userId);
+		userDices.put(userId, userDice);
+		return userDice;
 	}
 
 
