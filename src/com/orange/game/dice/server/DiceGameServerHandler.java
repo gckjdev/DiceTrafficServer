@@ -4,7 +4,9 @@ import org.jboss.netty.channel.MessageEvent;
 
 import com.orange.common.log.ServerLog;
 import com.orange.game.dice.messagehandler.CallDiceRequestHandler;
+import com.orange.game.dice.messagehandler.DiceJoinGameRequestHandler;
 import com.orange.game.dice.messagehandler.OpenDiceRequestHandler;
+import com.orange.game.dice.messagehandler.UseItemRequestHandler;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
 import com.orange.game.traffic.messagehandler.room.CreateRoomRequestHandler;
 import com.orange.game.traffic.messagehandler.room.GetRoomRequestHandler;
@@ -36,7 +38,7 @@ public class DiceGameServerHandler extends GameServerHandler {
 				return new GetRoomRequestHandler(messageEvent);
 
 			case JOIN_GAME_REQUEST:
-				return new JoinGameRequestHandler(messageEvent);
+				return new DiceJoinGameRequestHandler(messageEvent);
 				
 			case CALL_DICE_REQUEST:
 				return new CallDiceRequestHandler(messageEvent);
@@ -49,6 +51,9 @@ public class DiceGameServerHandler extends GameServerHandler {
 				
 			case UNREGISTER_ROOMS_NOTIFICATION_REQUEST:
 				return new UnRegisterRoomsRequestHandler(messageEvent);
+				
+			case USE_ITEM_REQUEST:
+				return new UseItemRequestHandler(messageEvent);
 		}
 		
 		return null;

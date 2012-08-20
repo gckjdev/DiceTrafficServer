@@ -117,10 +117,15 @@ public class DiceGameAction{
 	
 	private static void openDiceAndBroadcast(DiceGameSession session,
 			String userId) {
-		GameResultCode resultCode = session.openDice(userId);
+		int openType = DiceGameSession.DICE_OPEN_TYPE_NORMAL;
+		int openMultiple = 1;
+		GameResultCode resultCode = session.openDice(userId, openType, openMultiple);
 		if (resultCode == GameResultCode.SUCCESS){
 			
-			OpenDiceRequest request = OpenDiceRequest.newBuilder().setOpenType(0).build();
+			OpenDiceRequest request = OpenDiceRequest.newBuilder()
+				.setOpenType(openType)
+				.setMultiple(openMultiple)
+				.build();
 			
 			GameMessageProtos.GameMessage.Builder builder = GameMessageProtos.GameMessage.newBuilder()
 				.setCommand(GameCommandType.OPEN_DICE_REQUEST)
