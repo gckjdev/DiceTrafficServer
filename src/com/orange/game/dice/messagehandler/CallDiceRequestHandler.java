@@ -50,7 +50,7 @@ public class CallDiceRequestHandler extends AbstractMessageHandler {
 		
 		if (resultCode == GameResultCode.SUCCESS){
 			// broadcast call dice		
-			NotificationUtils.broadcastCallDiceNotification(session, request);
+			NotificationUtils.broadcastCallDiceNotification(session, request, false);
 			
 			// fire event
 			GameEventExecutor.getInstance().fireAndDispatchEvent(GameCommandType.LOCAL_CALL_DICE, session.getSessionId(), userId);

@@ -26,12 +26,14 @@ public class DiceGameSession extends GameSession {
 	public static final int DICE_COUNT = 5;		// each user has 5 dice
 	
 	public static final int DICE_1 = 1;
+	public static final int DICE_2 = 2;
 	public static final int DICE_6 = 6;
 	
 	public static final int DICE_OPEN_TYPE_NORMAL = 0;
 	public static final int DICE_OPEN_TYPE_QUICK = 1;
 
 	private static final int WIN_COINS = 200;
+
 	
 	ConcurrentHashMap<String, PBUserDice> userDices = new ConcurrentHashMap<String, PBUserDice>();
 	ConcurrentHashMap<String, PBUserResult> userResults = new ConcurrentHashMap<String, PBUserResult>(); 

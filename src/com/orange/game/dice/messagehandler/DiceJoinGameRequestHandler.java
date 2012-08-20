@@ -22,13 +22,15 @@ public class DiceJoinGameRequestHandler extends JoinGameRequestHandler {
 		DiceGameSession session = (DiceGameSession)processRequest(message, channel, requestSession);
 		
 		// send user dice notification
-		UserDiceNotification diceNotification = UserDiceNotification.newBuilder()
-			.addAllUserDice(session.getUserDices())
-			.setIsWild(session.getIsWilds())
-			.setCleanAll(true)
-			.build();
+		if (session.isGamePlaying()){
+			UserDiceNotification diceNotification = UserDiceNotification.newBuilder()
+				.addAllUserDice(session.getUserDices())
+				.setIsWild(session.getIsWilds())
+				.setCleanAll(true)
+				.build();
 		
-		NotificationUtils.sendUserDiceNotification(session, message.getUserId(), channel, diceNotification);
+			NotificationUtils.sendUserDiceNotification(session, message.getUserId(), channel, diceNotification);
+		}
 	}
 
 }
