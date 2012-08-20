@@ -164,7 +164,7 @@ public class DiceGameAction{
 			if (session.canContinueCall()){			
 				boolean wilds = session.getIsWilds();
 				if (callDiceUserId == null){
-					resultCode = session.callDice(currentPlayUserId, session.getPlayUserCount(), DiceGameSession.DICE_1, true); 
+					resultCode = session.callDice(currentPlayUserId, session.getPlayUserCount()+1, DiceGameSession.DICE_2, false); 
 				}				
 				else if (session.reachMaxDice(currentDiceNum)){
 					if (currentDice == DiceGameSession.DICE_6){
@@ -184,7 +184,7 @@ public class DiceGameAction{
 						.setNum(session.getCurrentDiceNum())
 						.setWilds(session.getIsWilds())
 						.build();
-					NotificationUtils.broadcastCallDiceNotification(session, request);
+					NotificationUtils.broadcastCallDiceNotification(session, request, true);
 				}
 			}
 			else if (session.canOpen(currentPlayUserId)){				

@@ -50,46 +50,71 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 		}
 		
 		int itemId = request.getItemId();
+		ServerLog.info(session.getSessionId(), "<UseItem> itemId="+itemId);
 		
 		GameResultCode resultCode = GameResultCode.SUCCESS;
 		switch (itemId){
 		case DiceGameConstant.DICE_ITEM_ROLL_DICE_AGAIN:
 			{
-				// roll dice again
-				PBUserDice userDice = session.rollDiceAgain(userId);
-				
-				// broadcast dice notification
-				UserDiceNotification diceNoti = UserDiceNotification.newBuilder().addUserDice(userDice).build(); 
-				NotificationUtils.broadcastUserDiceNotification(session, userId, diceNoti);
-	
-				// send success response with new rolled dice
-				UseItemResponse useItemResponse = UseItemResponse.newBuilder()
-					.setItemId(itemId)
-					.addAllDices(userDice.getDicesList())
-					.build();
-				
-				GameMessage response = GameMessage.newBuilder()
-					.setCommand(GameCommandType.USE_ITEM_RESPONSE)
-					.setMessageId(message.getMessageId())
-					.setResultCode(resultCode)
-					.setUseItemResponse(useItemResponse)
-					.setUserId(userId)
-					.build();
-				sendResponse(response);	
+				if (session.isOpen()){
+					resultCode = GameResultCode.ERROR_DICE_ALREADY_OPEN;
+					
+					// send success response with new rolled dice
+					UseItemResponse useItemResponse = UseItemResponse.newBuilder()
+						.setItemId(itemId)
+						.build();
+					
+					GameMessage response = GameMessage.newBuilder()
+						.setCommand(GameCommandType.USE_ITEM_RESPONSE)
+						.setMessageId(message.getMessageId())
+						.setResultCode(resultCode)
+						.setUseItemResponse(useItemResponse)
+						.setUserId(userId)
+						.build();
+					sendResponse(response);	
+					
+				}
+				else{				
+					// roll dice again
+					PBUserDice userDice = session.rollDiceAgain(userId);
+					
+					// broadcast dice notification
+					UserDiceNotification diceNoti = UserDiceNotification.newBuilder().addUserDice(userDice).build(); 
+					NotificationUtils.broadcastUserDiceNotification(session, userId, diceNoti);
+		
+					// send success response with new rolled dice
+					UseItemResponse useItemResponse = UseItemResponse.newBuilder()
+						.setItemId(itemId)
+						.addAllDices(userDice.getDicesList())
+						.build();
+					
+					GameMessage response = GameMessage.newBuilder()
+						.setCommand(GameCommandType.USE_ITEM_RESPONSE)
+						.setMessageId(message.getMessageId())
+						.setResultCode(resultCode)
+						.setUseItemResponse(useItemResponse)
+						.setUserId(userId)
+						.build();
+					sendResponse(response);	
+				}
 			}
 			break;
 			
 		default:
 			{
-				ServerLog.info(session.getSessionId(), "<UseItem> but itemId unknown, itemId="+itemId);
 				
-				// send error response
-				resultCode = GameResultCode.ERROR_UNKNOWN_ITEM;				
+				// send response
+				// resultCode = GameResultCode.ERROR_UNKNOWN_ITEM;				
+				UseItemResponse useItemResponse = UseItemResponse.newBuilder()
+					.setItemId(itemId)
+					.build();
+
 				GameMessage response = GameMessage.newBuilder()
 					.setCommand(GameCommandType.USE_ITEM_RESPONSE)
 					.setMessageId(message.getMessageId())
 					.setResultCode(resultCode)
 					.setUserId(userId)
+					.setUseItemResponse(useItemResponse)
 					.build();
 				sendResponse(response);	
 			}
