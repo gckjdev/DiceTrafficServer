@@ -36,7 +36,7 @@ public class DiceGameServerHandler extends GameServerHandler {
 				
 			case GET_ROOMS_REQUEST:
 				return new GetRoomRequestHandler(messageEvent);
-								
+
 			case JOIN_GAME_REQUEST:
 				return new DiceJoinGameRequestHandler(messageEvent);
 				
