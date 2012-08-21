@@ -155,7 +155,7 @@ public class DiceGameSession extends GameSession {
 			return GameResultCode.ERROR_DICE_ALREADY_OPEN;
 		}
 		
-		ServerLog.info(sessionId, "<openDice> userId="+userId);
+		ServerLog.info(sessionId, "<openDice> userId="+userId+", openType="+openType+", multiple="+multiple);
 		this.openDiceUserId = userId;
 		this.openDiceType = openType;
 		this.openDiceMultiple = multiple;

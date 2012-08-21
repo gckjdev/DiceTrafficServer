@@ -103,8 +103,7 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 		default:
 			{
 				
-				// send response
-				// resultCode = GameResultCode.ERROR_UNKNOWN_ITEM;				
+				// do nothing, just send response success 
 				UseItemResponse useItemResponse = UseItemResponse.newBuilder()
 					.setItemId(itemId)
 					.build();
