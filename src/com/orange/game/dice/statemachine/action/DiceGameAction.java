@@ -1,12 +1,18 @@
 package com.orange.game.dice.statemachine.action;
 
+import java.util.Collection;
+
 import com.orange.common.log.ServerLog;
+import com.orange.common.mongodb.MongoDBClient;
 import com.orange.common.statemachine.Action;
+import com.orange.game.constants.DBConstants;
 import com.orange.game.dice.model.DiceGameSession;
+import com.orange.game.model.manager.UserManager;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.robot.client.RobotService;
 import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.NotificationUtils;
+import com.orange.game.traffic.service.GameDBService;
 import com.orange.game.traffic.service.SessionUserService;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCompleteReason;
@@ -19,6 +25,8 @@ import com.orange.network.game.protocol.message.GameMessageProtos.OpenDiceReques
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceBeginNotificationRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceEndNotificationRequest;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
+import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
+import com.sun.tools.javac.util.List;
 
 public class DiceGameAction{
 
@@ -115,10 +123,8 @@ public class DiceGameAction{
 
 	}
 	
-	private static void openDiceAndBroadcast(DiceGameSession session,
-			String userId) {
-		int openType = DiceGameSession.DICE_OPEN_TYPE_NORMAL;
-		int openMultiple = 1;
+	public static GameResultCode openDiceAndBroadcast(DiceGameSession session,
+			String userId, int openType, int openMultiple) {
 		GameResultCode resultCode = session.openDice(userId, openType, openMultiple);
 		if (resultCode == GameResultCode.SUCCESS){
 			
@@ -136,6 +142,15 @@ public class DiceGameAction{
 
 			NotificationUtils.broadcastNotification(session, builder.build());
 		}
+		
+		return resultCode;
+	}
+	
+	public static void openDiceAndBroadcast(DiceGameSession session,
+			String userId) {
+		int openType = DiceGameSession.DICE_OPEN_TYPE_NORMAL;
+		int openMultiple = 1;
+		openDiceAndBroadcast(session, userId, openType, openMultiple);
 	}
 	
 	public static class AutoCallOrOpen implements Action{
@@ -254,6 +269,12 @@ public class DiceGameAction{
 			// calcuate user gain conins
 			session.calculateCoins();
 			
+			// save result
+			saveUserResultIntoDB(session);
+			
+			// charge/deduct coins
+			writeUserCoinsIntoDB(session);
+			
 			// broadcast complete complete with result
 			PBDiceGameResult result = PBDiceGameResult.newBuilder()
 				.addAllUserResult(session.getUserResults())
@@ -276,9 +297,46 @@ public class DiceGameAction{
 			GameMessage message = builder.build();
 			ServerLog.info(session.getSessionId(), "send game over="+message.toString());
 			NotificationUtils.broadcastNotification(session, null, message);
+				
+		}
+
+		private void writeUserCoinsIntoDB(final DiceGameSession session) {
+			final GameDBService dbService = GameDBService.getInstance();
+			dbService.executeDBRequest(session.getSessionId()	, new Runnable() {
+				
+				@Override
+				public void run() {
+					
+					MongoDBClient dbClient = dbService.getMongoDBClient(session.getSessionId());
+					
+					Collection<PBUserResult> resultList = session.getUserResults();
+					for (PBUserResult result : resultList){
+						boolean win = result.getWin();
+						String userId = result.getUserId();
+						int amount = result.getGainCoins();
+						
+						if (win){
+							UserManager.chargeAccount(dbClient, userId, amount, DBConstants.C_CHARGE_SOURCE_DICE_WIN, null, null);
+						}
+						else{
+							UserManager.deductAccount(dbClient, userId, -amount, DBConstants.C_CHARGE_SOURCE_DICE_WIN);
+						}
+					}
+				}
+			});
 			
-			// TODO 
-			// sessionManager.adjustSessionSetForTurnComplete(session);			
+		}
+
+		private void saveUserResultIntoDB(final DiceGameSession session) {
+			final GameDBService dbService = GameDBService.getInstance();
+			dbService.executeDBRequest(session.getSessionId()	, new Runnable() {
+				
+				@Override
+				public void run() {
+					// TODO write two user records into Mongo DB					
+					// user_id, game_id, play_times, win_times, lose_times, update_date
+				}
+			});
 		}
 
 	}

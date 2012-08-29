@@ -6,8 +6,8 @@ import com.orange.game.traffic.model.manager.GameSessionManager;
 public class DiceGameSessionManager extends GameSessionManager {
 
 	@Override
-	public GameSession createSession(int sessionId, String name, boolean createByUser) {
-		return new DiceGameSession(sessionId, name, createByUser);
+	public GameSession createSession(int sessionId, String name, String password, boolean createByUser, String createBy) {
+		return new DiceGameSession(sessionId, name, password, createByUser, createBy);
 	}
 
 	@Override

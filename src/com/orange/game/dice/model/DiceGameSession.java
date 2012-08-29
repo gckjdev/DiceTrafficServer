@@ -31,9 +31,9 @@ public class DiceGameSession extends GameSession {
 	
 	public static final int DICE_OPEN_TYPE_NORMAL = 0;
 	public static final int DICE_OPEN_TYPE_QUICK = 1;
+	public static final int DICE_OPEN_TYPE_CUT = 2;
 
 	private static final int WIN_COINS = 200;
-
 	
 	ConcurrentHashMap<String, PBUserDice> userDices = new ConcurrentHashMap<String, PBUserDice>();
 	ConcurrentHashMap<String, PBUserResult> userResults = new ConcurrentHashMap<String, PBUserResult>(); 
@@ -46,8 +46,8 @@ public class DiceGameSession extends GameSession {
 	volatile int openDiceMultiple = 1;	
 	volatile int openDiceType = DICE_OPEN_TYPE_NORMAL;
 	
-	public DiceGameSession(int sessionId, String name, boolean createByUser) {
-		super(sessionId, name, createByUser);
+	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy) {
+		super(sessionId, name, password, createByUser, createBy);
 		
 		// init state
 		this.currentState = DiceGameStateMachineBuilder.INIT_STATE;

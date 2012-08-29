@@ -8,6 +8,7 @@ import com.orange.game.dice.messagehandler.DiceJoinGameRequestHandler;
 import com.orange.game.dice.messagehandler.OpenDiceRequestHandler;
 import com.orange.game.dice.messagehandler.UseItemRequestHandler;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
+import com.orange.game.traffic.messagehandler.ChatRequestHandler;
 import com.orange.game.traffic.messagehandler.room.CreateRoomRequestHandler;
 import com.orange.game.traffic.messagehandler.room.GetRoomRequestHandler;
 import com.orange.game.traffic.messagehandler.room.JoinGameRequestHandler;
@@ -36,6 +37,9 @@ public class DiceGameServerHandler extends GameServerHandler {
 				
 			case GET_ROOMS_REQUEST:
 				return new GetRoomRequestHandler(messageEvent);
+				
+			case CHAT_REQUEST:
+				return new ChatRequestHandler(messageEvent);
 
 			case JOIN_GAME_REQUEST:
 				return new DiceJoinGameRequestHandler(messageEvent);
