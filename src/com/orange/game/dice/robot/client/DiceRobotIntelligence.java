@@ -401,14 +401,20 @@ public class DiceRobotIntelligence {
 	private void recordCall(int num, int dice, int isWild) {
 		whatToCall[0] = num;
 		whatToCall[1] = dice;
-		whatToCall[2] = isWild;
+		// If callNum is 2, auto wild,
+		// If dice is 1,no doubt wild.  
+		if ( whatToCall[0] == 2 || whatToCall[1] == 1) {
+			whatToCall[2] = 1;
+		} else {
+			whatToCall[2] = isWild;
+		}
 	}
 
 	// Robot initiate the call.
 	private void intialCall(int dice) {
 		
 		if ( intelligence < IQ_THRESHOLD) {
-			recordCall(1 + RandomUtils.nextInt(3), 1+RandomUtils.nextInt(6), RandomUtils.nextInt(2) );
+			recordCall( 2 + RandomUtils.nextInt(2), 1+RandomUtils.nextInt(6), 0 );
 			safe = false;
 			logger.info("<intialCall> Initially, not smart, just do a random call , call "
 					+ whatToCall[0]  + " X " + whatToCall[1] );
@@ -451,7 +457,7 @@ public class DiceRobotIntelligence {
 						+ whatToCall[0] + " X " + whatToCall[1]);
 			}
 			else {
-				recordCall(1 + RandomUtils.nextInt(3), 2+RandomUtils.nextInt(5), RandomUtils.nextInt(2) );
+				recordCall(2 + RandomUtils.nextInt(2), 2+RandomUtils.nextInt(5), (RandomUtils.nextInt(4) == 1? 1 : 0) );
 				safe = false;
 				logger.info("<intialCall> Initially, smart,dices distributed uniformly,  do a random call , call "
 						+ whatToCall[0]  + " X " + whatToCall[1]);
