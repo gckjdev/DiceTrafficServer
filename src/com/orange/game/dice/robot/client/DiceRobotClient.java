@@ -32,7 +32,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	List<PBDice> pbDiceList = null;
 	
 	ScheduledFuture<?> callDiceFuture = null;
-	
+	ScheduledFuture<?> openDiceFuture = null;
 	
 	
 	DiceRobotIntelligence diceRobotIntelligence = new DiceRobotIntelligence(playerCount);
@@ -74,7 +74,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 				
 				if ( this.sessionRealUserCount() == 0 || canOpenDice ){
 					ServerLog.info(sessionId, "[NEXT_PLAYER_START_NOTIFICATION_REQUEST] robotRollResult dicides to open.");
-					sendOpenDice();
+					scheduleSendOpenDice();
 				}
 				else {
 					// Make a decision what to call.
@@ -82,7 +82,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 					// Check the decision.
 					if (diceRobotIntelligence.giveUpCall()) {
 						ServerLog.info(sessionId, "[NEXT_PLAYER_START_NOTIFICATION_REQUEST] robot gives up call ,just open.");
-						sendOpenDice();
+						scheduleSendOpenDice();
 					} else {
 						scheduleSendCallDice(diceRobotIntelligence.getWhatTocall());
 					}
@@ -109,7 +109,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 //				// Next player is not robot.
 //				if ( (callUserSeatId + 1) % playerCount != userList.get(userId).getSeatId() ) {
 //					ServerLog.info(sessionId, "[CALL_DICE_RUQUET] sendOpenDice()");
-//					sendOpenDice();
+//					scheduleSendOpenDice();
 //				}
 //				else { 
 					canOpenDice = true;
@@ -167,6 +167,21 @@ public class DiceRobotClient extends AbstractRobotClient {
 		send(message);
 	}
 
+	
+	private void scheduleSendOpenDice() {
+		
+		if (openDiceFuture != null){
+			openDiceFuture.cancel(false);
+		}
+		
+		openDiceFuture = scheduleService.schedule(new Runnable() {			
+			@Override
+			public void run() {
+				sendOpenDice();
+			}
+		}, 
+		RandomUtils.nextInt(2)+1, TimeUnit.SECONDS);
+	}
 
 	private void sendOpenDice() {
 		ServerLog.info(sessionId, "Robot "+nickName+" open dice");
