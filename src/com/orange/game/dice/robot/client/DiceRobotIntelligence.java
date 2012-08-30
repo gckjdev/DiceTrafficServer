@@ -1,6 +1,6 @@
 package com.orange.game.dice.robot.client;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import org.apache.commons.lang.math.RandomUtils;
 
 public class DiceRobotIntelligence {
