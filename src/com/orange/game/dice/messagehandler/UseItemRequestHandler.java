@@ -10,8 +10,10 @@ import org.jboss.netty.channel.MessageEvent;
 import com.orange.common.log.ServerLog;
 import com.orange.game.dice.model.DiceGameConstant;
 import com.orange.game.dice.model.DiceGameSession;
+import com.orange.game.dice.statemachine.action.DiceGameAction;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
 import com.orange.game.traffic.model.dao.GameSession;
+import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.HandlerUtils;
 import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
@@ -98,6 +100,38 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 					sendResponse(response);	
 				}
 			}
+			break;
+			
+		case DiceGameConstant.DICE_ITEM_DOUBLE_COIN:
+		{
+			if (session.isOpen()){
+				resultCode = GameResultCode.ERROR_DICE_ALREADY_OPEN;											
+			}
+			else{
+				int multiple = 2;
+				resultCode = DiceGameAction.openDiceAndBroadcast(session, userId, DiceGameSession.DICE_OPEN_TYPE_CUT, multiple);
+			}
+						
+			// send success response with new rolled dice
+			UseItemResponse useItemResponse = UseItemResponse.newBuilder()
+				.setItemId(itemId)
+				.build();
+			
+			GameMessage response = GameMessage.newBuilder()
+				.setCommand(GameCommandType.USE_ITEM_RESPONSE)
+				.setMessageId(message.getMessageId())
+				.setResultCode(resultCode)
+				.setUseItemResponse(useItemResponse)
+				.setUserId(userId)
+				.build();
+			sendResponse(response);	
+			
+			if (resultCode == GameResultCode.SUCCESS){
+				// fire event
+				GameEventExecutor.getInstance().fireAndDispatchEvent(GameCommandType.LOCAL_OPEN_DICE, session.getSessionId(), userId);				
+			}
+
+		}
 			break;
 			
 		default:
