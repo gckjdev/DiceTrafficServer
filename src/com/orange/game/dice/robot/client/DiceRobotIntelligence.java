@@ -3,10 +3,13 @@ package com.orange.game.dice.robot.client;
 import org.apache.log4j.Logger;
 import org.apache.commons.lang.math.RandomUtils;
 
+
 public class DiceRobotIntelligence {
 	
 	private static final Logger logger = Logger.getLogger(DiceRobotIntelligence.class
 			.getName());
+	private DiceRobotChatContent chatContent = DiceRobotChatContent.getInstance();
+	
 		/*
 		 *  定义一个多项式分布概率数组, 每一项表示5个骰子出现
 		 *  x个y的概率(忽略了机器人自己的5个骰子).y可以是
@@ -49,6 +52,10 @@ public class DiceRobotIntelligence {
 		// A accelerator fator that control how
 		//  fast the intelligence changes.
 		private static final double ACCELERATOR_FACTOR = Math.E;
+	
+		
+		
+		
 		
 //      NOT USED NOW !!!
 //		// Per-player's initial honesty
@@ -97,12 +104,30 @@ public class DiceRobotIntelligence {
 		private int[] introspection = {0, 0, 0, 0, 0, 0, 0, 0};
 		
 		// How dose robot's dices distribute?
-		private int[] distribution = {0,0,0,0,0,0};
+		private int[] distribution = {0, 0, 0, 0, 0, 0};
 		
 		
 		private boolean safe = true;
 		private boolean lying = false;
 		private int lieDice = 0;
+		
+		private boolean hasSendCallWilds = false;
+		
+		// For chat.
+		private final static int TEXT = 1;
+		/*
+		 * index 0 : chatContent
+		 * index 1 : chatVoidId
+		 * index 2 : contentType: TEXT or EXPRESSION
+		 */
+		private final static int IDX_CONTENT = 0;
+		private final static int IDX_CONTENTID = 1;
+		private final static int IDX_CONTNET_TYPE = 2;
+		
+		private String[ ] whatToChat = {"关注我吧。","1", "1"};
+		private boolean setChat = false;
+		
+		
 		
 		private void reset(int[] array) {
 			for ( int i = 0; i< array.length; i++) {
@@ -140,6 +165,8 @@ public class DiceRobotIntelligence {
 			safe = true;
 			lying = false;
 			lieDice = 0;
+			setChat = false;
+			hasSendCallWilds = false;
 			reset(whatToCall);
 			reset(introspection);
 			reset(distribution);
@@ -163,14 +190,17 @@ public class DiceRobotIntelligence {
 			// Make a decision...
 			if ( intelligence < IQ_THRESHOLD ) {
 				canOpen = ((int)HIGHEST_IQ/intelligence >= 2 && num - numOfDice > 2 ? true : false);
-				if(canOpen)
+				if(canOpen) {
 					logger.info("robot is not smart, it decides to open!");
+					setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));
+				}
 				return canOpen;
 			}
 			
 			if ( lying && dice == lieDice && num > 2) {
 					canOpen = RandomUtils.nextInt(2) == 1? true : false;
 					logger.info("Robot is lyint and player is fooled,open!");
+					setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.YOU_ARE_FOOL));
 					return canOpen;
 			}
 			
@@ -193,8 +223,11 @@ public class DiceRobotIntelligence {
 					if (round == 2 || round == 3) {
 						if ( changed ) {
 							canOpen = (round + RandomUtils.nextInt(2) > 2 ? true : false);
-							if(canOpen)
+							if(canOpen) {
 								logger.info("round 2 or round 3, player changes calling  dice, he may be cheating, open!");
+								setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));	
+								return canOpen;
+							}
 						}
 						if ( num - numOfDice >= 3 ) {
 							canOpen = (round + RandomUtils.nextInt(2) > 2 ? true : false);
@@ -213,9 +246,19 @@ public class DiceRobotIntelligence {
 					}
 				}	
 			}
+			// For chat
+			if (canOpen == true ) {
+				if ( RandomUtils.nextInt(3) == 1) {
+				setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.BELIEVE_IT));
+				} 
+				else if ( canOpen == true && RandomUtils.nextInt(2) == 0 ) {
+				setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));
+				}
+			}
 			
 			return canOpen;
 		}
+
 		
 	public void decideWhatToCall(int playerCount,int num, int dice, boolean isWild, int[] robotDices) {
 			
@@ -278,7 +321,7 @@ public class DiceRobotIntelligence {
 						}
 						// round+1 is current round, if current round is 3, it must be true,
 						// if current round is 2, it is 50% true. 
-						if ( round == 0 || round + 1 + RandomUtils.nextInt(2) > 2 ){
+						if ( num - numOfDice < 3 && (round == 0 || round + 1 + RandomUtils.nextInt(2) > 2) ){
 							recordCall(num+1, dice,1);
 							safe = false;
 							logger.info("<DiceRobotIntelligence> isWild & smart, just add one, call "
@@ -398,6 +441,7 @@ public class DiceRobotIntelligence {
 			round++;
 		}
 
+	// Record what robot wants to call
 	private void recordCall(int num, int dice, int isWild) {
 		whatToCall[0] = num;
 		whatToCall[1] = dice;
@@ -407,6 +451,13 @@ public class DiceRobotIntelligence {
 			whatToCall[2] = 1;
 		} else {
 			whatToCall[2] = isWild;
+		}
+		if ( whatToCall[2] == 1 && hasSendCallWilds == false && RandomUtils.nextInt(2) == 1) {
+			logger.info("*****Robot call wilds! Set chat content*****");
+			setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.CALL_WILDS));
+			hasSendCallWilds = true;
+		} else if ( RandomUtils.nextInt(3) == 1 && safe == true ) {
+			setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.BITE_ME));
 		}
 	}
 
@@ -542,4 +593,34 @@ public class DiceRobotIntelligence {
 					introspection[7] = 1;
 			}
 		}
+		
+		public boolean hasSetChat() {
+			return setChat;
+		}
+		
+		public void resetHasSetChat() {
+			this.setChat = false;
+		}
+		
+		
+		public String[] getChatContent(){
+			String[] result = {null,null, null};
+			
+			result[IDX_CONTENT] = whatToChat[IDX_CONTENT];
+			result[IDX_CONTENTID] = whatToChat[IDX_CONTENTID];
+			result[IDX_CONTNET_TYPE]= whatToChat[IDX_CONTNET_TYPE];
+			
+			return result;
+		}
+		
+		private void setChatContent(int contentType,String[] content) {
+			
+			this.setChat = true;
+			
+			whatToChat[IDX_CONTENT] = content[IDX_CONTENT];
+			whatToChat[IDX_CONTENTID] = content[IDX_CONTENTID];
+			whatToChat[IDX_CONTNET_TYPE] = Integer.toString(contentType);
+			
+		}
+
 }

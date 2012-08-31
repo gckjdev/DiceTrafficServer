@@ -26,7 +26,6 @@ import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceBeginN
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceEndNotificationRequest;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
-import com.sun.tools.javac.util.List;
 
 public class DiceGameAction{
 
