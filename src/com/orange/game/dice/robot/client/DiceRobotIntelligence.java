@@ -443,6 +443,12 @@ public class DiceRobotIntelligence {
 
 	// Record what robot wants to call
 	private void recordCall(int num, int dice, int isWild) {
+		// We should avoid call the same as last round
+		//  Just add the quantity by one
+		if ( whatToCall[0] == num && whatToCall[1] == dice && whatToCall[2] == isWild ) {
+				num++;
+		}
+		
 		whatToCall[0] = num;
 		whatToCall[1] = dice;
 		// If callNum is 2, auto wild,
