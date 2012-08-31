@@ -26,7 +26,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	private int playerCount = 0;
 
 	// chatContent type
-//	private final static int TEXT = 1;
+	private final static int TEXT = 1;
 	private final static int EXPRESSION = 2;
 	
 	private final static int IDX_CONTENT = 0;
@@ -236,20 +236,27 @@ public class DiceRobotClient extends AbstractRobotClient {
 	
 	public void sendChat(final String[] content) {
 		
-		// index 0 : content(only valid for TEXT)
-		// index 1 : content voiceId or expressionId, depent on contentType
-		// index 2 : contentType, TEXT or EXPRESSION
+		// index IDX_CONTENT(0) : content(only valid for TEXT)
+		// index IDX_CONTENTID(1) : content voiceId or expressionId, depent on contentType
+		// index IDX_CONTENT_TYPE(2) : contentType, TEXT or EXPRESSION
 		String chatContent = content[IDX_CONTENT];
 		String contentId = content[IDX_CONTENTID];
 		int contentType = Integer.parseInt(content[IDX_CONTNET_TYPE]);
 		
 		ServerLog.info(sessionId, "Robot "+nickName+" sends chat content");
 		
-		GameChatRequest request = GameChatRequest.newBuilder()
+		GameChatRequest request = null;
+		
+		GameChatRequest.Builder builder = GameChatRequest.newBuilder()
 				.setContentType(contentType) // 1: text, 2: expression
-				.setContent(chatContent)  // will be ignored when contentType is 2
-				.setExpressionId(contentId)
-				.build();
+				.setContent(chatContent); // will be ignored when contentType is 2
+		if ( contentType == TEXT ) {
+				builder.setContentVoiceId(contentId);
+		} else {
+				builder.setExpressionId(contentId);
+		}
+		
+		request = builder.build();
 				
 		GameMessage message = GameMessage.newBuilder()
 			.setChatRequest(request)
