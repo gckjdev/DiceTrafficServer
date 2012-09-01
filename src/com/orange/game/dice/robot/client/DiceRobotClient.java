@@ -24,7 +24,9 @@ public class DiceRobotClient extends AbstractRobotClient {
 	private int callUserSeatId = -1;
 	private boolean canOpenDice = false;
 	private int playerCount = 0;
-
+	private boolean robotWinThisGame = false;
+	private boolean firstRound = true;
+	
 	// chatContent type
 	private final static int TEXT = 1;
 	private final static int EXPRESSION = 2;
@@ -54,6 +56,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	DiceRobotIntelligence diceRobotIntelligence = new DiceRobotIntelligence(playerCount);
 	DiceRobotChatContent diceRobotChatContent = DiceRobotChatContent.getInstance();
 	
+	
 	public DiceRobotClient(String userId, String nickName, String avatar,
 			boolean gender, String location, int sessionId, int index) {
 		super(userId, nickName, avatar, gender, location, sessionId, index);
@@ -62,10 +65,15 @@ public class DiceRobotClient extends AbstractRobotClient {
 	
 	@Override
 	public void handleMessage(GameMessage message){
+		
 		switch (message.getCommand()){
 		
 		case ROLL_DICE_BEGIN_NOTIFICATION_REQUEST:
 			ServerLog.info(sessionId, "Robot "+nickName+" receive ROLL_DICE_BEGIN_NOTIFICATION_REQUEST");
+			// Balance and reset data of current game
+			if ( !firstRound ) {
+				diceRobotIntelligence.balanceAndReset(userList.size(), robotWinThisGame);
+			}
 			break;
 		
 		case ROLL_DICE_END_NOTIFICATION_REQUEST:			
@@ -96,15 +104,16 @@ public class DiceRobotClient extends AbstractRobotClient {
 				
 				if ( this.sessionRealUserCount() == 0 || canOpenDice ){
 					ServerLog.info(sessionId, "[NEXT_PLAYER_START_NOTIFICATION_REQUEST] robot dicides to open.");
-					scheduleSendOpenDice();
+					scheduleSendOpenDice(0);
 				}
 				else {
 					// Make a decision what to call.
+					playerCount = userList.size();
 					diceRobotIntelligence.decideWhatToCall(playerCount, callDiceNum, callDice, callDiceIsWild, robotRollResult);
 					// Check the decision.
 					if (diceRobotIntelligence.giveUpCall()) {
 						ServerLog.info(sessionId, "[NEXT_PLAYER_START_NOTIFICATION_REQUEST] robot gives up call ,just open.");
-						scheduleSendOpenDice();
+						scheduleSendOpenDice(0);
 					} else {
 						scheduleSendCallDice(diceRobotIntelligence.getWhatTocall());
 					}
@@ -125,24 +134,27 @@ public class DiceRobotClient extends AbstractRobotClient {
 			callUserSeatId = userList.get(callUserId).getSeatId();
 			playerCount = userList.size();
 			ServerLog.info(sessionId, "Robot " + nickName + " receive CALL_DICE_REQUEST");
-			ServerLog.info(sessionId, "The playerCount is " + playerCount);
-			if (diceRobotIntelligence.canOpenDice(playerCount,callUserSeatId , callDiceNum, callDice, callDiceIsWild)) {
+			ServerLog.info(sessionId, "The playerCount is " + playerCount + " seatId is " + callUserSeatId);
+			ServerLog.info(sessionId, "Robot " + nickName + "'s seatId is " + userList.get(userId).getSeatId());
+			if (diceRobotIntelligence.canOpenDice(playerCount,callUserId, callDiceNum, callDice, callDiceIsWild)) {
 				ServerLog.info(sessionId, "Robot " + nickName + " decide to open " + callUserId);
-//				// Next player is not robot.
-//				if ( (callUserSeatId + 1) % playerCount != userList.get(userId).getSeatId() ) {
-//					ServerLog.info(sessionId, "[CALL_DICE_RUQUET] sendOpenDice()");
-//					scheduleSendOpenDice();
-//				}
-//				else { 
+				// Next player is not robot.
+				if ( (callUserSeatId + 1) % playerCount != userList.get(userId).getSeatId() ) {
+					ServerLog.info(sessionId, "[CALL_DICE_RUQUET] *****Robot " + nickName + "rush to open!!!*****");
+					sendOpenDice(1);// 抢开
+				}
+				else { 
 					canOpenDice = true;
-//				}
+				}
 			}
 			
 			break;
 			
 		case OPEN_DICE_REQUEST:
-			ServerLog.info(sessionId, "Robot "+nickName+" is opened by player, sends a angry expression");
-			sendChat(expression);
+			if ( RandomUtils.nextInt(2) == 1) {
+				ServerLog.info(sessionId, "Robot "+nickName+" is opened by player, sends a angry expression");
+				sendChat(expression);
+			}
 			openUserId = message.getUserId();
 			ServerLog.info(sessionId, "Robot "+nickName+" receive OPEN_DICE_REQUEST");
 			
@@ -198,7 +210,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	}
 
 	
-	private void scheduleSendOpenDice() {
+	private void scheduleSendOpenDice(final int openType) {
 		
 		if (openDiceFuture != null){
 			openDiceFuture.cancel(false);
@@ -211,16 +223,18 @@ public class DiceRobotClient extends AbstractRobotClient {
 					sendChat(diceRobotIntelligence.getChatContent());
 					diceRobotIntelligence.resetHasSetChat();
 				}
-				sendOpenDice();
+				sendOpenDice(openType);
 			}
 		}, 
 		RandomUtils.nextInt(2)+1, TimeUnit.SECONDS);
 	}
 
-	private void sendOpenDice() {
+	private void sendOpenDice(int openType) {
 		ServerLog.info(sessionId, "Robot "+nickName+" open dice");
 		
-		OpenDiceRequest request = OpenDiceRequest.newBuilder().build();
+		OpenDiceRequest request = OpenDiceRequest.newBuilder()
+				.setOpenType(openType)
+				.build();
 		GameMessage message = GameMessage.newBuilder()
 			.setOpenDiceRequest(request)
 			.setMessageId(getClientIndex())
@@ -295,7 +309,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	
 
 	@Override
-	public void resetPlayData(boolean robotWinThisRound) {
+	public void resetPlayData(boolean robotWinThisGame) {
 		openUserId = null;
 		callUserId = null;
 		callDice = -1;
@@ -310,7 +324,9 @@ public class DiceRobotClient extends AbstractRobotClient {
 		openDiceFuture = null;
 		callDicechatFuture = null;
 		
-		diceRobotIntelligence.balanceAndReset(robotWinThisRound);
+		this.robotWinThisGame = robotWinThisGame;
+		firstRound = false;
+		
 	}
 
 }
