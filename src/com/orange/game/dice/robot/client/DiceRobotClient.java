@@ -27,6 +27,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	private boolean robotWinThisGame = false;
 	private boolean firstRound = true;
 	
+	
 	// chatContent type
 	private final static int TEXT = 1;
 	private final static int EXPRESSION = 2;
@@ -50,8 +51,8 @@ public class DiceRobotClient extends AbstractRobotClient {
 	ScheduledFuture<?> callDiceFuture = null;
 	ScheduledFuture<?> openDiceFuture = null;
 	
-	ScheduledFuture<?> rollEndchatFuture = null;
-	ScheduledFuture<?> callDicechatFuture = null;
+	ScheduledFuture<?> rollEndChatFuture = null;
+	volatile static int rollEndChatLock = 2;
 	
 	DiceRobotIntelligence diceRobotIntelligence = new DiceRobotIntelligence(playerCount);
 	DiceRobotChatContent diceRobotChatContent = DiceRobotChatContent.getInstance();
@@ -94,8 +95,8 @@ public class DiceRobotClient extends AbstractRobotClient {
 			diceRobotIntelligence.inspectRobotDices(robotRollResult);
 			
 			// schedule random chat
-			ServerLog.info(sessionId, "Rolling ends.*****Robot "+nickName+"***** schedules to send random chat");
-			scheduleRandomSendChat(rollEndchatFuture,RandomUtils.nextInt(3)+10);
+				ServerLog.info(sessionId, "Rolling ends.*****Robot "+nickName+"***** schedules to send random chat");
+				scheduleRandomSendChat(rollEndChatFuture,RandomUtils.nextInt(3)+10);
 			break;
 			
 		case NEXT_PLAYER_START_NOTIFICATION_REQUEST:
@@ -134,8 +135,8 @@ public class DiceRobotClient extends AbstractRobotClient {
 			callUserSeatId = userList.get(callUserId).getSeatId();
 			playerCount = userList.size();
 			ServerLog.info(sessionId, "Robot " + nickName + " receive CALL_DICE_REQUEST");
-			ServerLog.info(sessionId, "The playerCount is " + playerCount + " seatId is " + callUserSeatId);
-			ServerLog.info(sessionId, "Robot " + nickName + "'s seatId is " + userList.get(userId).getSeatId());
+//			ServerLog.info(sessionId, "The playerCount is " + playerCount + " seatId is " + callUserSeatId);
+//			ServerLog.info(sessionId, "Robot " + nickName + "'s seatId is " + userList.get(userId).getSeatId());
 			if (diceRobotIntelligence.canOpenDice(playerCount,callUserId, callDiceNum, callDice, callDiceIsWild)) {
 				ServerLog.info(sessionId, "Robot " + nickName + " decide to open " + callUserId);
 				// Next player is not robot.
@@ -299,8 +300,11 @@ public class DiceRobotClient extends AbstractRobotClient {
 		chatFuture = scheduleService.schedule(new Runnable() {			
 			@Override
 			public void run() {
-				ServerLog.info(sessionId, "**********Random chat fired !!!");
-				sendChat(content);
+				if ( rollEndChatLock > 0 ) {
+					ServerLog.info(sessionId, "**********Random chat fired !!!");
+					sendChat(content);
+					rollEndChatLock--;
+				}
 			}
 		}, 
 		delay, TimeUnit.SECONDS);
@@ -322,11 +326,10 @@ public class DiceRobotClient extends AbstractRobotClient {
 		pbDiceList = null;
 		
 		openDiceFuture = null;
-		callDicechatFuture = null;
 		
 		this.robotWinThisGame = robotWinThisGame;
 		firstRound = false;
-		
+		rollEndChatLock = 2;
 	}
 
 }

@@ -251,7 +251,7 @@ public class DiceRobotIntelligence {
 				return canOpen;
 			}
 			
-			// lying means robot call a dice value it evne doesn't have one!
+			// lying means robot call a dice value that it evne doesn't have one!
 			if ( lying && dice == lieDice && difference >= UNSAFE_DIFFERENCE[playerCount-2]) {
 					canOpen = RandomUtils.nextInt(2) == 1? true : false;
 					logger.info("Robot is lyint and player is fooled,open!");
@@ -277,7 +277,6 @@ public class DiceRobotIntelligence {
 					}
 					if (round == 2 || round == 3) {
 						if ( changeDiceValue.get(userId) == true) {
-							// round == 3 , it must be true
 							canOpen = (round + RandomUtils.nextInt(2) > 2 ? true : false);
 							if(canOpen) {
 								logger.info("round 2 or round 3, player changes calling  dice, he may be cheating, open!");
@@ -303,14 +302,10 @@ public class DiceRobotIntelligence {
 				}	
 			}
 			// For chat
-			if (canOpen == true ) {
-				if ( RandomUtils.nextInt(3) == 1) {
+			if (canOpen == true && RandomUtils.nextInt(4) == 1) {
 				setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.BELIEVE_IT));
 				} 
-				else if ( canOpen == true && RandomUtils.nextInt(2) == 0 ) {
-				setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));
-				}
-			}
+				
 			
 			return canOpen;
 		}
@@ -527,7 +522,7 @@ public class DiceRobotIntelligence {
 			logger.info("*****Robot call wilds! Set chat content*****");
 			setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.CALL_WILDS));
 			hasSendCallWilds = true;
-		} else if ( RandomUtils.nextInt(3) == 1 && safe == true ) {
+		} else if ( RandomUtils.nextInt(4) == 1 && safe == true ) {
 			setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.BITE_ME));
 		}
 	}
