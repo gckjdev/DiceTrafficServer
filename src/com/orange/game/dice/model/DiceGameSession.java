@@ -33,7 +33,7 @@ public class DiceGameSession extends GameSession {
 	public static final int DICE_OPEN_TYPE_QUICK = 1;
 	public static final int DICE_OPEN_TYPE_CUT = 2;
 
-	private static final int WIN_COINS = 200;
+	private static final int WIN_COINS = 100;
 	
 	ConcurrentHashMap<String, PBUserDice> userDices = new ConcurrentHashMap<String, PBUserDice>();
 	ConcurrentHashMap<String, PBUserResult> userResults = new ConcurrentHashMap<String, PBUserResult>(); 
