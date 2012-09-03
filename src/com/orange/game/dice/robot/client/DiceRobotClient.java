@@ -92,11 +92,11 @@ public class DiceRobotClient extends AbstractRobotClient {
 					robotRollResult[i] = pbDiceList.get(i).getDice();
 				}
 			}
-			diceRobotIntelligence.inspectRobotDices(robotRollResult);
+			diceRobotIntelligence.introspectRobotDices(robotRollResult);
 			
 			// schedule random chat
-				ServerLog.info(sessionId, "Rolling ends.*****Robot "+nickName+"***** schedules to send random chat");
-				scheduleRandomSendChat(rollEndChatFuture,RandomUtils.nextInt(3)+10);
+			ServerLog.info(sessionId, "Rolling ends.*****Robot "+nickName+"***** schedules to send random chat");
+			scheduleRandomSendChat(rollEndChatFuture,RandomUtils.nextInt(3)+10);
 			break;
 			
 		case NEXT_PLAYER_START_NOTIFICATION_REQUEST:
@@ -135,12 +135,14 @@ public class DiceRobotClient extends AbstractRobotClient {
 			callUserSeatId = userList.get(callUserId).getSeatId();
 			playerCount = userList.size();
 			ServerLog.info(sessionId, "Robot " + nickName + " receive CALL_DICE_REQUEST");
-//			ServerLog.info(sessionId, "The playerCount is " + playerCount + " seatId is " + callUserSeatId);
-//			ServerLog.info(sessionId, "Robot " + nickName + "'s seatId is " + userList.get(userId).getSeatId());
+			ServerLog.info(sessionId, "The playerCount is " + playerCount + ", seatId is " + callUserSeatId 
+						+"Robot " + nickName + "'s seatId is " + userList.get(userId).getSeatId());
 			if (diceRobotIntelligence.canOpenDice(playerCount,callUserId, callDiceNum, callDice, callDiceIsWild)) {
-				ServerLog.info(sessionId, "Robot " + nickName + " decide to open " + callUserId);
+				ServerLog.info(sessionId, "Robot " + nickName + " decides to open " + callUserId);
 				// Next player is not robot.
 				if ( (callUserSeatId + 1) % playerCount != userList.get(userId).getSeatId() ) {
+					ServerLog.info(sessionId, "!!!!!The callUserSeatId is " + callUserSeatId + ", Robot "+nickName
+							+ "'s seatId is " + userList.get(userId).getSeatId());
 					ServerLog.info(sessionId, "[CALL_DICE_RUQUET] *****Robot " + nickName + "rush to open!!!*****");
 					sendOpenDice(1);// 抢开
 				}

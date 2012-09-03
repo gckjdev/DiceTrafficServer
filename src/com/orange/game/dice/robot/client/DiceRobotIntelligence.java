@@ -49,7 +49,7 @@ public class DiceRobotIntelligence {
 				2.78093e-13,	1.01125e-14,	2.63803e-16,	4.39672e-18,	3.51738e-20,
 		};
 		
-		// If two players, base in probability[] is 0, etc.
+		// In case of two players, base in probability[] is 0, etc.
 		private final static int[]  BASE = {0, 6, 17, 33, 54}; 
 
 		/*
@@ -63,37 +63,37 @@ public class DiceRobotIntelligence {
 		private  static final  int  DiceMeanValue[] = {3, 5, 5, 5, 5};
 		
 
-		// If difference is this value, it's not safe
+		// If difference is >= unsafe_difference[playerCount-2], it's not safe
 		private final static int[] UNSAFE_DIFFERENCE = {3, 5, 7, 8, 10};
 		// Initial benchmark probability
 		// 5:  0.160751;   10: 0.0542659;  15: 0.0207905;  20: 0.0258821;	25: 0.0109648
 		private static final double INI_BENCHMARK[] = {0.16, 0.05, 0.02,	0.02,  0.01} ;
-		// Current round's benchmark probablity
+		// Current game's benchmark probablity
 		private double[]  benchmark = {0.16, 0.05, 0.02,	0.02,  0.01};
 		
 		
 		// Robot's highest intelligence
 		private static final double HIGHEST_IQ = 1;
-		// IQ threshold affects how robot make decision.
+		// IQ threshold affects how robot make decision
 		private static final double IQ_THRESHOLD = 0.6d;
 		// A accelerator fator that control how
-		//  fast the intelligence changes.
+		// fast the intelligence changes
 		private static final double ACCELERATOR_FACTOR = Math.E;
-		// Robot's IQ.
+		// Robot's IQ in current game
 		private  double intelligence;
 		
-//      NOT USED NOW !!!
+//      *** NOT IMPLEMENTED NOW !!! ***
 //		// Per-player's initial honesty
 //		private static final int INIHONESTY = 10;
 //		// At most five player(except robot itself) 
 //		private int[] honesty = {INIHONESTY,INIHONESTY,INIHONESTY,INIHONESTY,INIHONESTY};
 		
-		// How many rounds is this game in ?
+		// The current this game in
 		private int round;
-		// How many rounds the robot wins
-		private int winRound;
-		// How many rounds the robot loses
-		private int loseRound;
+		// How many games the robot wins
+		private int winGame;
+		// How many games the robot loses
+		private int loseGame;
 		
 	
 		// A flag to indicate whether giving up calling.
@@ -103,17 +103,17 @@ public class DiceRobotIntelligence {
 		// index 0: the number of dices
 		// index 1: which dice
 		// index 2: is wild ?
-		private final static int IDX_NUM_OF_DICE = 0;
+		private final static int IDX_NUM_OF_DICE 		= 0;
 		private final static int IDX_DICE_FACE_VALUE = 1;
-		private final static int IDX_CALL_WILD = 2;
+		private final static int IDX_CALL_WILD 		= 2;
 		private int[] whatToCall = {0, 0, 0};
 		
-		// What each player last call
+		// What each player last calls
 		private Map<String, Integer> lastCall = new HashMap<String, Integer>();
 		// Does player change his/her dice, compared to last round?
 		private Map<String, Boolean> changeDiceValue = new HashMap<String, Boolean>();
 		
-		/* Introspection of robot's dices, set by inspectRobotDices method.
+		/* Introspection of robot's dices, set by introspectRobotDices method.
 		 * index 0: any dice of 4 or 5 instances ? 1 for yes, 0 for no.
 		 * index 1: which dice has 4/5 instances ? Only set if index 1 is 1.
 		 * index 2: any dice of 3 instances ? 1 for yes, 0 for no.
@@ -134,21 +134,22 @@ public class DiceRobotIntelligence {
 		private int[] introspection = {0, 0, 0, 0, 0, 0, 0, 0};
 		
 		// How dose robot's dices distribute?
-		private final static int DICE_VALUE_ONE = 1;
-		private final static int DICE_VALUE_TWO = 2;
+		private final static int DICE_VALUE_ONE 	= 1;
+		private final static int DICE_VALUE_TWO 	= 2;
 		private final static int DICE_VALUE_THREE = 3;
-		private final static int DICE_VALUE_FOUR = 4;
-		private final static int DICE_VALUE_FIVE = 5;
-		private final static int DICE_VALUE_SIX = 6;
+		private final static int DICE_VALUE_FOUR 	= 4;
+		private final static int DICE_VALUE_FIVE 	= 5;
+		private final static int DICE_VALUE_SIX 	= 6;
 		private int[] distribution = {0, 0, 0, 0, 0, 0};
 		
-		// Is safe for robot to call?
+		// Is it safe for robot to call?
 		private boolean safe = true;
 		// Does robot lie?
 		private boolean lying = false;
 		// If lie, what dice it lie?
 		private int lieDice = 0;
 		
+		// In one game, we limit robot to only send one callwild message.
 		private boolean hasSendCallWilds = false;
 		
 		
@@ -159,8 +160,8 @@ public class DiceRobotIntelligence {
 		 * index 1 : chatVoidId
 		 * index 2 : contentType: TEXT or EXPRESSION
 		 */
-		private final static int IDX_CONTENT = 0;
-		private final static int IDX_CONTENTID = 1;
+		private final static int IDX_CONTENT 		= 0;
+		private final static int IDX_CONTENTID 	= 1;
 		private final static int IDX_CONTNET_TYPE = 2;
 		private String[ ] whatToChat = {"关注我吧。","1", "1"};
 		private boolean setChat = false;
@@ -173,33 +174,34 @@ public class DiceRobotIntelligence {
 		
 		public DiceRobotIntelligence(int playerCount) {
 				intelligence = HIGHEST_IQ;
-				for ( int i = 2; i <= playerCount; i++) {
-					benchmark[i-2] = INI_BENCHMARK[i-2] / intelligence;
-				}
+//				for ( int i = 2; i <= playerCount; i++) {
+//					benchmark[i-2] = INI_BENCHMARK[i-2] / intelligence;
+//				}
 				round = 0;
-				winRound = 0;
-				loseRound = 0;
+				winGame = 0;
+				loseGame = 0;
 		}
 		
+		// Mainly adjust robot's IQ and the probability benchmark.
 		public void balanceAndReset(int playerCount, boolean robotWinThisGame) {
 			
 			double tmp = 0.0;
 			
 			if ( robotWinThisGame ) {
-				winRound++;
-				intelligence = HIGHEST_IQ / Math.pow(ACCELERATOR_FACTOR, winRound);
+				winGame++;
+				intelligence = HIGHEST_IQ / Math.pow(ACCELERATOR_FACTOR, winGame);
 				tmp = benchmark[playerCount-2] / intelligence;
 				benchmark[playerCount-2] = ( tmp > 0.6 ? 0.6 : tmp );
-				loseRound = 0;
+				loseGame = 0;
 			} else {
-				loseRound++;
-				if ( intelligence * Math.pow(ACCELERATOR_FACTOR/2, loseRound) > HIGHEST_IQ)
+				loseGame++;
+				if ( intelligence * Math.pow(ACCELERATOR_FACTOR/2, loseGame) > HIGHEST_IQ)
 					intelligence = HIGHEST_IQ;
 				else 
-					intelligence *= Math.pow(ACCELERATOR_FACTOR/2, loseRound);
+					intelligence *= Math.pow(ACCELERATOR_FACTOR/2, loseGame);
 				tmp = benchmark[playerCount-2] / intelligence;
 				benchmark[playerCount-2] = (tmp > 0.6 ? 0.6 : tmp);
-				winRound = 0;
+				winGame = 0;
 			}
 			round = 0;
 			giveUpCalling = false;
@@ -208,17 +210,11 @@ public class DiceRobotIntelligence {
 			lieDice = 0;
 			setChat = false;
 			hasSendCallWilds = false;
-//			reset(whatToCall);
 			reset(introspection);
 			reset(distribution);
 		}
 		
 		public boolean canOpenDice(int playerCount,String userId, int num, int dice, boolean isWild) {
-			
-			// Correctly set current benchmark
-			for ( int i = 2; i <= playerCount; i++) {
-				benchmark[i-2] = INI_BENCHMARK[i-2] / intelligence;
-			}
 			
 			boolean canOpen = false;
 			
@@ -240,6 +236,11 @@ public class DiceRobotIntelligence {
 				}
 			}
 
+			// Correctly set current benchmark
+			for ( int i = 2; i <= playerCount; i++) {
+				benchmark[i-2] = INI_BENCHMARK[i-2] / intelligence;
+			}
+			
 
 			// Make a decision...
 			if ( intelligence < IQ_THRESHOLD ) {
@@ -251,14 +252,16 @@ public class DiceRobotIntelligence {
 				return canOpen;
 			}
 			
-			// lying means robot call a dice value that it evne doesn't have one!
+			// Ok, below starts hard work, since robot is quite smart ^_^
+			// lying means robot call a dice value that it even doesn't have one!
 			if ( lying && dice == lieDice && difference >= UNSAFE_DIFFERENCE[playerCount-2]) {
 					canOpen = RandomUtils.nextInt(2) == 1? true : false;
-					logger.info("Robot is lyint and player is fooled,open!");
+					logger.info("Robot is lying and player is fooled,open!");
 					setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.YOU_ARE_FOOL));
 					return canOpen;
 			}
 			
+			// If difference <= 0, of course robot won't chanllenge.
 			if ( difference > 0 ) {
 				if ( difference > UNSAFE_DIFFERENCE[playerCount-2] ) {
 					canOpen = true;
@@ -279,7 +282,7 @@ public class DiceRobotIntelligence {
 						if ( changeDiceValue.get(userId) == true) {
 							canOpen = (round + RandomUtils.nextInt(2) > 2 ? true : false);
 							if(canOpen) {
-								logger.info("round 2 or round 3, player changes calling  dice, he may be cheating, open!");
+								logger.info("round 2 or round 3, player changes dice face value, he/she may be cheating, open!");
 								setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));	
 								return canOpen;
 							}
@@ -313,21 +316,22 @@ public class DiceRobotIntelligence {
 		
 	public void decideWhatToCall(int playerCount,int num, int dice, boolean isWild, int[] robotDices) {
 		
-			// Correctly set current benchmark
-			for ( int i = 2; i <= playerCount; i++) {
-					benchmark[i-2] = INI_BENCHMARK[i-2] / intelligence;
-			}
-			
 			int tmp = 0;
 			
 			giveUpCalling = false;
 			whatToCall[IDX_NUM_OF_DICE] = 0;
 			whatToCall[IDX_DICE_FACE_VALUE] = 0;
 			whatToCall[IDX_CALL_WILD] = 0;
+		
+			// We are first to call 
+			if ( num == -1 || dice == -1) {
+				intialCall(playerCount);
+				return;
+			}
 			
 			
 			// Just adding one even exceeds the limit, we should not call. 
-			if ( num + 1 > playerCount * 5 ) {
+			if ( num + 1 >= playerCount * 5 ) {
 				giveUpCalling = true;
 				return ;
 			}
@@ -337,17 +341,17 @@ public class DiceRobotIntelligence {
 			logger.info("Now the benchmark is " + benchmark);
 			logger.info("Current round is Round " + (round +1) );
 
-			// We are first to call 
-			if ( num == -1 || dice == -1) {
-				intialCall(playerCount);
-				return;
-			}
-			
+		
 			int notWild = (isWild == false? 1 : 0);
 			// How many "dice" robot have.
 			int numOfDice = distribution[dice-1] + distribution[DICE_VALUE_ONE-1] * notWild;
 			int difference = num - numOfDice;
-			
+
+			// Correctly set current benchmark
+			for ( int i = 2; i <= playerCount; i++) {
+					benchmark[i-2] = INI_BENCHMARK[i-2] / intelligence;
+			}
+						
 			// Make decision...
 			if (isWild){
 				// Not so intelligent, just add 1
@@ -426,7 +430,7 @@ public class DiceRobotIntelligence {
 				}
 				// Smart, quite lots of choice.
 				else {
-					// Does robot have more than ONEs?
+					// Does robot have more than 3 ONEs?
 					if ( distribution[DICE_VALUE_ONE-1] >= 3 ){
 							// YES, call ONE(auto wild)
 							if ( num <= DiceMeanValue[playerCount-2] + distribution[DICE_VALUE_ONE-1] ) {
@@ -437,10 +441,11 @@ public class DiceRobotIntelligence {
 							} else {
 								// YES, but the num is some little big, call wilds is not safe,
 								// we should be careful.
+								// 3 X 1 + 2 X ?
 								if ( introspection[NUM_OF_TWO] == 1) {
 									recordCall((dice > introspection[DICE_OF_TWO] ? num+1 : num), introspection[DICE_OF_TWO], 0, playerCount);
 									safe = false;
- 									logger.info("<DiceRobotIntelligence> Not Wild &  smart, have many ONEs & has dice of 2 instances, call "
+ 									logger.info("<DiceRobotIntelligence> Not Wild &  smart, many ONEs & has dice of 2 instances, call "
  											+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 								}
 								else {
@@ -459,7 +464,7 @@ public class DiceRobotIntelligence {
 								", so change dice to " + introspection[DICE_MORE_THAN_FOUR]+", call "+ whatToCall[IDX_NUM_OF_DICE] 
 										+ " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 					}
-					// We have dice of 3 instances...
+					// We have dice of 3 instances...(not ONE, otherwise this branch won't be executed)
 					else if ( introspection[NUM_OF_THREE] == 1 && distribution[DICE_VALUE_ONE-1] == 2) {
 							recordCall(num + 1, introspection[DICE_OF_THREE], 0, playerCount);
 							logger.info("<DiceRobotIntelligence> Not Wild &  smart, has 3 "+introspection[DICE_OF_THREE]+ " & 2 ONEs, call "
@@ -504,15 +509,16 @@ public class DiceRobotIntelligence {
 	private void recordCall(int num, int dice, int isWild,int playerCount) {
 		
 		// We should avoid call the same as last round
-		//  Just add the quantity by one
+		// (eg: robot calls 3x4, player calls 3x1, robot may call 3x4 again, which is not permitted)
+		// Just add the quantity by one
 		if ( whatToCall[IDX_NUM_OF_DICE] == num && whatToCall[IDX_DICE_FACE_VALUE] == dice && whatToCall[IDX_CALL_WILD] == isWild ) {
 				num++;
 		}
 		
 		whatToCall[IDX_NUM_OF_DICE] = num;
 		whatToCall[IDX_DICE_FACE_VALUE] = dice;
-		// If callNum is 2, auto wild,
-		// If dice is 1,no doubt wild.  
+		// If callNum is the same as playerCount , auto wild,
+		// If dice is ONE,no doubt it is  wild.  
 		if ( whatToCall[IDX_NUM_OF_DICE] == playerCount || whatToCall[IDX_DICE_FACE_VALUE] == DICE_VALUE_ONE) {
 			whatToCall[IDX_CALL_WILD] = 1;
 		} else {
@@ -527,11 +533,11 @@ public class DiceRobotIntelligence {
 		}
 	}
 
-	// Robot initiate the call.
+	// Robot initiates the call.
 	private void intialCall(int playerCount) {
 		
 		if ( intelligence < IQ_THRESHOLD) {
-			recordCall( 2 + RandomUtils.nextInt(2), 1+RandomUtils.nextInt(6), 0, playerCount );
+			recordCall( playerCount + RandomUtils.nextInt(2), 1+RandomUtils.nextInt(6), 0, playerCount );
 			safe = false;
 			logger.info("<intialCall> Initially, not smart, just do a random call , call "
 					+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE] );
@@ -606,9 +612,9 @@ public class DiceRobotIntelligence {
 		}
 		
 		
-		public void inspectRobotDices(int[] robotDices) {
+		public void introspectRobotDices(int[] robotDices) {
 			
-			logger.info("robotDices[] is: "+ robotDices[0]+", " +robotDices[1]
+			logger.info("robot's Dices are: "+ robotDices[0]+", " +robotDices[1]
 					+", " + robotDices[2]+", "+ robotDices[3]+", " +
 					robotDices[4]);
 			
@@ -638,7 +644,7 @@ public class DiceRobotIntelligence {
 				
 			}
 			for (int i = 0;i < distribution.length; i++) {
-				if ( distribution[i] > 3 ) {
+				if ( distribution[i] >= 4 ) {
 					introspection[NUM_MORE_THAN_FOUR] = 1;
 					introspection[DICE_MORE_THAN_FOUR] = i+1;
 				} 
