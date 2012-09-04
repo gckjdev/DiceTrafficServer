@@ -174,9 +174,6 @@ public class DiceRobotIntelligence {
 		
 		public DiceRobotIntelligence(int playerCount) {
 				intelligence = HIGHEST_IQ;
-//				for ( int i = 2; i <= playerCount; i++) {
-//					benchmark[i-2] = INI_BENCHMARK[i-2] / intelligence;
-//				}
 				round = 0;
 				winGame = 0;
 				loseGame = 0;

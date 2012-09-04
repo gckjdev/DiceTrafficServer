@@ -120,6 +120,13 @@ public class DiceRobotClient extends AbstractRobotClient {
 					}
 				}
 			}
+			// 抢开
+			else if ( canOpenDice ) {
+					ServerLog.info(sessionId, "!!!!!The callUserSeatId is " + callUserSeatId + ", Robot "+nickName
+							+ "'s seatId is " + userList.get(userId).getSeatId());
+					ServerLog.info(sessionId, "[CALL_DICE_RUQUET] *****Robot " + nickName + "rush to open!!!*****");
+					sendOpenDice(1);
+			}
 			break;
 			
 		case CALL_DICE_REQUEST:
@@ -138,17 +145,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 			ServerLog.info(sessionId, "The playerCount is " + playerCount + ", seatId is " + callUserSeatId 
 						+"Robot " + nickName + "'s seatId is " + userList.get(userId).getSeatId());
 			if (diceRobotIntelligence.canOpenDice(playerCount,callUserId, callDiceNum, callDice, callDiceIsWild)) {
-				ServerLog.info(sessionId, "Robot " + nickName + " decides to open " + callUserId);
-				// Next player is not robot.
-				if ( (callUserSeatId + 1) % playerCount != userList.get(userId).getSeatId() ) {
-					ServerLog.info(sessionId, "!!!!!The callUserSeatId is " + callUserSeatId + ", Robot "+nickName
-							+ "'s seatId is " + userList.get(userId).getSeatId());
-					ServerLog.info(sessionId, "[CALL_DICE_RUQUET] *****Robot " + nickName + "rush to open!!!*****");
-					sendOpenDice(1);// 抢开
-				}
-				else { 
 					canOpenDice = true;
-				}
 			}
 			
 			break;
