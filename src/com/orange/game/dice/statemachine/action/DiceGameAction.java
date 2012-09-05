@@ -341,32 +341,34 @@ public class DiceGameAction{
 				public void run() {
 					
 					MongoDBClient dbClient = dbService.getMongoDBClient(session.getSessionId());
-					String tableName = "userResult";
+ 					String tableName = DBConstants.T_USER_GAME_RESULT;
 					Collection<PBUserResult> resultList = session.getUserResults();
-					DBObject query = new BasicDBObject();
-					DBObject update = new BasicDBObject();
-					DBObject incUpdate = new BasicDBObject();
-					DBObject dateUpdate = new BasicDBObject();
 					
 					for(PBUserResult result : resultList) {
 						// query by user_id and game_id
-						query.put("user_id", result.getUserId());
-						query.put("game_id", "Dice");
+						DBObject query = new BasicDBObject();
+						query.put(DBConstants.F_USERID, result.getUserId());
+						query.put(DBConstants.F_GAMEID, "Dice");
 						
+						DBObject update = new BasicDBObject();
+						DBObject incUpdate = new BasicDBObject();
+						DBObject dateUpdate = new BasicDBObject();
 						// update
-						incUpdate.put("play_times", 1);
+						incUpdate.put(DBConstants.F_PLAY_TIMES, 1);
 						if ( result.getWin() == true ) {
-							incUpdate.put("win_times", 1);
+							incUpdate.put(DBConstants.F_WIN_TIMES, 1);
 						} 
 						else if ( result.getWin() == false ) {
-							incUpdate.put("lose_times", 1);
+							incUpdate.put(DBConstants.F_LOSE_TIMES, 1);
 						}
-						dateUpdate.put("update_date", new Date());
+						dateUpdate.put(DBConstants.F_MODIFY_DATE, new Date());
 						
 						update.put("$inc", incUpdate);
 						update.put("$set", dateUpdate);
+						
+						dbClient.upsertAll(tableName, query, update);
 					}
-					dbClient.upsertAll(tableName, query, update);
+					
 				}
 			});
 		}
