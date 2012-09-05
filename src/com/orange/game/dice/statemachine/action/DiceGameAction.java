@@ -341,7 +341,6 @@ public class DiceGameAction{
 				public void run() {
 					
 					MongoDBClient dbClient = dbService.getMongoDBClient(session.getSessionId());
-					DB db = dbClient.getDb();
 					String tableName = "userResult";
 					Collection<PBUserResult> resultList = session.getUserResults();
 					DBObject query = new BasicDBObject();
