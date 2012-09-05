@@ -1,7 +1,14 @@
 package com.orange.game.dice.statemachine.action;
 
 import java.util.Collection;
+import java.util.Date;
 
+import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 import com.orange.common.log.ServerLog;
 import com.orange.common.mongodb.MongoDBClient;
 import com.orange.common.statemachine.Action;
@@ -332,8 +339,35 @@ public class DiceGameAction{
 				
 				@Override
 				public void run() {
-					// TODO write two user records into Mongo DB					
-					// user_id, game_id, play_times, win_times, lose_times, update_date
+					
+					MongoDBClient dbClient = dbService.getMongoDBClient(session.getSessionId());
+					DB db = dbClient.getDb();
+					String tableName = "userResult";
+					Collection<PBUserResult> resultList = session.getUserResults();
+					DBObject query = new BasicDBObject();
+					DBObject update = new BasicDBObject();
+					DBObject incUpdate = new BasicDBObject();
+					DBObject dateUpdate = new BasicDBObject();
+					
+					for(PBUserResult result : resultList) {
+						// query by user_id and game_id
+						query.put("user_id", result.getUserId());
+						query.put("game_id", "Dice");
+						
+						// update
+						incUpdate.put("play_times", 1);
+						if ( result.getWin() == true ) {
+							incUpdate.put("win_times", 1);
+						} 
+						else if ( result.getWin() == false ) {
+							incUpdate.put("lose_times", 1);
+						}
+						dateUpdate.put("update_date", new Date());
+						
+						update.put("$inc", incUpdate);
+						update.put("$set", dateUpdate);
+					}
+					dbClient.upsertAll(tableName, query, update);
 				}
 			});
 		}
