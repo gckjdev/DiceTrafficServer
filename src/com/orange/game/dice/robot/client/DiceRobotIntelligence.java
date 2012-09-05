@@ -533,8 +533,10 @@ public class DiceRobotIntelligence {
 	// Robot initiates the call.
 	private void intialCall(int playerCount) {
 		
+		int tmp = (RandomUtils.nextInt(5) == 0? 0 : 1);
+		
 		if ( intelligence < IQ_THRESHOLD) {
-			recordCall( playerCount + RandomUtils.nextInt(2), 1+RandomUtils.nextInt(6), 0, playerCount );
+			recordCall( playerCount + tmp, 1+RandomUtils.nextInt(6), 0, playerCount );
 			safe = false;
 			logger.info("<intialCall> Initially, not smart, just do a random call , call "
 					+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE] );
@@ -580,7 +582,7 @@ public class DiceRobotIntelligence {
 						+ whatToCall[IDX_NUM_OF_DICE] + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 			}
 			else {
-				recordCall(2 + RandomUtils.nextInt(2), 2 + RandomUtils.nextInt(5), (RandomUtils.nextInt(4) == 1? 1 : 0), playerCount);
+				recordCall(playerCount + tmp, 2 + RandomUtils.nextInt(5), (RandomUtils.nextInt(10) == 1? 1 : 0), playerCount);
 				safe = false;
 				logger.info("<intialCall> Initially, smart,dices distributed uniformly,  do a random call , call "
 						+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
