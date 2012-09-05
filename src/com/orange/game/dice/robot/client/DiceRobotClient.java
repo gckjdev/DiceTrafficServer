@@ -30,7 +30,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	
 	// chatContent type
 	private final static int TEXT = 1;
-	private final static int EXPRESSION = 2;
+//	private final static int EXPRESSION = 2;
 	
 	private final static int IDX_CONTENT = 0;
 	private final static int IDX_CONTENTID = 1;
@@ -39,11 +39,11 @@ public class DiceRobotClient extends AbstractRobotClient {
 	// What dices robot gets
 	int[] robotRollResult={0,0,0,0,0,0};
 	
-	// Used when robot is opened by player.
-	// index 0: no content
-	// index 1: expressionId is "[anger]"
-	// index 2: contentType is EXPRESSION
-	String[] expression = {"NULL","[anger]", Integer.toString(EXPRESSION)};
+//	// Used when robot is opened by player.
+//	// index 0: no content
+//	// index 1: expressionId is "[anger]"
+//	// index 2: contentType is EXPRESSION
+//	String[] expression = {"NULL","[anger]", Integer.toString(EXPRESSION)};
 	
 	List<PBUserDice> pbUserDiceList = null;
 	List<PBDice> pbDiceList = null;
@@ -94,9 +94,9 @@ public class DiceRobotClient extends AbstractRobotClient {
 			}
 			diceRobotIntelligence.introspectRobotDices(robotRollResult);
 			
-			// schedule random chat
-			ServerLog.info(sessionId, "Rolling ends.*****Robot "+nickName+"***** schedules to send random chat");
-			scheduleRandomSendChat(rollEndChatFuture,RandomUtils.nextInt(3)+10);
+//			// schedule random chat
+//			ServerLog.info(sessionId, "Rolling ends.*****Robot "+nickName+"***** schedules to send random chat");
+//			scheduleRandomSendChat(rollEndChatFuture,RandomUtils.nextInt(3)+10);
 			break;
 			
 		case NEXT_PLAYER_START_NOTIFICATION_REQUEST:
@@ -151,10 +151,10 @@ public class DiceRobotClient extends AbstractRobotClient {
 			break;
 			
 		case OPEN_DICE_REQUEST:
-			if ( RandomUtils.nextInt(2) == 1) {
-				ServerLog.info(sessionId, "Robot "+nickName+" is opened by player, sends a angry expression");
-				sendChat(expression);
-			}
+//			if ( RandomUtils.nextInt(2) == 1) {
+//				ServerLog.info(sessionId, "Robot "+nickName+" is opened by player, sends a angry expression");
+//				sendChat(expression);
+//			}
 			openUserId = message.getUserId();
 			ServerLog.info(sessionId, "Robot "+nickName+" receive OPEN_DICE_REQUEST");
 			
@@ -175,10 +175,10 @@ public class DiceRobotClient extends AbstractRobotClient {
 			@Override
 			public void run() {
 				sendCallDice(whatToCall);
-				if ( diceRobotIntelligence.hasSetChat()) {
-					sendChat(diceRobotIntelligence.getChatContent());
-					diceRobotIntelligence.resetHasSetChat();
-				}
+//				if ( diceRobotIntelligence.hasSetChat()) {
+//					sendChat(diceRobotIntelligence.getChatContent());
+//					diceRobotIntelligence.resetHasSetChat();
+//				}
 			}
 		}, 
 		RandomUtils.nextInt(5)+1, TimeUnit.SECONDS);
@@ -219,10 +219,10 @@ public class DiceRobotClient extends AbstractRobotClient {
 		openDiceFuture = scheduleService.schedule(new Runnable() {			
 			@Override
 			public void run() {
-				if ( diceRobotIntelligence.hasSetChat()) {
-					sendChat(diceRobotIntelligence.getChatContent());
-					diceRobotIntelligence.resetHasSetChat();
-				}
+//				if ( diceRobotIntelligence.hasSetChat()) {
+//					sendChat(diceRobotIntelligence.getChatContent());
+//					diceRobotIntelligence.resetHasSetChat();
+//				}
 				sendOpenDice(openType);
 			}
 		}, 
@@ -285,30 +285,30 @@ public class DiceRobotClient extends AbstractRobotClient {
 	}
 	
 	
-	public void scheduleRandomSendChat(ScheduledFuture<?> chatFuture, int delay) {
-		
-		if (chatFuture != null){
-			chatFuture.cancel(false);
-		}
-		
-		// index 0: contentType
-		// index 1: content( only valid for TEXT)
-		// index 2: contentVoiceId or expressionId,depent on contentType
-		final String[] content = diceRobotChatContent.prepareChatContent();
-		
-		chatFuture = scheduleService.schedule(new Runnable() {			
-			@Override
-			public void run() {
-				if ( rollEndChatLock > 0 ) {
-					ServerLog.info(sessionId, "**********Random chat fired !!!");
-					sendChat(content);
-					rollEndChatLock--;
-				}
-			}
-		}, 
-		delay, TimeUnit.SECONDS);
-		
-	}
+//	public void scheduleRandomSendChat(ScheduledFuture<?> chatFuture, int delay) {
+//		
+//		if (chatFuture != null){
+//			chatFuture.cancel(false);
+//		}
+//		
+//		// index 0: contentType
+//		// index 1: content( only valid for TEXT)
+//		// index 2: contentVoiceId or expressionId,depent on contentType
+//		final String[] content = diceRobotChatContent.prepareChatContent();
+//		
+//		chatFuture = scheduleService.schedule(new Runnable() {			
+//			@Override
+//			public void run() {
+//				if ( rollEndChatLock > 0 ) {
+//					ServerLog.info(sessionId, "**********Random chat fired !!!");
+//					sendChat(content);
+//					rollEndChatLock--;
+//				}
+//			}
+//		}, 
+//		delay, TimeUnit.SECONDS);
+//		
+//	}
 	
 
 	@Override
