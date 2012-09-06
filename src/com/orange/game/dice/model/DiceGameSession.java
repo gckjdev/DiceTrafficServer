@@ -155,6 +155,11 @@ public class DiceGameSession extends GameSession {
 			return GameResultCode.ERROR_DICE_ALREADY_OPEN;
 		}
 		
+		if (callDiceUserId != null && callDiceUserId.equals(userId)){
+			ServerLog.info(sessionId, "<openDice> but you are the call user in last round, userId="+userId);
+			return GameResultCode.ERROR_DICE_OPEN_SELF;			
+		}
+		
 		ServerLog.info(sessionId, "<openDice> userId="+userId+", openType="+openType+", multiple="+multiple);
 		this.openDiceUserId = userId;
 		this.openDiceType = openType;
