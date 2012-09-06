@@ -31,15 +31,7 @@ public class DiceGameServer {
 		// start server
 		server.start();
 		
-		// This code is to initiate the listener.
-		ServerSocket srv = null;
-		try {
-		    srv = new ServerSocket(2222);
-		    ServerMonitor monitor = new ServerMonitor(srv);
-		    monitor.start();
-		} catch (Exception e) {
-		    System.out.println(e.getMessage());
-		}
+	
 	}
 
 }
