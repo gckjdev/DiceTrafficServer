@@ -2,6 +2,9 @@ package com.orange.game.dice.statemachine.action;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
 
@@ -16,6 +19,8 @@ import com.orange.game.constants.DBConstants;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.model.manager.UserManager;
 import com.orange.game.traffic.model.dao.GameSession;
+import com.orange.game.traffic.model.dao.GameSessionUserList;
+import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.game.traffic.robot.client.RobotService;
 import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.NotificationUtils;
@@ -343,30 +348,56 @@ public class DiceGameAction{
 					MongoDBClient dbClient = dbService.getMongoDBClient(session.getSessionId());
  					String tableName = DBConstants.T_USER_GAME_RESULT;
 					Collection<PBUserResult> resultList = session.getUserResults();
+					List<GameUser> gameUserList = session.getUserList().getUserList();
+					String[] getUserResultUserId = { null, null};
+					Map<String, Boolean> gameResult = new HashMap<String, Boolean>();
+					int count = 0;
 					
-					for(PBUserResult result : resultList) {
-						// query by user_id and game_id
-						DBObject query = new BasicDBObject();
-						query.put(DBConstants.F_USERID, result.getUserId());
-						query.put(DBConstants.F_GAMEID, "Dice");
-						
-						DBObject update = new BasicDBObject();
-						DBObject incUpdate = new BasicDBObject();
-						DBObject dateUpdate = new BasicDBObject();
-						// update
-						incUpdate.put(DBConstants.F_PLAY_TIMES, 1);
-						if ( result.getWin() == true ) {
-							incUpdate.put(DBConstants.F_WIN_TIMES, 1);
-						} 
-						else if ( result.getWin() == false ) {
-							incUpdate.put(DBConstants.F_LOSE_TIMES, 1);
+					// get userResult, only two, one wins, one loses.
+					for ( PBUserResult result : resultList ) {
+						if ( count < 2 ) {
+							getUserResultUserId[count] = result.getUserId(); 
+							gameResult.put(getUserResultUserId[count], new Boolean(result.getWin()));
+							count++;
 						}
-						dateUpdate.put(DBConstants.F_MODIFY_DATE, new Date());
+					}
+					
+					// correctly set count
+					count = 2;
+					
+					// update each player
+					for(GameUser gameUser : gameUserList) {
+						if ( gameUser.isPlaying() == true ) {
+							String userId = gameUser.getUserId();
+							// query by user_id and game_id
+							DBObject query = new BasicDBObject();
+							query.put(DBConstants.F_USERID, userId);
+							query.put(DBConstants.F_GAMEID, "Dice");
 						
-						update.put("$inc", incUpdate);
-						update.put("$set", dateUpdate);
+							// update
+							DBObject update = new BasicDBObject();
+							DBObject incUpdate = new BasicDBObject();
+							DBObject dateUpdate = new BasicDBObject();
+							
+							incUpdate.put(DBConstants.F_PLAY_TIMES, 1);
+							// check count first to eliminate unnecessary comparison of userId
+							if ( count > 0 && 
+									userId.equals(getUserResultUserId[0]) || userId.equals(getUserResultUserId[1]) ) {
+								if ( gameResult.get(userId) == true ) { // wins
+									incUpdate.put(DBConstants.F_WIN_TIMES, 1);
+								} 
+								else { // loses
+									incUpdate.put(DBConstants.F_LOSE_TIMES, 1);
+								}
+								count--;
+							}
+							dateUpdate.put(DBConstants.F_MODIFY_DATE, new Date());
 						
-						dbClient.upsertAll(tableName, query, update);
+							update.put("$inc", incUpdate);
+							update.put("$set", dateUpdate);
+						
+							dbClient.upsertAll(tableName, query, update);
+							}
 					}
 					
 				}
