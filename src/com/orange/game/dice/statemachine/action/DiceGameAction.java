@@ -350,9 +350,10 @@ public class DiceGameAction{
 				
 				@Override
 				public void run() {
+
+					int sessionId = session.getSessionId();
+					MongoDBClient dbClient = dbService.getMongoDBClient(sessionId);
 					
-					MongoDBClient dbClient = dbService.getMongoDBClient(session.getSessionId());
- 					String tableName = DBConstants.T_USER_GAME_RESULT;
 					Collection<PBUserResult> resultList = session.getUserResults();
 					List<GameUser> gameUserList = session.getUserList().getUserList();
 					
@@ -364,27 +365,25 @@ public class DiceGameAction{
 						// record which two users get userResults
 						gameResultUserIdSet.add(userId);
 						
- 						queryAndUpdate(dbClient, tableName, userId, result);
+ 						queryAndUpdate(sessionId, dbClient, userId, result);
 					}
 					
 					// update other players
 					for(GameUser gameUser : gameUserList) {
 						String userId = gameUser.getUserId();
-						if ( gameUser.isPlaying() == true  && gameResultUserIdSet.contains(userId)) {
-							queryAndUpdate(dbClient, tableName, userId, null);
+						if ( gameUser.isPlaying() == true  && !gameResultUserIdSet.contains(userId)) {
+							queryAndUpdate(sessionId, dbClient, userId, null);
 						}
 					}
 					
 				}
 
-				private void queryAndUpdate(MongoDBClient dbClient,
-						String tableName, String userIdString,
-						PBUserResult result) {
+				private void queryAndUpdate(int sessionId, MongoDBClient dbClient, String userIdString, PBUserResult result) {
 					
 					// query by user_id and game_id
 					DBObject query = new BasicDBObject();
 					query.put(DBConstants.F_USERID, userIdString);
-					query.put(DBConstants.F_GAMEID, "Dice");
+					query.put(DBConstants.F_GAMEID, DBConstants.GAME_ID_DICE);
 
 					// update
 					DBObject update = new BasicDBObject();
@@ -404,7 +403,8 @@ public class DiceGameAction{
 					update.put("$inc", incUpdate);
 					update.put("$set", dateUpdate);
 
-					dbClient.upsertAll(tableName, query, update);
+					ServerLog.info(sessionId, "<updateUserResult> query="+query.toString()+", update="+update.toString());
+					dbClient.upsertAll(DBConstants.T_USER_GAME_RESULT, query, update);
 				}
 			});
 		}
