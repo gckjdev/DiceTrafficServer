@@ -70,8 +70,9 @@ public class DiceGameServerHandler extends GameServerHandler {
 		int sessionId = session.getSessionId();
 		ServerLog.info(sessionId, "user "+userId+" quit");
 
+		int sessionUserCount = session.getUserCount();
 		GameUser user = session.findUser(userId);
-		boolean removeUser = (user.isPlaying() == false);
+		boolean removeUser = (user.isPlaying() == false || sessionUserCount == 1);
 		
 		if (!removeUser){
 			session.takeOverUser(userId);
@@ -82,7 +83,7 @@ public class DiceGameServerHandler extends GameServerHandler {
 			command = GameCommandType.LOCAL_PLAY_USER_QUIT;			
 //			session.setCompleteReason(GameCompleteReason.REASON_DRAW_USER_QUIT);			
 		}
-		else if (session.getUserCount() <= 2){
+		else if (sessionUserCount <= 2){
 			command = GameCommandType.LOCAL_ALL_OTHER_USER_QUIT;			
 //			session.setCompleteReason(GameCompleteReason.REASON_ONLY_ONE_USER);			
 		}

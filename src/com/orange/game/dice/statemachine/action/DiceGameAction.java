@@ -152,11 +152,11 @@ public class DiceGameAction{
 		return resultCode;
 	}
 	
-	public static void openDiceAndBroadcast(DiceGameSession session,
+	public static GameResultCode openDiceAndBroadcast(DiceGameSession session,
 			String userId) {
 		int openType = DiceGameSession.DICE_OPEN_TYPE_NORMAL;
 		int openMultiple = 1;
-		openDiceAndBroadcast(session, userId, openType, openMultiple);
+		return openDiceAndBroadcast(session, userId, openType, openMultiple);
 	}
 	
 	public static class AutoCallOrOpen implements Action{
@@ -208,8 +208,11 @@ public class DiceGameAction{
 					NotificationUtils.broadcastCallDiceNotification(session, request, true);
 				}
 			}
-			else if (session.canOpen(currentPlayUserId)){				
-				openDiceAndBroadcast(session, currentPlayUserId);				
+			else {				
+				resultCode = openDiceAndBroadcast(session, currentPlayUserId);
+				if (resultCode != GameResultCode.SUCCESS){
+					ServerLog.warn(sessionId, "<AutoCallOrOpen> but fail to open, result code ="+resultCode.toString());
+				}
 			}				
 		}
 	}
@@ -381,6 +384,7 @@ public class DiceGameAction{
 		public void execute(Object context) {
 			DiceGameSession session = (DiceGameSession)context;
 			session.restartGame();
+			SessionUserService.getInstance().kickTakenOverUser(session);			
 			return;
 		}
 	}		
