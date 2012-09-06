@@ -107,6 +107,7 @@ public class DiceRobotIntelligence {
 		private final static int IDX_DICE_FACE_VALUE = 1;
 		private final static int IDX_CALL_WILD 		= 2;
 		private int[] whatToCall = {0, 0, 0};
+		private int[] lastRoundCall = {0, 0, 0};
 		
 		// What each player last calls
 		private Map<String, Integer> lastCall = new HashMap<String, Integer>();
@@ -207,6 +208,7 @@ public class DiceRobotIntelligence {
 			lieDice = 0;
 			setChat = false;
 			hasSendCallWilds = false;
+			reset(whatToCall);
 			reset(introspection);
 			reset(distribution);
 		}
@@ -519,18 +521,18 @@ public class DiceRobotIntelligence {
 		// We should avoid call the same as last round
 		// (eg: robot calls 3x4, player calls 3x1, robot may call 3x4 again, which is not permitted)
 		// Just add the quantity by one
-		if ( whatToCall[IDX_NUM_OF_DICE] == num && whatToCall[IDX_DICE_FACE_VALUE] == dice && whatToCall[IDX_CALL_WILD] == isWild ) {
+		if ( lastRoundCall[IDX_NUM_OF_DICE] == num && lastRoundCall[IDX_DICE_FACE_VALUE] == dice && lastRoundCall[IDX_CALL_WILD] == isWild ) {
 				num++;
 		}
 		
-		whatToCall[IDX_NUM_OF_DICE] = num;
-		whatToCall[IDX_DICE_FACE_VALUE] = dice;
+		whatToCall[IDX_NUM_OF_DICE] = lastRoundCall[IDX_NUM_OF_DICE] = num;
+		whatToCall[IDX_DICE_FACE_VALUE] = lastRoundCall[IDX_DICE_FACE_VALUE] = dice;
 		// If callNum is the same as playerCount , auto wild,
 		// If dice is ONE,no doubt it is  wild.  
 		if ( whatToCall[IDX_NUM_OF_DICE] == playerCount || whatToCall[IDX_DICE_FACE_VALUE] == DICE_VALUE_ONE) {
-			whatToCall[IDX_CALL_WILD] = 1;
+			whatToCall[IDX_CALL_WILD] = lastRoundCall[IDX_CALL_WILD] = 1;
 		} else {
-			whatToCall[IDX_CALL_WILD] = isWild;
+			whatToCall[IDX_CALL_WILD] = lastRoundCall[IDX_CALL_WILD] = isWild;
 		}
 		if ( whatToCall[IDX_CALL_WILD] == 1 && hasSendCallWilds == false && RandomUtils.nextInt(2) == 1) {
 			logger.info("*****Robot call wilds! Set chat content*****");
