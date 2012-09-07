@@ -243,7 +243,7 @@ public class DiceRobotIntelligence {
 
 			// Make a decision...
 			if ( intelligence < IQ_THRESHOLD ) {
-				canOpen = ((int)HIGHEST_IQ/intelligence >= 2 && difference >= UNSAFE_DIFFERENCE[playerCount-2] ? true : false);
+				canOpen = ((int)HIGHEST_IQ/intelligence >= 2 && difference > UNSAFE_DIFFERENCE[playerCount-2] ? true : false);
 				if(canOpen) {
 					logger.info("robot is not smart, it decides to open!");
 					setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));
@@ -355,10 +355,10 @@ public class DiceRobotIntelligence {
 			if (isWild){
 				// Not so intelligent, just add 1
 				if ( intelligence < IQ_THRESHOLD ){
-					recordCall(num+1, dice,1, playerCount);
-					safe = false;
-					logger.info("<DiceRobotIntelligence> isWild & not so smart, just add one, call "
-							+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE] );
+						recordCall(num+1, dice,1, playerCount);
+						safe = false;
+						logger.info("<DiceRobotIntelligence> isWild & not so smart, just add one, call "
+								+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE] );
 				}
 				// Quite smart, do some deep thought.
 				else {
@@ -424,9 +424,9 @@ public class DiceRobotIntelligence {
 			else {
 				// Not so intelligent, rudely call...
 				if ( intelligence < IQ_THRESHOLD ){
-					recordCall((num + 1+ RandomUtils.nextInt(2)), dice, 0, playerCount);
+					recordCall(num +1, dice, 0, playerCount);
 					safe = false;
-					logger.info("<DiceRobotIntelligence> Not Wild & not so smart, rudely call, call "
+					logger.info("<DiceRobotIntelligence> Not Wild & not so smart, follow call, call "
 							+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 				}
 				// Smart, quite lots of choice.
@@ -434,7 +434,7 @@ public class DiceRobotIntelligence {
 					// Does robot have more than 3 ONEs?
 					if ( distribution[DICE_VALUE_ONE-1] >= 3 ){
 							// YES, call ONE(auto wild)
-							if ( num <= DiceMeanValue[playerCount-2] + distribution[DICE_VALUE_ONE-1] ) {
+							if ( num <= DiceMeanValue[playerCount-2] + distribution[DICE_VALUE_ONE-1] && probability[BASE[playerCount-2] + num] > benchmark[playerCount-2] ) {
 								recordCall(num, 1, 1, playerCount);
 								safe = false;
 								logger.info("<DiceRobotIntelligence> Not Wild & smart, many ONEs, call one! Call "
@@ -474,17 +474,27 @@ public class DiceRobotIntelligence {
 					// We have dice of 2 intances...
 					else if ( introspection[NUM_OF_TWO] == 1) {
 						if (introspection[ANOTHER_DICE_OF_TWO] != 0  ) {
-							if ( introspection[ANOTHER_DICE_OF_TWO] > dice ) {
+							if ( introspection[ANOTHER_DICE_OF_TWO] == DICE_VALUE_ONE || introspection[DICE_OF_TWO] == DICE_VALUE_ONE) {
+								if ( introspection[ANOTHER_DICE_OF_TWO] == DICE_VALUE_ONE ) {
+									recordCall(num + (introspection[DICE_OF_TWO]> dice ? 0 : 1),introspection[DICE_OF_TWO], 0, playerCount);
+								} else {
+									recordCall(num + (introspection[ANOTHER_DICE_OF_TWO]> dice ? 0 : 1),introspection[ANOTHER_DICE_OF_TWO], 0, playerCount);
+								}
+								logger.info("<DiceRobotIntelligence> Not Wild &  smart, has 2 X "+introspection[DICE_OF_TWO]+ " and 2 X 1, call "
+										+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
+								round++;
+								return;
+							}
+							else if ( introspection[ANOTHER_DICE_OF_TWO] > dice ) {
 								recordCall(num, introspection[ANOTHER_DICE_OF_TWO], 0, playerCount);
-								
 							}
 							else if ( introspection[DICE_OF_TWO] > dice ) {
 								recordCall(num, introspection[DICE_OF_TWO], 0, playerCount);
 							}
-							else if ( num+1 - distribution[introspection[ANOTHER_DICE_OF_TWO]-1] < UNSAFE_DIFFERENCE[playerCount-2] ) {
+							else if ( num+1 - distribution[introspection[ANOTHER_DICE_OF_TWO]-1] - distribution[DICE_VALUE_ONE-1] < UNSAFE_DIFFERENCE[playerCount-2] ) {
 								recordCall(num+1, introspection[ANOTHER_DICE_OF_TWO], 0, playerCount);
 							}
-							else if ( num+1 - distribution[introspection[DICE_OF_TWO]-1] < UNSAFE_DIFFERENCE[playerCount-2] ) {
+							else if ( num+1 - distribution[introspection[DICE_OF_TWO]-1] - distribution[DICE_VALUE_ONE-1] < UNSAFE_DIFFERENCE[playerCount-2] ) {
 								recordCall(num+1, introspection[DICE_OF_TWO], 0, playerCount);
 							}
 							else {
@@ -496,10 +506,24 @@ public class DiceRobotIntelligence {
 									+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 						} 
 						else {
-							if ( introspection[DICE_OF_TWO] > dice ) {
+							if ( introspection[DICE_OF_TWO] == DICE_VALUE_ONE ) {
+								for ( int i = 0; i < distribution.length; i++ ) {
+									if ( distribution[i-1] == 1 && probability[BASE[playerCount-2] + num+1-(introspection[DICE_OF_TWO]+1)] > benchmark[playerCount-2]) {
+										recordCall(num+1, introspection[DICE_OF_TWO], 0, playerCount);
+										logger.info("<DiceRobotIntelligence> Not Wild & smart,has 2 X 1, call "
+												+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
+										round++;
+										return;
+									}
+								}
+								recordCall(num+1, dice, 0, playerCount);
+								logger.info("<DiceRobotIntelligence> Not Wild &  smart, has 2 X 1, call "
+										+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
+							}
+							else if ( introspection[DICE_OF_TWO] > dice ) {
 								recordCall(num, introspection[DICE_OF_TWO], 0, playerCount);
 							}
-							else if ( num+1 - distribution[introspection[DICE_OF_TWO]-1] < UNSAFE_DIFFERENCE[playerCount-2] ) {
+							else if ( num+1 - distribution[introspection[DICE_OF_TWO]-1] - distribution[DICE_VALUE_ONE-1] < UNSAFE_DIFFERENCE[playerCount-2] ) {
 								recordCall(num+1, introspection[DICE_OF_TWO], 0, playerCount);
 							}
 							else {
