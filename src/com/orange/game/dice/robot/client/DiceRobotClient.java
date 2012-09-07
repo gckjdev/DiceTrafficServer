@@ -141,9 +141,9 @@ public class DiceRobotClient extends AbstractRobotClient {
 			// Get the callUser's seatId
 			callUserSeatId = userList.get(callUserId).getSeatId();
 			playerCount = userList.size();
-			ServerLog.info(sessionId, "Robot " + nickName + " receive CALL_DICE_REQUEST");
-			ServerLog.info(sessionId, "The playerCount is " + playerCount + ", seatId is " + callUserSeatId 
-						+"Robot " + nickName + "'s seatId is " + userList.get(userId).getSeatId());
+////			ServerLog.info(sessionId, "Robot " + nickName + " receive CALL_DICE_REQUEST");
+////			ServerLog.info(sessionId, "The playerCount is " + playerCount + ", seatId is " + callUserSeatId 
+//						+". Robot " + nickName + "'s seatId is " + userList.get(userId).getSeatId());
 			if (diceRobotIntelligence.canOpenDice(playerCount,callUserId, callDiceNum, callDice, callDiceIsWild)) {
 					canOpenDice = true;
 			}
