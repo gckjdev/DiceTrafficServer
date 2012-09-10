@@ -2,6 +2,7 @@ package com.orange.game.dice.robot.client;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.apache.commons.lang.math.RandomUtils;
 
@@ -12,7 +13,7 @@ public class DiceRobotIntelligence {
 		private DiceRobotChatContent chatContent = DiceRobotChatContent.getInstance();
 	
 		/*
-		 *  定义一个多项式分布概率数组, 每一项表示n个骰子出现
+		 *   多项式分布概率数组, 每一项表示n个骰子出现
 		 *  x个y的概率(忽略了机器人自己的5个骰子).y可以是
 		 *  1,2,3,4,5,6.   
 		 *    
@@ -69,8 +70,12 @@ public class DiceRobotIntelligence {
 		// 5:  0.160751;   10: 0.0542659;  15: 0.0207905;  20: 0.0258821;	25: 0.0109648
 		private static final double INI_BENCHMARK[] = {0.16, 0.05, 0.02,	0.02,  0.01} ;
 		// Current game's benchmark probablity
-		private double[]  benchmark = {0.16, 0.05, 0.02,	0.02,  0.01};
+		private double[]  benchmark = {INI_BENCHMARK[0], INI_BENCHMARK[1], INI_BENCHMARK[2], INI_BENCHMARK[3], INI_BENCHMARK[4]};
 		
+		private  void resetBenchmark() {
+			benchmark[0] = INI_BENCHMARK[0]; benchmark[1] = INI_BENCHMARK[1]; benchmark[2] = INI_BENCHMARK[2];
+			benchmark[3] = INI_BENCHMARK[3]; benchmark[4] = INI_BENCHMARK[4];
+		}
 		
 		// Robot's highest intelligence
 		private static final double HIGHEST_IQ = 1;
@@ -94,7 +99,8 @@ public class DiceRobotIntelligence {
 		private int winGame;
 		// How many games the robot loses
 		private int loseGame;
-		
+		// Last Game playercount, it is 2 in the beginning.
+		private int lastPlayerCount = 2;
 	
 		// A flag to indicate whether giving up calling.
 		private boolean giveUpCalling = false;
@@ -151,11 +157,12 @@ public class DiceRobotIntelligence {
 		private int lieDice = 0;
 		
 		// In one game, we limit robot to only send one callwild message.
-		private boolean hasSendCallWilds = false;
+//		private boolean hasSendCallWilds = false;
 		
 		
 		// For chat.
 		private final static int TEXT = 1;
+		private final static int EXPRESSION = 2;
 		/*
 		 * index 0 : chatContent
 		 * index 1 : chatVoidId
@@ -173,7 +180,7 @@ public class DiceRobotIntelligence {
 			}
 		}
 		
-		public DiceRobotIntelligence(int playerCount) {
+		public DiceRobotIntelligence() {
 				intelligence = HIGHEST_IQ;
 				round = 0;
 				winGame = 0;
@@ -188,8 +195,12 @@ public class DiceRobotIntelligence {
 			if ( robotWinThisGame ) {
 				winGame++;
 				intelligence = HIGHEST_IQ / Math.pow(ACCELERATOR_FACTOR, winGame);
-				tmp = benchmark[playerCount-2] / intelligence;
-				benchmark[playerCount-2] = ( tmp > 0.6 ? 0.6 : tmp );
+				if ( playerCount == lastPlayerCount ) {
+					tmp = benchmark[playerCount-2] / intelligence;
+					benchmark[playerCount-2] = ( tmp > 0.6 ? 0.6 : tmp );
+				} else {
+					resetBenchmark();
+				}
 				loseGame = 0;
 			} else {
 				loseGame++;
@@ -197,17 +208,22 @@ public class DiceRobotIntelligence {
 					intelligence = HIGHEST_IQ;
 				else 
 					intelligence *= Math.pow(ACCELERATOR_FACTOR/2, loseGame);
-				tmp = benchmark[playerCount-2] / intelligence;
-				benchmark[playerCount-2] = (tmp > 0.6 ? 0.6 : tmp);
+				if ( playerCount == lastPlayerCount ) {
+					tmp = benchmark[playerCount-2] / intelligence;
+					benchmark[playerCount-2] = (tmp > 0.6 ? 0.6 : tmp);
+				} else {
+					resetBenchmark();
+				}
 				winGame = 0;
 			}
+			lastPlayerCount = playerCount;
 			round = 0;
 			giveUpCalling = false;
 			safe = true;
 			lying = false;
 			lieDice = 0;
 			setChat = false;
-			hasSendCallWilds = false;
+//			hasSendCallWilds = false;
 			reset(whatToCall);
 			reset(introspection);
 			reset(distribution);
@@ -235,12 +251,6 @@ public class DiceRobotIntelligence {
 				}
 			}
 
-			// Correctly set current benchmark
-			for ( int i = 2; i <= playerCount; i++) {
-				benchmark[i-2] = INI_BENCHMARK[i-2] / intelligence;
-			}
-			
-
 			// Make a decision...
 			if ( intelligence < IQ_THRESHOLD ) {
 				canOpen = ((int)HIGHEST_IQ/intelligence >= 2 && difference > UNSAFE_DIFFERENCE[playerCount-2] ? true : false);
@@ -256,7 +266,8 @@ public class DiceRobotIntelligence {
 			if ( lying && dice == lieDice && difference >= UNSAFE_DIFFERENCE[playerCount-2]) {
 					canOpen = RandomUtils.nextInt(2) == 1? true : false;
 					logger.info("Robot is lying and player is fooled,open!");
-					setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.YOU_ARE_FOOL));
+//					setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.YOU_ARE_FOOL));
+					setChatContent(EXPRESSION, chatContent.getExpression(DiceRobotChatContent.Expression.PROUND));
 					return canOpen;
 			}
 			
@@ -266,7 +277,7 @@ public class DiceRobotIntelligence {
 					canOpen = true;
 					logger.info("Call to much, open!");
 				}
-				// Distributed uniformly & num is too big, it's not safe to call.
+				// Distributed uniformly & quantity is too big, it's not safe to call.
 				else if ( introspection[DISTRIBUTE_UNIFORMLY] == 1 && difference >= UNSAFE_DIFFERENCE[playerCount-2]) {
 					canOpen = true;
 					logger.info("Distributed uniformly & call too much, open!");
@@ -304,9 +315,13 @@ public class DiceRobotIntelligence {
 				}	
 			}
 			// For chat
-			if (canOpen == true && RandomUtils.nextInt(4) == 1) {
-				setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.BELIEVE_IT));
-				} 
+			if (canOpen == true && RandomUtils.nextInt(3) == 1) {
+//				setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.BELIEVE_IT));
+				if ( RandomUtils.nextInt(2) == 0 )
+					setChatContent(EXPRESSION, chatContent.getExpression(DiceRobotChatContent.Expression.SMILE));
+				else 
+					setChatContent(EXPRESSION, chatContent.getExpression(DiceRobotChatContent.Expression.PROUND));
+			} 
 				
 			
 			return canOpen;
@@ -328,7 +343,6 @@ public class DiceRobotIntelligence {
 				return;
 			}
 			
-			
 			// Just adding one even exceeds the limit, we should not call. 
 			if ( num + 1 >= playerCount * 5 ) {
 				giveUpCalling = true;
@@ -339,18 +353,13 @@ public class DiceRobotIntelligence {
 			logger.info("Now the playerCount is " + playerCount);
 			logger.info("Now the benchmark is " + benchmark[playerCount-2]);
 			logger.info("Current round is Round " + (round +1) );
-
 		
 			int notWild = (isWild == false? 1 : 0);
 			// How many "dice" robot have.
 			int numOfDice = distribution[dice-1] + distribution[DICE_VALUE_ONE-1] * notWild;
 			int difference = num - numOfDice;
 
-			// Correctly set current benchmark
-			for ( int i = 2; i <= playerCount; i++) {
-					benchmark[i-2] = INI_BENCHMARK[i-2] / intelligence;
-			}
-						
+			
 			// Make decision...
 			if (isWild){
 				// Not so intelligent, just add 1
@@ -573,12 +582,23 @@ public class DiceRobotIntelligence {
 		} else {
 			whatToCall[IDX_CALL_WILD] = lastRoundCall[IDX_CALL_WILD] = isWild;
 		}
-		if ( whatToCall[IDX_CALL_WILD] == 1 && hasSendCallWilds == false && RandomUtils.nextInt(2) == 1) {
-			logger.info("*****Robot call wilds! Set chat content*****");
-			setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.CALL_WILDS));
-			hasSendCallWilds = true;
-		} else if ( RandomUtils.nextInt(4) == 1 && safe == true ) {
-			setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.BITE_ME));
+//		if ( whatToCall[IDX_CALL_WILD] == 1 && hasSendCallWilds == false && RandomUtils.nextInt(2) == 1) {
+//			logger.info("*****Robot call wilds! Set chat content*****");
+//			setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.CALL_WILDS));
+//			hasSendCallWilds = true;
+//		} else if ( RandomUtils.nextInt(4) == 1 && safe == true ) {
+//			setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.BITE_ME));
+//		}
+		if ( RandomUtils.nextInt(3) == 1 ) {
+			if ( safe == true ) {
+				setChatContent(EXPRESSION, chatContent.getExpression(DiceRobotChatContent.Expression.PROUND));
+			} 
+			else if ( RandomUtils.nextInt(2) == 0 ) {
+				setChatContent(EXPRESSION, chatContent.getExpression(DiceRobotChatContent.Expression.SMILE));
+			}
+			else {
+				setChatContent(EXPRESSION, chatContent.getExpression(DiceRobotChatContent.Expression.EMBARRASS));
+			}
 		}
 	}
 

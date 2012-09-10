@@ -3,6 +3,7 @@ package com.orange.game.dice.robot.client;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang.math.RandomUtils;
 import com.orange.common.log.ServerLog;
 import com.orange.game.traffic.robot.client.AbstractRobotClient;
@@ -30,7 +31,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	
 	// chatContent type
 	private final static int TEXT = 1;
-//	private final static int EXPRESSION = 2;
+	private final static int EXPRESSION = 2;
 	
 	private final static int IDX_CONTENT = 0;
 	private final static int IDX_CONTENTID = 1;
@@ -39,11 +40,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	// What dices robot gets
 	int[] robotRollResult={0,0,0,0,0,0};
 	
-//	// Used when robot is opened by player.
-//	// index 0: no content
-//	// index 1: expressionId is "[anger]"
-//	// index 2: contentType is EXPRESSION
-//	String[] expression = {"NULL","[anger]", Integer.toString(EXPRESSION)};
+	DiceRobotChatContent chatContent = DiceRobotChatContent.getInstance();
 	
 	List<PBUserDice> pbUserDiceList = null;
 	List<PBDice> pbDiceList = null;
@@ -54,7 +51,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	ScheduledFuture<?> rollEndChatFuture = null;
 	volatile static int rollEndChatLock = 2;
 	
-	DiceRobotIntelligence diceRobotIntelligence = new DiceRobotIntelligence(playerCount);
+	DiceRobotIntelligence diceRobotIntelligence = new DiceRobotIntelligence();
 	DiceRobotChatContent diceRobotChatContent = DiceRobotChatContent.getInstance();
 	
 	
@@ -151,10 +148,23 @@ public class DiceRobotClient extends AbstractRobotClient {
 			break;
 			
 		case OPEN_DICE_REQUEST:
-//			if ( RandomUtils.nextInt(2) == 1) {
-//				ServerLog.info(sessionId, "Robot "+nickName+" is opened by player, sends a angry expression");
-//				sendChat(expression);
-//			}
+			if ( RandomUtils.nextInt(2) == 1 ) {
+				if ( RandomUtils.nextInt(2) == 1 ) {
+					String[] tmp = {null, null};
+					tmp = chatContent.getExpression(DiceRobotChatContent.Expression.WORRY);
+					String[] expression = {null, null, Integer.toString(EXPRESSION)};
+					expression[0] = tmp[0];
+					expression[1] = tmp[1];
+					sendChat(expression);
+				} else {
+					String[] tmp = {null, null};
+					tmp = chatContent.getExpression(DiceRobotChatContent.Expression.ANGER);
+					String[] expression = {null, null, Integer.toString(EXPRESSION)};
+					expression[0] = tmp[0];
+					expression[1] = tmp[1];
+					sendChat(expression);
+				}
+			}
 			openUserId = message.getUserId();
 			ServerLog.info(sessionId, "Robot "+nickName+" receive OPEN_DICE_REQUEST");
 			
@@ -175,10 +185,10 @@ public class DiceRobotClient extends AbstractRobotClient {
 			@Override
 			public void run() {
 				sendCallDice(whatToCall);
-//				if ( diceRobotIntelligence.hasSetChat()) {
-//					sendChat(diceRobotIntelligence.getChatContent());
-//					diceRobotIntelligence.resetHasSetChat();
-//				}
+				if ( diceRobotIntelligence.hasSetChat()) {
+					sendChat(diceRobotIntelligence.getChatContent());
+					diceRobotIntelligence.resetHasSetChat();
+				}
 			}
 		}, 
 		RandomUtils.nextInt(5)+1, TimeUnit.SECONDS);
@@ -219,10 +229,10 @@ public class DiceRobotClient extends AbstractRobotClient {
 		openDiceFuture = scheduleService.schedule(new Runnable() {			
 			@Override
 			public void run() {
-//				if ( diceRobotIntelligence.hasSetChat()) {
-//					sendChat(diceRobotIntelligence.getChatContent());
-//					diceRobotIntelligence.resetHasSetChat();
-//				}
+				if ( diceRobotIntelligence.hasSetChat()) {
+					sendChat(diceRobotIntelligence.getChatContent());
+					diceRobotIntelligence.resetHasSetChat();
+				}
 				sendOpenDice(openType);
 			}
 		}, 

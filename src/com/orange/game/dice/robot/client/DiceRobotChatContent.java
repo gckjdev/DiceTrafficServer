@@ -1,21 +1,20 @@
 
 package com.orange.game.dice.robot.client;
 
-import org.apache.commons.lang.math.RandomUtils;
 
 
 public class DiceRobotChatContent {
 	
 	// chatContent type
-	private final static int TEXT = 1;
-	private final static int EXPRESSION = 2;
+//	private final static int TEXT = 1;
+//	private final static int EXPRESSION = 2;
 	
 	private final static int IDX_CONTENT = 0;
 	private final static int IDX_CONTENTID = 1;
-	private final static int IDX_CONTNET_TYPE = 2;
+//	private final static int IDX_CONTNET_TYPE = 2;
 	
 
-	private DiceRobotChatContent() {
+	DiceRobotChatContent() {
 		
 	}
 	private static DiceRobotChatContent chatContent = new DiceRobotChatContent();
@@ -81,29 +80,37 @@ public class DiceRobotChatContent {
 			"I gonna go,  hope palying with you next time",
 	};
 			
-	public String getExpression(Expression expression) {
+	public String[] getExpression(Expression expression) {
 		
+		String[] result = {null, null};
+		
+		result[IDX_CONTENT] = "NULL";
 		switch (expression.ordinal()) {
 			case 0:
-				return "[smile]";
+				result[IDX_CONTENTID] = "[smile]";
+				break;
 			case 1:
-				return "[pround]";
+				result[IDX_CONTENTID] =  "[pround]";
+				break;
 			case 2:
-				return "[embarrass]";
+				result[IDX_CONTENTID] = "[embarrass]";
+				break;
 			case 3:
-				return "[wry]";
+				result[IDX_CONTENTID] = "[wry]";
+				break;
 			case 4:
-				return "[anger]";
-			default:
-				return "[NULL]";
+				result[IDX_CONTENTID] = "[anger]";
+				break;
 		}
+		
+		return result;
 	};
 	
 	public  String[] getContent(VoiceContent voice) {
 			
 			// index 0 : chat content
 			// index 1 : content voiceId or expressionId, depent on contentType
-			String[] result = {"NULL", "NULL"};
+			String[] result = {null, null};
 		
 			if ( voice.ordinal() < contentVoiceId.length ) {
 				result[IDX_CONTENT] = content[voice.ordinal()];
@@ -113,48 +120,48 @@ public class DiceRobotChatContent {
 			return result;
 	};
 	
-	public String[] prepareChatContent() {
-		
-		// index 0: content( only valid for TEXT)
-		// index 1: contentVoiceId or expressionId,depent on contentType
-		// index 2: contentType
-		String[] result = {"NULL", "NULL", "NULL"};
-		
-		
-		String[] tempArray = {"NULL","NULL"};
-		int tmp = 0;
-		
-		// Expression or content
-		if ( RandomUtils.nextInt(2) == 1 ) {
-			// TEXT
-			 result[IDX_CONTNET_TYPE] = Integer.toString(TEXT);
-		    tmp = RandomUtils.nextInt(3);
-		     if ( tmp < 2) {
-		    	 tempArray = getContent(VoiceContent.CHANLLENGE_YOU);
-		     } else {
-		    	 tempArray = getContent(VoiceContent.KEEP_PLAYING);
-		      }
-		     result[IDX_CONTENT] = tempArray[IDX_CONTENT];
-		     result[IDX_CONTENTID] = tempArray[IDX_CONTENTID];
-		}
-		else {
-			// EXPRESSION
-			result[IDX_CONTNET_TYPE] = Integer.toString(EXPRESSION);
-			tmp = RandomUtils.nextInt(3);
-			if ( tmp == 0) {
-				 result[IDX_CONTENTID] = getExpression(Expression.SMILE);
-			} else if ( tmp == 1) {
-				 result[IDX_CONTENTID] = getExpression(Expression.PROUND);
-			} else if ( tmp == 2) {
-				result[IDX_CONTENTID] = getExpression(Expression.EMBARRASS);
-			} else {
-				result[IDX_CONTENTID] = getExpression(Expression.WORRY);
-			}
-		}
-		
-		return result;
-		      
-	}
+//	public String[] prepareChatContent() {
+//		
+//		// index 0: content( only valid for TEXT)
+//		// index 1: contentVoiceId or expressionId,depent on contentType
+//		// index 2: contentType
+//		String[] result = {"NULL", "NULL", "NULL"};
+//		
+//		
+//		String[] tempArray = {"NULL","NULL"};
+//		int tmp = 0;
+//		
+//		// Expression or content
+//		if ( RandomUtils.nextInt(2) == 1 ) {
+//			// TEXT
+//			 result[IDX_CONTNET_TYPE] = Integer.toString(TEXT);
+//		    tmp = RandomUtils.nextInt(3);
+//		     if ( tmp < 2) {
+//		    	 tempArray = getContent(VoiceContent.CHANLLENGE_YOU);
+//		     } else {
+//		    	 tempArray = getContent(VoiceContent.KEEP_PLAYING);
+//		      }
+//		     result[IDX_CONTENT] = tempArray[IDX_CONTENT];
+//		     result[IDX_CONTENTID] = tempArray[IDX_CONTENTID];
+//		}
+//		else {
+//			// EXPRESSION
+//			result[IDX_CONTNET_TYPE] = Integer.toString(EXPRESSION);
+//			tmp = RandomUtils.nextInt(3);
+//			if ( tmp == 0) {
+//				 result[IDX_CONTENTID] = getExpression(Expression.SMILE);
+//			} else if ( tmp == 1) {
+//				 result[IDX_CONTENTID] = getExpression(Expression.PROUND);
+//			} else if ( tmp == 2) {
+//				result[IDX_CONTENTID] = getExpression(Expression.EMBARRASS);
+//			} else {
+//				result[IDX_CONTENTID] = getExpression(Expression.WORRY);
+//			}
+//		}
+//		
+//		return result;
+//		      
+//	}
 	
 
 }
