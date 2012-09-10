@@ -256,7 +256,7 @@ public class DiceRobotIntelligence {
 				canOpen = ((int)HIGHEST_IQ/intelligence >= 2 && difference > UNSAFE_DIFFERENCE[playerCount-2] ? true : false);
 				if(canOpen) {
 					logger.info("robot is not smart, it decides to open!");
-					setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));
+//					setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));
 				}
 				return canOpen;
 			}
