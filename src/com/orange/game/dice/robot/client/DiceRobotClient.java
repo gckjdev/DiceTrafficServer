@@ -267,7 +267,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 		String contentId = content[IDX_CONTENTID];
 		int contentType = Integer.parseInt(content[IDX_CONTNET_TYPE]);
 		
-		ServerLog.info(sessionId, "Robot "+nickName+" sends chat content");
+		ServerLog.info(sessionId, "Robot "+nickName+" sends chat content: " + contentId);
 		
 		GameChatRequest request = null;
 		

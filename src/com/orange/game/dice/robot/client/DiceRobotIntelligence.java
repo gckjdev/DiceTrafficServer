@@ -293,7 +293,7 @@ public class DiceRobotIntelligence {
 							canOpen = (round + RandomUtils.nextInt(2) > 2 ? true : false);
 							if(canOpen) {
 								logger.info("round 2 or round 3, player changes dice face value, he/she may be cheating, open!");
-								setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));	
+//								setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));	
 								return canOpen;
 							}
 						}
@@ -481,7 +481,7 @@ public class DiceRobotIntelligence {
 										+ " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 					}
 					// We have dice of 3 instances...(not ONE, otherwise this branch won't be executed)
-					else if ( introspection[NUM_OF_THREE] == 1 && distribution[DICE_VALUE_ONE-1] == 2) {
+					else if ( introspection[NUM_OF_THREE] == 1 ){ //&& distribution[DICE_VALUE_ONE-1] == 2) {
 							recordCall(num + 1, introspection[DICE_OF_THREE], 0, playerCount);
 							logger.info("<DiceRobotIntelligence> Not Wild &  smart, has 3 "+introspection[DICE_OF_THREE]+ " & 2 ONEs, call "
 									+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
@@ -587,7 +587,7 @@ public class DiceRobotIntelligence {
 //			setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.CALL_WILDS));
 //			hasSendCallWilds = true;
 //		} else if ( RandomUtils.nextInt(4) == 1 && safe == true ) {
-//			setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.BITE_ME));
+//			setChatContent(TEXT,chatContent.getContent(DiceRobotChatNot Wild &  smartContent.VoiceContent.BITE_ME));
 //		}
 		if ( RandomUtils.nextInt(3) == 1 ) {
 			if ( safe == true ) {

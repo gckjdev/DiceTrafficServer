@@ -44,8 +44,8 @@ public class DiceRobotChatContent {
 	}
 	
 	String[] expressionId = {
-			"[Smile]",
-			"[Pround]",
+			"[smile]",
+			"[proud]",
 			"[embarrass]",
 			"[wry]",
 			"[anger]",
@@ -90,7 +90,7 @@ public class DiceRobotChatContent {
 				result[IDX_CONTENTID] = "[smile]";
 				break;
 			case 1:
-				result[IDX_CONTENTID] =  "[pround]";
+				result[IDX_CONTENTID] =  "[proud]";
 				break;
 			case 2:
 				result[IDX_CONTENTID] = "[embarrass]";
