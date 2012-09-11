@@ -90,10 +90,6 @@ public class DiceRobotClient extends AbstractRobotClient {
 				}
 			}
 			diceRobotIntelligence.introspectRobotDices(robotRollResult);
-			
-//			// schedule random chat
-//			ServerLog.info(sessionId, "Rolling ends.*****Robot "+nickName+"***** schedules to send random chat");
-//			scheduleRandomSendChat(rollEndChatFuture,RandomUtils.nextInt(3)+10);
 			break;
 			
 		case NEXT_PLAYER_START_NOTIFICATION_REQUEST:
@@ -102,6 +98,10 @@ public class DiceRobotClient extends AbstractRobotClient {
 				
 				if ( this.sessionRealUserCount() == 0 || canOpenDice ){
 					ServerLog.info(sessionId, "[NEXT_PLAYER_START_NOTIFICATION_REQUEST] robot dicides to open.");
+					if ( diceRobotIntelligence.hasSetChat()) {
+						sendChat(diceRobotIntelligence.getChatContent());
+						diceRobotIntelligence.resetHasSetChat();
+					}
 					scheduleSendOpenDice(0);
 				}
 				else {
@@ -111,9 +111,17 @@ public class DiceRobotClient extends AbstractRobotClient {
 					// Check the decision.
 					if (diceRobotIntelligence.giveUpCall()) {
 						ServerLog.info(sessionId, "[NEXT_PLAYER_START_NOTIFICATION_REQUEST] robot gives up call ,just open.");
+						if ( diceRobotIntelligence.hasSetChat()) {
+							sendChat(diceRobotIntelligence.getChatContent());
+							diceRobotIntelligence.resetHasSetChat();
+						}
 						scheduleSendOpenDice(0);
 					} else {
 						scheduleSendCallDice(diceRobotIntelligence.getWhatTocall());
+						if ( diceRobotIntelligence.hasSetChat()) {
+							sendChat(diceRobotIntelligence.getChatContent());
+							diceRobotIntelligence.resetHasSetChat();
+						}
 					}
 				}
 			}
@@ -185,10 +193,6 @@ public class DiceRobotClient extends AbstractRobotClient {
 			@Override
 			public void run() {
 				sendCallDice(whatToCall);
-				if ( diceRobotIntelligence.hasSetChat()) {
-					sendChat(diceRobotIntelligence.getChatContent());
-					diceRobotIntelligence.resetHasSetChat();
-				}
 			}
 		}, 
 		RandomUtils.nextInt(5)+1, TimeUnit.SECONDS);
@@ -229,10 +233,6 @@ public class DiceRobotClient extends AbstractRobotClient {
 		openDiceFuture = scheduleService.schedule(new Runnable() {			
 			@Override
 			public void run() {
-				if ( diceRobotIntelligence.hasSetChat()) {
-					sendChat(diceRobotIntelligence.getChatContent());
-					diceRobotIntelligence.resetHasSetChat();
-				}
 				sendOpenDice(openType);
 			}
 		}, 
