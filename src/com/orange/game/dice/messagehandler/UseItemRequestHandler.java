@@ -58,21 +58,7 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 		int itemId = request.getItemId();	
 		
 		GameResultCode resultCode = GameResultCode.SUCCESS;
-		ItemHandleInterface itemHandler = null;
-		
-		switch (itemId){
-		case DiceGameConstant.DICE_ITEM_ROLL_DICE_AGAIN:
-			itemHandler = rollDiceItemHandler;				
-			break;
-			
-		case DiceGameConstant.DICE_ITEM_DOUBLE_COIN:
-			itemHandler = doubleCoinItemHandler;
-			break;
-			
-		default:
-			itemHandler = defaultItemHandler;
-			break;
-		}
+		ItemHandleInterface itemHandler = getItemHandler(itemId);		
 		
 		// prepare response builder
 		UseItemResponse.Builder useItemResponseBuilder = UseItemResponse.newBuilder()
@@ -99,6 +85,25 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 		}
 	}
 	
+	private ItemHandleInterface getItemHandler(int itemId) {
+		ItemHandleInterface itemHandler;
+		switch (itemId){
+		case DiceGameConstant.DICE_ITEM_ROLL_DICE_AGAIN:
+			itemHandler = rollDiceItemHandler;				
+			break;
+			
+		case DiceGameConstant.DICE_ITEM_DOUBLE_COIN:
+			itemHandler = doubleCoinItemHandler;
+			break;
+			
+		default:
+			itemHandler = defaultItemHandler;
+			break;
+		}
+		
+		return itemHandler;
+	}
+
 	/*
 	@Override
 	public void handleRequest(GameMessage message, Channel channel,
