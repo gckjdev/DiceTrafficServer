@@ -1,16 +1,16 @@
 package com.orange.game.dice.messagehandler;
 
-import javax.jws.soap.SOAPBinding.Use;
-import javax.management.Notification;
 
-import org.eclipse.jetty.server.UserIdentity;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.MessageEvent;
 
 import com.orange.common.log.ServerLog;
+import com.orange.game.dice.messagehandler.item.DefaultItemHandler;
+import com.orange.game.dice.messagehandler.item.DoubleCoinItemHandler;
+import com.orange.game.dice.messagehandler.item.ItemHandleInterface;
+import com.orange.game.dice.messagehandler.item.RollDiceItemHandler;
 import com.orange.game.dice.model.DiceGameConstant;
 import com.orange.game.dice.model.DiceGameSession;
-import com.orange.game.dice.statemachine.action.DiceGameAction;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.server.GameEventExecutor;
@@ -26,11 +26,80 @@ import com.orange.network.game.protocol.model.DiceProtos.PBUserDice;
 
 public class UseItemRequestHandler extends AbstractMessageHandler {
 
+	public static ItemHandleInterface doubleCoinItemHandler = new DoubleCoinItemHandler();
+	public static ItemHandleInterface rollDiceItemHandler = new RollDiceItemHandler();
+	public static ItemHandleInterface defaultItemHandler = new DefaultItemHandler();
+	
 	public UseItemRequestHandler(MessageEvent messageEvent) {
 		super(messageEvent);
-		// TODO Auto-generated constructor stub
 	}
 
+	public void handleRequest(GameMessage message, Channel channel,
+			GameSession gameSession) {
+		DiceGameSession session = (DiceGameSession)gameSession;
+		
+		if (session == null){
+			ServerLog.warn(0, "<UseItem> but session is null");						
+			return;
+		}
+		
+		String userId = message.getUserId();
+		if (userId == null){
+			ServerLog.warn(session.getSessionId(), "<UseItem> but userId is null");						
+			return;
+		}
+		
+		UseItemRequest request = message.getUseItemRequest();
+		if (request == null){
+			ServerLog.warn(session.getSessionId(), "<UseItem> but item request is null");			
+			return;
+		}
+		
+		int itemId = request.getItemId();	
+		
+		GameResultCode resultCode = GameResultCode.SUCCESS;
+		ItemHandleInterface itemHandler = null;
+		
+		switch (itemId){
+		case DiceGameConstant.DICE_ITEM_ROLL_DICE_AGAIN:
+			itemHandler = rollDiceItemHandler;				
+			break;
+			
+		case DiceGameConstant.DICE_ITEM_DOUBLE_COIN:
+			itemHandler = doubleCoinItemHandler;
+			break;
+			
+		default:
+			itemHandler = defaultItemHandler;
+			break;
+		}
+		
+		// prepare response builder
+		UseItemResponse.Builder useItemResponseBuilder = UseItemResponse.newBuilder()
+			.setItemId(itemId);
+
+		resultCode = itemHandler.handleMessage(message, channel, session, userId, itemId, useItemResponseBuilder);		
+		ServerLog.info(session.getSessionId(), "<UseItem> itemId="+itemId+",result="+resultCode.toString());
+		
+		// send use item response
+		UseItemResponse useItemResponse = useItemResponseBuilder.build();		
+		GameMessage response = GameMessage.newBuilder()
+			.setCommand(GameCommandType.USE_ITEM_RESPONSE)
+			.setMessageId(message.getMessageId())
+			.setResultCode(resultCode)
+			.setUseItemResponse(useItemResponse)
+			.setUserId(userId)
+			.build();
+		sendResponse(response);	
+		
+		
+		// broadcast to all other users in the session for use item request
+		if (resultCode == GameResultCode.SUCCESS){
+			NotificationUtils.broadcastNotification(session, userId, message);
+		}
+	}
+	
+	/*
 	@Override
 	public void handleRequest(GameMessage message, Channel channel,
 			GameSession gameSession) {
@@ -159,6 +228,7 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 			NotificationUtils.broadcastNotification(session, userId, message);
 		}
 	}
+	*/
 
 	@Override
 	public boolean isProcessForSessionAllocation() {
