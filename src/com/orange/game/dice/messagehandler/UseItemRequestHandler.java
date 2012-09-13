@@ -96,7 +96,7 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 			itemHandler = doubleCoinItemHandler;
 			break;
 			
-		default:
+		default:		
 			itemHandler = defaultItemHandler;
 			break;
 		}

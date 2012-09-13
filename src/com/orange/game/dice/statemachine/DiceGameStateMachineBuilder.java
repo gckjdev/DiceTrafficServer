@@ -161,6 +161,10 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 				public Object decideNextState(Object context){
 					DiceGameSession session = (DiceGameSession)context;
 					GameUser user = session.getCurrentPlayUser();
+					if (session.getUserCount() <= 1){
+						return GameStateKey.CHECK_USER_COUNT;
+					}
+					
 					if (user == null || user.isTakenOver() == false){
 						return GameStateKey.WAIT_NEXT_PLAYER_PLAY;
 					}
