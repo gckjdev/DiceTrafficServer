@@ -12,6 +12,7 @@ import com.orange.game.dice.messagehandler.item.ItemHandleInterface;
 import com.orange.game.dice.messagehandler.item.IncTimeItemHandler;
 import com.orange.game.dice.messagehandler.item.ReverseCallItemHandler;
 import com.orange.game.dice.messagehandler.item.RollDiceItemHandler;
+import com.orange.game.dice.messagehandler.item.SkipCallItemHandler;
 import com.orange.game.dice.model.DiceGameConstant;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
@@ -31,6 +32,7 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 	public static ItemHandleInterface reverseCallItemHandler = new ReverseCallItemHandler();
 	public static ItemHandleInterface incTimeItemHandler = new IncTimeItemHandler();
 	public static ItemHandleInterface decTimeItemHandler = new DecTimeItemHandler();
+	public static ItemHandleInterface skipCallItemHandler = new SkipCallItemHandler();
 	
 	public UseItemRequestHandler(MessageEvent messageEvent) {
 		super(messageEvent);
@@ -121,6 +123,7 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 				break;
 
 			case DiceGameConstant.DICE_SKIP_CALL:
+				itemHandler = skipCallItemHandler;
 				break;
 
 			case DiceGameConstant.Dice_DOUBLE_KILL:

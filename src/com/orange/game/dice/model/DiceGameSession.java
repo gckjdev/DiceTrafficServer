@@ -49,8 +49,8 @@ public class DiceGameSession extends GameSession {
 	volatile int openDiceType = DICE_OPEN_TYPE_NORMAL;
 	
 	
-	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy) {
-		super(sessionId, name, password, createByUser, createBy);
+	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy, int ruleType) {
+		super(sessionId, name, password, createByUser, createBy, ruleType);
 		
 		// init state
 		this.currentState = DiceGameStateMachineBuilder.INIT_STATE;
@@ -112,8 +112,18 @@ public class DiceGameSession extends GameSession {
 		PBUserDice.Builder builder = PBUserDice.newBuilder().setUserId(userId);
 		
 		// Roll five dices
+		int test = RandomUtils.nextInt(2);
 		for (int i = 0; i < DICE_COUNT; i++) {
-			int number = RandomUtil.random(DICE_6) + 1;
+			int number = 0;
+			//For test
+			if ( test == 1) {
+				number = i+1;// produce snake dices
+			}
+			else {
+				// produce net or wai dices
+				number = (RandomUtils.nextInt(2) == 1 ? 1 : 3); 
+			}
+//			int number = RandomUtil.random(DICE_6) + 1;
 			distribution[number-1]++;
 			
 			PBDice dice = PBDice.newBuilder()
@@ -253,7 +263,8 @@ public class DiceGameSession extends GameSession {
 		userResults.put(userId, result);		
 	}
 	
-	public List<PBDiceFinalCount> diceCountSettlement(DiceGameRuleType ruleType, int allFinalCount) {
+	
+	public List<PBDiceFinalCount> diceCountSettlement(int ruleType) {
 		
 		Collection<PBUserDice> allUserDices = userDices.values();
 		if (allUserDices.size() < 2 || (callDiceUserId == null || openDiceUserId == null)){
@@ -297,10 +308,10 @@ public class DiceGameSession extends GameSession {
 			
 			// Decide what finalDiceCount is and what diceType is 
 			finalDiceCount = distribution[currentDice-1] + (currentDice == DICE_1 ? 0 : distribution[DICE_1-1]*(isWilds ? 0 : 1));
-			if ( ruleType.equals(DiceGameRuleType.RULE_NORMAL) ) {
+			if ( ruleType == DiceGameRuleType.RULE_NORMAL_VALUE ) {
 				diceType = PBDiceType.DICE_NORMAL;
 			}
-			else if ( ruleType.equals(DiceGameRuleType.RULE_HIGH) || ruleType.equals(DiceGameRuleType.RULE_SUPER_HIGH)) {
+			else if ( ruleType == DiceGameRuleType.RULE_HIGH_VALUE || ruleType == DiceGameRuleType.RULE_SUPER_HIGH_VALUE) {
 				if ( count == 1 && finalDiceCount == 5 ) {
 					if (distribution[DICE_1-1] == 5 && currentDice != DICE_1) {
 						finalDiceCount = 6;
@@ -322,9 +333,7 @@ public class DiceGameSession extends GameSession {
 					diceType = PBDiceType.DICE_NORMAL;
 				}
 			}
-			// Add to all users' total count
-			allFinalCount += finalDiceCount;
-			
+				
 			// Build the PBDiceFinalCount 
 			PBDiceFinalCount diceDiceFinalCount = PBDiceFinalCount.newBuilder()
 					.setUserId(userId)
@@ -335,8 +344,6 @@ public class DiceGameSession extends GameSession {
 			pbDiceFinalCountList.add(diceDiceFinalCount);
 		}
 		
-		ServerLog.info(sessionId, "<diceCountSettlement> result = total "+allFinalCount + " X "+currentDice);
-		
 		// clear user results
 		userResults.clear();
 		
@@ -345,8 +352,11 @@ public class DiceGameSession extends GameSession {
 
 	public void calculateCoins(int allFinalCount) {
 		
-		int winCoins = WIN_COINS * this.openDiceMultiple;
+		int times = (allFinalCount > currentDiceNum ?  allFinalCount - currentDiceNum : currentDiceNum - allFinalCount) + 1;
+		int winCoins = WIN_COINS *  times * this.openDiceMultiple;
 		int lostCoins = -winCoins;
+
+		ServerLog.info(sessionId, "<diceCountSettlement> result = total "+allFinalCount + " X "+currentDice);
 		
 		// now check who wins			
 		if (allFinalCount >= currentDiceNum){
@@ -359,8 +369,6 @@ public class DiceGameSession extends GameSession {
 			addUserResult(openDiceUserId, winCoins, true);
 			addUserResult(callDiceUserId, lostCoins, false);
 		}
-		
-//		ServerLog.info(sessionId, "<calculateCoins> user result="+userResults.toString());
 	}
 	
 	public Collection<PBUserResult> getUserResults(){

@@ -2,18 +2,10 @@ package com.orange.game.dice.statemachine.action;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
-import org.mortbay.jetty.servlet.HashSessionIdManager;
-
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.orange.common.log.ServerLog;
 import com.orange.common.mongodb.MongoDBClient;
@@ -22,7 +14,6 @@ import com.orange.game.constants.DBConstants;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.model.manager.UserManager;
 import com.orange.game.traffic.model.dao.GameSession;
-import com.orange.game.traffic.model.dao.GameSessionUserList;
 import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.game.traffic.robot.client.RobotService;
 import com.orange.game.traffic.server.GameEventExecutor;
@@ -30,14 +21,12 @@ import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.game.traffic.service.GameDBService;
 import com.orange.game.traffic.service.SessionUserService;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
-import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCompleteReason;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
 import com.orange.network.game.protocol.message.GameMessageProtos;
 import com.orange.network.game.protocol.message.GameMessageProtos.CallDiceRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameOverNotificationRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.OpenDiceRequest;
-import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceBeginNotificationRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceEndNotificationRequest;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceFinalCount;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
@@ -285,10 +274,13 @@ public class DiceGameAction{
 			DiceGameSession session = (DiceGameSession)context;
 						
 			// all users' dices settlement
-			int allFinalCount = 0 ; // all user total final count
-			List<PBDiceFinalCount> diceFinalCountList = session.diceCountSettlement(session.getRuleType(), allFinalCount);
+			List<PBDiceFinalCount> diceFinalCountList = session.diceCountSettlement(session.getRuleType());
 			
 			// calculate how many coins that users gain
+			int allFinalCount = 0 ; // all user total final count
+			for ( PBDiceFinalCount finalCount: diceFinalCountList ) {
+					allFinalCount += finalCount.getFinalDiceCount();
+			}
 			session.calculateCoins(allFinalCount);
 			
 			// save result into db
