@@ -1,24 +1,26 @@
 package com.orange.game.dice.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.jetty.security.PropertyUserStore.UserListener;
+import org.apache.commons.lang.math.RandomUtils;
 
 import com.orange.common.log.ServerLog;
 import com.orange.common.utils.RandomUtil;
 import com.orange.game.dice.statemachine.DiceGameStateMachineBuilder;
-import com.orange.game.dice.statemachine.state.GameStateKey;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.model.dao.GameUser;
+import com.orange.network.game.protocol.constants.GameConstantsProtos;
+import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRuleType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
+import com.orange.network.game.protocol.model.DiceProtos;
 import com.orange.network.game.protocol.model.DiceProtos.PBDice;
+import com.orange.network.game.protocol.model.DiceProtos.PBDiceFinalCount;
+import com.orange.network.game.protocol.model.DiceProtos.PBDiceType;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserDice;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
-import com.orange.network.game.protocol.model.GameBasicProtos.PBGameUser;
 
 public class DiceGameSession extends GameSession {
 
@@ -45,6 +47,7 @@ public class DiceGameSession extends GameSession {
 	String openDiceUserId;
 	volatile int openDiceMultiple = 1;	
 	volatile int openDiceType = DICE_OPEN_TYPE_NORMAL;
+	
 	
 	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy) {
 		super(sessionId, name, password, createByUser, createBy);
@@ -98,17 +101,50 @@ public class DiceGameSession extends GameSession {
 	// roll dice for specific user
 	private PBUserDice randomRollDice(String userId) {
 		
-		PBUserDice.Builder builder = PBUserDice.newBuilder();
-		builder.setUserId(userId);
+		// How six dice face value distributed, initial value is 0 
+		int[]  distribution = new int[DICE_6];
+		for ( int i = 0 ; i < DICE_6; i++) {
+			distribution[i] = 0;
+		}
 		
-		for (int i=0; i<DICE_COUNT; i++){
+		PBDiceType diceType = null;
+		
+		PBUserDice.Builder builder = PBUserDice.newBuilder().setUserId(userId);
+		
+		// Roll five dices
+		for (int i = 0; i < DICE_COUNT; i++) {
 			int number = RandomUtil.random(DICE_6) + 1;
+			distribution[number-1]++;
 			
-			PBDice dice = PBDice.newBuilder().setDiceId(i+1).setDice(number).build();
+			PBDice dice = PBDice.newBuilder()
+									.setDiceId(i+1)
+									.setDice(number)
+									.build();
 			builder.addDices(dice);
 		}
 		
-		return builder.build();
+		// Decide the diceType
+		ServerLog.info(sessionId, "The distribution of dices of user[" + userId + "] is "+ distribution.toString());
+		int count = 0; // dice category count
+		for ( int i: distribution ) {
+			if ( i != 0 ) 
+				count++;
+		}
+		if ( count == 1 ) 
+			diceType = PBDiceType.DICE_NET;
+		else if ( count == 2 && distribution[DICE_1-1] != 0)
+			diceType = PBDiceType.DICE_WAI;
+		else if ( count == 5 )
+			diceType = PBDiceType.DICE_SNAKE;
+		else 
+			diceType = PBDiceType.DICE_NORMAL;
+		
+		
+		// Complete the PBUserDice building.
+		PBUserDice pbUserDice = builder.setType(diceType).build();
+		ServerLog.info(sessionId, "User[" + userId + "]'s PBUserDice is " + pbUserDice.toString());
+		
+		return pbUserDice;
 	}
 
 	public Collection<PBUserDice> getUserDices() {
@@ -217,40 +253,103 @@ public class DiceGameSession extends GameSession {
 		userResults.put(userId, result);		
 	}
 	
-	public void calculateCoins() {
+	public List<PBDiceFinalCount> diceCountSettlement(DiceGameRuleType ruleType, int allFinalCount) {
+		
 		Collection<PBUserDice> allUserDices = userDices.values();
 		if (allUserDices.size() < 2 || (callDiceUserId == null || openDiceUserId == null)){
 			ServerLog.info(sessionId, "<calculateCoins> but user dice count="+allUserDices.size()+" callDiceUserId="+callDiceUserId+", openDiceUserId"+openDiceUserId);
-			return;
+			return null;
 		}
 		
-		int resultCount = 0;
+		List<PBDiceFinalCount> pbDiceFinalCountList = new ArrayList<DiceProtos.PBDiceFinalCount>();
+		
+		
+		// Per user's dices settlement
 		for (PBUserDice userDice : allUserDices){
-			List<PBDice> diceList = userDice.getDicesList();
-			if (diceList == null)
-				continue;
 			
-			for (PBDice dice : diceList){
-				int number = dice.getDice();
-				if (number == 1 && isWilds == false){
-					resultCount ++;
-				}
-				else if (number == currentDice){
-					resultCount ++;
-				}				
+			// How six dice's  face value distributed, initial value is 0
+			int[] distribution = new int[DICE_6] ;  
+	      for(int i = 0 ; i < DICE_6 ; i++) {  
+	         distribution[i] = 0 ;  
+	         }  
+	         
+			String userId = userDice.getUserId();
+			ServerLog.info(sessionId, "The distribution of dices of user[" + userId + "] is "+ distribution);
+			int finalDiceCount = 0;
+			PBDiceType diceType = null;
+			
+			List<PBDice> diceList = userDice.getDicesList();
+			if (diceList == null) {
+				ServerLog.info(sessionId, "<diceCountSettlement> ERROR:" + userId + "'s diceList is null !!!");
+				continue;
 			}
+			
+			// First check how this user's dices distributed.
+			for ( PBDice dice : diceList ) {
+				int diceValue = dice.getDice();
+				distribution[diceValue-1]++;
+			}
+			int count = 0;
+			for ( int i: distribution ) {
+				if ( i != 0 ) 
+					count++;
+			}
+			
+			// Decide what finalDiceCount is and what diceType is 
+			finalDiceCount = distribution[currentDice-1] + (currentDice == DICE_1 ? 0 : distribution[DICE_1-1]*(isWilds ? 0 : 1));
+			if ( ruleType.equals(DiceGameRuleType.RULE_NORMAL) ) {
+				diceType = PBDiceType.DICE_NORMAL;
+			}
+			else if ( ruleType.equals(DiceGameRuleType.RULE_HIGH) || ruleType.equals(DiceGameRuleType.RULE_SUPER_HIGH)) {
+				if ( count == 1 && finalDiceCount == 5 ) {
+					if (distribution[DICE_1-1] == 5 && currentDice != DICE_1) {
+						finalDiceCount = 6;
+						diceType = PBDiceType.DICE_WAI;
+					} else {
+						finalDiceCount = 7;
+						diceType = PBDiceType.DICE_NET;
+					}
+				}
+				else if ( count == 2 && finalDiceCount == 5 ) {
+					finalDiceCount = 6;
+					diceType = PBDiceType.DICE_WAI;
+				}
+				else if ( count == 5 ) {
+					finalDiceCount = 0;
+					diceType = PBDiceType.DICE_SNAKE;
+				}
+				else  {
+					diceType = PBDiceType.DICE_NORMAL;
+				}
+			}
+			// Add to all users' total count
+			allFinalCount += finalDiceCount;
+			
+			// Build the PBDiceFinalCount 
+			PBDiceFinalCount diceDiceFinalCount = PBDiceFinalCount.newBuilder()
+					.setUserId(userId)
+					.setType(diceType)
+					.setFinalDiceCount(finalDiceCount)
+					.build();
+			
+			pbDiceFinalCountList.add(diceDiceFinalCount);
 		}
 		
-		ServerLog.info(sessionId, "<calculateCoins> result = total "+resultCount + " X "+currentDice);
+		ServerLog.info(sessionId, "<diceCountSettlement> result = total "+allFinalCount + " X "+currentDice);
 		
 		// clear user results
 		userResults.clear();
+		
+		return pbDiceFinalCountList;
+	}
+
+	public void calculateCoins(int allFinalCount) {
 		
 		int winCoins = WIN_COINS * this.openDiceMultiple;
 		int lostCoins = -winCoins;
 		
 		// now check who wins			
-		if (resultCount >= currentDiceNum){
+		if (allFinalCount >= currentDiceNum){
 			// call dice wins
 			addUserResult(callDiceUserId, winCoins, true);
 			addUserResult(openDiceUserId, lostCoins, false);		
@@ -261,9 +360,9 @@ public class DiceGameSession extends GameSession {
 			addUserResult(callDiceUserId, lostCoins, false);
 		}
 		
-		ServerLog.info(sessionId, "<calculateCoins> user result="+userResults.toString());
+//		ServerLog.info(sessionId, "<calculateCoins> user result="+userResults.toString());
 	}
-
+	
 	public Collection<PBUserResult> getUserResults(){
 		return userResults.values();
 	}
@@ -329,6 +428,7 @@ public class DiceGameSession extends GameSession {
 		userDices.put(userId, userDice);
 		return userDice;
 	}
+
 
 
 

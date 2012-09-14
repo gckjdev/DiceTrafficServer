@@ -50,6 +50,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	
 	ScheduledFuture<?> rollEndChatFuture = null;
 	volatile static int rollEndChatLock = 2;
+	private ScheduledFuture<?> chatFuture = null;
 	
 	DiceRobotIntelligence diceRobotIntelligence = new DiceRobotIntelligence();
 	DiceRobotChatContent diceRobotChatContent = DiceRobotChatContent.getInstance();
@@ -173,6 +174,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 					sendChat(expression);
 				}
 			}
+			scheduleSendChat(chatFuture , 1);
 			openUserId = message.getUserId();
 			ServerLog.info(sessionId, "Robot "+nickName+" receive OPEN_DICE_REQUEST");
 			
@@ -295,30 +297,42 @@ public class DiceRobotClient extends AbstractRobotClient {
 	}
 	
 	
-//	public void scheduleRandomSendChat(ScheduledFuture<?> chatFuture, int delay) {
-//		
-//		if (chatFuture != null){
-//			chatFuture.cancel(false);
-//		}
-//		
+	public void scheduleSendChat(ScheduledFuture<?> chatFuture, int delay) {
+		
+		if (chatFuture != null){
+			chatFuture.cancel(false);
+		}
+		
 //		// index 0: contentType
 //		// index 1: content( only valid for TEXT)
 //		// index 2: contentVoiceId or expressionId,depent on contentType
 //		final String[] content = diceRobotChatContent.prepareChatContent();
-//		
-//		chatFuture = scheduleService.schedule(new Runnable() {			
-//			@Override
-//			public void run() {
-//				if ( rollEndChatLock > 0 ) {
-//					ServerLog.info(sessionId, "**********Random chat fired !!!");
-//					sendChat(content);
-//					rollEndChatLock--;
-//				}
-//			}
-//		}, 
-//		delay, TimeUnit.SECONDS);
-//		
-//	}
+		
+		chatFuture = scheduleService.schedule(new Runnable() {			
+			@Override
+			public void run() {
+				if ( RandomUtils.nextInt(2) == 1 ) {
+					if ( RandomUtils.nextInt(2) == 1 ) {
+						String[] tmp = {null, null};
+						tmp = chatContent.getExpression(DiceRobotChatContent.Expression.WORRY);
+						String[] expression = {null, null, Integer.toString(EXPRESSION)};
+						expression[0] = tmp[0];
+						expression[1] = tmp[1];
+						sendChat(expression);
+					} else {
+						String[] tmp = {null, null};
+						tmp = chatContent.getExpression(DiceRobotChatContent.Expression.ANGER);
+						String[] expression = {null, null, Integer.toString(EXPRESSION)};
+						expression[0] = tmp[0];
+						expression[1] = tmp[1];
+						sendChat(expression);
+					}
+				}
+			}
+		}, 
+		delay, TimeUnit.SECONDS);
+		
+	}
 	
 
 	@Override

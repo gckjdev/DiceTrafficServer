@@ -33,11 +33,11 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
     
 
 	
-	static final int START_GAME_TIMEOUT = 3;			// 36 seconds, 20 for start, 10 for result, 6 for reserved
-	static final int WAIT_CLAIM_TIMEOUT = 18;
-	static final int ROLL_DICE_TIMEOUT = 3;
-	static final int SHOW_RESULT_TIMEOUT = 10;
-	static final int TAKEN_OVER_USER_WAIT_TIMEOUT = 1;
+   public static final int START_GAME_TIMEOUT = 3;			// 36 seconds, 20 for start, 10 for result, 6 for reserved
+	public static final int WAIT_CLAIM_TIMEOUT = 18;
+	public static final int ROLL_DICE_TIMEOUT = 3;
+	public static final int SHOW_RESULT_TIMEOUT = 10;
+	public static final int TAKEN_OVER_USER_WAIT_TIMEOUT = 1;
     	
     @Override
 	public StateMachine buildStateMachine() {

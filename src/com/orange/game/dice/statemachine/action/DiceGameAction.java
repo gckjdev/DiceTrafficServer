@@ -39,6 +39,7 @@ import com.orange.network.game.protocol.message.GameMessageProtos.GameOverNotifi
 import com.orange.network.game.protocol.message.GameMessageProtos.OpenDiceRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceBeginNotificationRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceEndNotificationRequest;
+import com.orange.network.game.protocol.model.DiceProtos.PBDiceFinalCount;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
 
@@ -283,10 +284,14 @@ public class DiceGameAction{
 		public void execute(Object context) {
 			DiceGameSession session = (DiceGameSession)context;
 						
-			// calcuate user gain conins
-			session.calculateCoins();
+			// all users' dices settlement
+			int allFinalCount = 0 ; // all user total final count
+			List<PBDiceFinalCount> diceFinalCountList = session.diceCountSettlement(session.getRuleType(), allFinalCount);
 			
-			// save result
+			// calculate how many coins that users gain
+			session.calculateCoins(allFinalCount);
+			
+			// save result into db
 			saveUserResultIntoDB(session);
 			
 			// charge/deduct coins
@@ -295,6 +300,7 @@ public class DiceGameAction{
 			// broadcast complete complete with result
 			PBDiceGameResult result = PBDiceGameResult.newBuilder()
 				.addAllUserResult(session.getUserResults())
+				.addAllFinalCount(diceFinalCountList)
 				.build();
 				
 			GameOverNotificationRequest notification = GameOverNotificationRequest.newBuilder()

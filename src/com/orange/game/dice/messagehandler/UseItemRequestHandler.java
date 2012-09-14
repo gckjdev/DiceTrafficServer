@@ -5,34 +5,39 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.MessageEvent;
 
 import com.orange.common.log.ServerLog;
+import com.orange.game.dice.messagehandler.item.DecTimeItemHandler;
 import com.orange.game.dice.messagehandler.item.DefaultItemHandler;
 import com.orange.game.dice.messagehandler.item.DoubleCoinItemHandler;
 import com.orange.game.dice.messagehandler.item.ItemHandleInterface;
+import com.orange.game.dice.messagehandler.item.IncTimeItemHandler;
+import com.orange.game.dice.messagehandler.item.ReverseCallItemHandler;
 import com.orange.game.dice.messagehandler.item.RollDiceItemHandler;
 import com.orange.game.dice.model.DiceGameConstant;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
 import com.orange.game.traffic.model.dao.GameSession;
-import com.orange.game.traffic.server.GameEventExecutor;
-import com.orange.game.traffic.server.HandlerUtils;
 import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 import com.orange.network.game.protocol.message.GameMessageProtos.UseItemRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.UseItemResponse;
-import com.orange.network.game.protocol.message.GameMessageProtos.UserDiceNotification;
-import com.orange.network.game.protocol.model.DiceProtos.PBUserDice;
 
 public class UseItemRequestHandler extends AbstractMessageHandler {
 
 	public static ItemHandleInterface doubleCoinItemHandler = new DoubleCoinItemHandler();
 	public static ItemHandleInterface rollDiceItemHandler = new RollDiceItemHandler();
 	public static ItemHandleInterface defaultItemHandler = new DefaultItemHandler();
+	public static ItemHandleInterface reverseCallItemHandler = new ReverseCallItemHandler();
+	public static ItemHandleInterface incTimeItemHandler = new IncTimeItemHandler();
+	public static ItemHandleInterface decTimeItemHandler = new DecTimeItemHandler();
 	
 	public UseItemRequestHandler(MessageEvent messageEvent) {
 		super(messageEvent);
 	}
+
+
+
 
 	public void handleRequest(GameMessage message, Channel channel,
 			GameSession gameSession) {
@@ -83,22 +88,53 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 		if (resultCode == GameResultCode.SUCCESS){
 			NotificationUtils.broadcastNotification(session, userId, message);
 		}
-	}
-	
+	}   
+	    
 	private ItemHandleInterface getItemHandler(int itemId) {
-		ItemHandleInterface itemHandler;
+		ItemHandleInterface itemHandler = null;
 		switch (itemId){
-		case DiceGameConstant.DICE_ITEM_ROLL_DICE_AGAIN:
-			itemHandler = rollDiceItemHandler;				
-			break;
-			
-		case DiceGameConstant.DICE_ITEM_DOUBLE_COIN:
-			itemHandler = doubleCoinItemHandler;
-			break;
-			
-		default:
-			itemHandler = defaultItemHandler;
-			break;
+			case DiceGameConstant.DICE_ITEM_ROLL_DICE_AGAIN:
+				itemHandler = rollDiceItemHandler;
+				break;
+
+			case DiceGameConstant.DICE_ITEM_DOUBLE_COIN:
+				itemHandler = doubleCoinItemHandler;
+				break;
+
+			case DiceGameConstant.Dice_PEEK:
+				itemHandler = defaultItemHandler;
+				break;
+
+			case DiceGameConstant.Dice_REVERSE_CALL:
+				itemHandler = reverseCallItemHandler;
+				break;
+
+			case DiceGameConstant.Dice_INC_TIME:
+				itemHandler = incTimeItemHandler;
+				break;
+
+			case DiceGameConstant.Dice_DEC_TIME:
+				itemHandler = decTimeItemHandler;
+				break;
+
+			case DiceGameConstant.Dice_CALL_HINT:
+				break;
+
+			case DiceGameConstant.DICE_SKIP_CALL:
+				break;
+
+			case DiceGameConstant.Dice_DOUBLE_KILL:
+				break;
+
+			case DiceGameConstant.Dice_FLOWER:
+				break;
+
+			case DiceGameConstant.Dice_TOMATO:
+				break;
+
+			default:
+				itemHandler = defaultItemHandler;
+				break;
 		}
 		
 		return itemHandler;
