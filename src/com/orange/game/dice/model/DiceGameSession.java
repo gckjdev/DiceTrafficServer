@@ -46,6 +46,8 @@ public class DiceGameSession extends GameSession {
 	volatile int openDiceMultiple = 1;	
 	volatile int openDiceType = DICE_OPEN_TYPE_NORMAL;
 	
+	int waitClaimTimeOutTimes = 0;
+	
 	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy) {
 		super(sessionId, name, password, createByUser, createBy);
 		
@@ -330,6 +332,13 @@ public class DiceGameSession extends GameSession {
 		return userDice;
 	}
 
+	public void incWaitClaimTimeOutTimes() {
+		waitClaimTimeOutTimes ++;
+	}
+
+	public void clearWaitClaimTimeOutTimes() {
+		waitClaimTimeOutTimes = 0;
+	}
 
 
 	

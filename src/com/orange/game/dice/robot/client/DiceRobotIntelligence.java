@@ -517,7 +517,7 @@ public class DiceRobotIntelligence {
 					} 
 					else {
 						if ( introspection[DICE_OF_TWO] == DICE_VALUE_ONE ) {
-							for ( int i = 0; i < distribution.length; i++ ) {
+							for ( int i = 1; i <= distribution.length; i++ ) {
 								if ( distribution[i-1] == 1 && probability[BASE[playerCount-2] + num+1-(introspection[DICE_OF_TWO]+1)] > benchmark[playerCount-2]) {
 									recordCall(num+1+extra, introspection[DICE_OF_TWO], 0, playerCount);
 									logger.info("<DiceRobotIntelligence> Not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart,has 2 X 1, call "

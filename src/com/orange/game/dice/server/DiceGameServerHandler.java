@@ -66,43 +66,9 @@ public class DiceGameServerHandler extends GameServerHandler {
 	@Override
 	public void userQuitSession(String userId,
 			GameSession session, boolean needFireEvent) {
+		
+		GameEventExecutor.getInstance().getSessionManager().userQuitSession(session, userId, needFireEvent);
 				
-		int sessionId = session.getSessionId();
-		ServerLog.info(sessionId, "user "+userId+" quit");
-
-		int sessionUserCount = session.getUserCount();
-		GameUser user = session.findUser(userId);
-		boolean removeUser = (user.isPlaying() == false || sessionUserCount == 1);
-		
-		if (!removeUser){
-			session.takeOverUser(userId);
-		}
-		
-		GameCommandType command = null;		
-		if (session.isCurrentPlayUser(userId)){
-			command = GameCommandType.LOCAL_PLAY_USER_QUIT;			
-//			session.setCompleteReason(GameCompleteReason.REASON_DRAW_USER_QUIT);			
-		}
-		else if (sessionUserCount <= 2){
-			command = GameCommandType.LOCAL_ALL_OTHER_USER_QUIT;			
-//			session.setCompleteReason(GameCompleteReason.REASON_ONLY_ONE_USER);			
-		}
-		else {
-			command = GameCommandType.LOCAL_OTHER_USER_QUIT;						
-//			updateCurrentPlayer(session);			
-		}			
-		
-		// broadcast user exit message to all other users
-		NotificationUtils.broadcastUserStatusChangeNotification(session, userId);			
-		
-		// fire message
-		if (needFireEvent){
-			GameEventExecutor.getInstance().fireAndDispatchEvent(command, sessionId, userId);
-		}
-		
-		if (removeUser){
-			SessionUserService.getInstance().removeUser(session, userId);
-		}
 		
 		
 	}

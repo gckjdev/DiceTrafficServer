@@ -44,6 +44,26 @@ import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
 
 public class DiceGameAction{
 
+	public static class ClearWaitClaimTimeOutTimes implements Action {
+
+		@Override
+		public void execute(Object context) {
+			DiceGameSession session = (DiceGameSession)context;
+			session.clearWaitClaimTimeOutTimes();
+		}
+
+	}
+	public static class IncWaitClaimTimeOutTimes implements Action {
+
+		@Override
+		public void execute(Object context) {
+			DiceGameSession session = (DiceGameSession)context;			
+			session.incWaitClaimTimeOutTimes();
+			
+			// TODO not clean yet
+		}
+	}
+
 	public enum DiceTimerType{
 		START, ROLL_DICE, WAIT_CLAIM, SHOW_RESULT, TAKEN_OVER_USER_WAIT
 	};

@@ -64,6 +64,8 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action setShowResultTimer = new DiceGameAction.SetShowResultTimer();		
 		Action clearTimer = new CommonGameAction.ClearTimer();
 		Action clearRobotTimer = new DiceGameAction.ClearRobotTimer();
+		Action detectWaitClaimTimeOutTimes = new DiceGameAction.IncWaitClaimTimeOutTimes();
+		Action clearWaitClaimTimeOutTimes = new DiceGameAction.ClearWaitClaimTimeOutTimes();
 		
 		Action restartGame = new DiceGameAction.RestartGame();
 		Action selectLoserAsCurrentPlayerUser = new DiceGameAction.SelectLoserAsCurrentPlayerUser();
@@ -181,16 +183,8 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addEmptyTransition(GameCommandType.LOCAL_OTHER_USER_QUIT)
 			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)
 			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.AUTO_ROLL_DICE)
+			.addAction(clearWaitClaimTimeOutTimes)
 			.addAction(clearTimer);
-		
-//		sm.addState(new GameState(GameStateKey.CALL_DICE_FOR_TAKEOVER_USER))
-//			.addAction(autoCallOrOpen)
-//			.setDecisionPoint(new DecisionPoint(null){
-//				@Override
-//				public Object decideNextState(Object context){
-//					return GameStateKey.CHECK_NEXT_PLAYER_PLAY;
-//				}
-//			});			
 		
 		sm.addState(new GameState(GameStateKey.WAIT_NEXT_PLAYER_PLAY))
 			.addAction(broadcastNextPlayerNotification)
@@ -201,10 +195,11 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)
 			.addTransition(GameCommandType.LOCAL_CALL_DICE, GameStateKey.PLAYER_CALL_DICE)		
 			.addTransition(GameCommandType.LOCAL_OPEN_DICE, GameStateKey.CHECK_OPEN_DICE)		
-			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.AUTO_ROLL_DICE)				
+			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.AUTO_ROLL_DICE)	
 			.addAction(clearTimer);		
 
 		sm.addState(new GameState(GameStateKey.PLAYER_CALL_DICE))
+			.addAction(clearWaitClaimTimeOutTimes)		
 			.addAction(selectPlayUser)
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
@@ -220,6 +215,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			});			
 		
 		sm.addState(new GameState(GameStateKey.AUTO_ROLL_DICE))
+			.addAction(detectWaitClaimTimeOutTimes)		
 			.addAction(autoCallOrOpen)
 			.addAction(selectPlayUser)
 			.setDecisionPoint(new DecisionPoint(null){
@@ -249,6 +245,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 
 		
 		sm.addState(new GameState(GameStateKey.CHECK_OPEN_DICE))
+			.addAction(clearWaitClaimTimeOutTimes)		
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
@@ -260,7 +257,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addAction(completeGame)
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
-				public Object decideNextState(Object context){
+				public Object decideNextState(Object context){					
 					return GameStateKey.SHOW_RESULT;	// goto check user count state directly
 				}
 			});
