@@ -13,7 +13,6 @@ import com.orange.game.dice.messagehandler.item.IncTimeItemHandler;
 import com.orange.game.dice.messagehandler.item.ReverseCallItemHandler;
 import com.orange.game.dice.messagehandler.item.RollDiceItemHandler;
 import com.orange.game.dice.messagehandler.item.SkipCallItemHandler;
-import com.orange.game.dice.messagehandler.item.doubleKillItemHandler;
 import com.orange.game.dice.model.DiceGameConstant;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
