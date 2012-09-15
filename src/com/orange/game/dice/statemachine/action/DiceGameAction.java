@@ -296,7 +296,7 @@ public class DiceGameAction{
 			// all users' dices settlement
 			List<PBDiceFinalCount> diceFinalCountList = session.diceCountSettlement(session.getRuleType());
 			
-			if ( diceFinalCountList.size() < 2 ) {
+			if ( diceFinalCountList.size() >= 2 ) { // only meaningful for at least 2 users
 				// calculate how many coins that users gain
 				int allFinalCount = 0 ; // all user total final count
 				for ( PBDiceFinalCount finalCount: diceFinalCountList ) {
