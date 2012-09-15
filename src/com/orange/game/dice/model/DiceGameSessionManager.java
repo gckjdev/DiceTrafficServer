@@ -13,8 +13,8 @@ import com.orange.network.game.protocol.constants.GameConstantsProtos.GameComman
 public class DiceGameSessionManager extends GameSessionManager {
 
 	@Override
-	public GameSession createSession(int sessionId, String name, String password, boolean createByUser, String createBy, int ruleType) {
-		return new DiceGameSession(sessionId, name, password, createByUser, createBy, ruleType);
+	public GameSession createSession(int sessionId, String name, String password, boolean createByUser, String createBy, int ruleType,int testEnable) {
+		return new DiceGameSession(sessionId, name, password, createByUser, createBy, ruleType,testEnable);
 	}
 
 	@Override
@@ -79,6 +79,17 @@ public class DiceGameSessionManager extends GameSessionManager {
 			return Integer.parseInt(ruleType);
 		}
 		return DiceGameRuleType.RULE_NORMAL_VALUE; // default
+	}
+
+	
+	@Override
+	// On: 1, Off:0[default]
+	public int getTestEnable() {
+			String testEnable = System.getProperty("test_enable");
+			if (testEnable != null && !testEnable.isEmpty()){
+				return Integer.parseInt(testEnable);
+			}
+			return 0;
 	}
 
 

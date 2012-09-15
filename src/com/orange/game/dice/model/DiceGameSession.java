@@ -13,6 +13,8 @@ import com.orange.common.utils.RandomUtil;
 import com.orange.game.dice.statemachine.DiceGameStateMachineBuilder;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.model.dao.GameUser;
+import com.orange.game.traffic.model.manager.GameSessionManager;
+import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.network.game.protocol.constants.GameConstantsProtos;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRuleType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
@@ -45,27 +47,31 @@ public class DiceGameSession extends GameSession {
 	volatile int currentDiceNum = -1;
 	volatile int currentDice = -1;
 	volatile boolean isWilds = false;
+	// how many rounds this game has go for?
+	private int playRound = 0 ;
+	
 	String callDiceUserId;	
 	String openDiceUserId;
 	volatile int openDiceMultiple = 1;	
 	volatile int openDiceType = DICE_OPEN_TYPE_NORMAL;
 
 	private int waitClaimTimeOutTimes;
+
 	
-	
-	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy, int ruleType) {
-		super(sessionId, name, password, createByUser, createBy, ruleType);
+	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy, int ruleType,int testEnable) {
+		super(sessionId, name, password, createByUser, createBy, ruleType, testEnable);
 		waitClaimTimeOutTimes = 0;
 		// init state
 		this.currentState = DiceGameStateMachineBuilder.INIT_STATE;
 	}
+	
+	
 
 	public void resetGame(){
 		super.resetGame();
 	}
 	
-	@Override
-	public void restartGame(){	
+	@Override	public void restartGame(){	
 		clearTimer();
 		userDices.clear();
 		userResults.clear();
@@ -78,6 +84,7 @@ public class DiceGameSession extends GameSession {
 		callDiceUserId = null;
 		currentDice = -1;
 		currentDiceNum = -1;
+		playRound = 0;
 	}
 	
 	private void clearOpenDice(){
@@ -119,15 +126,18 @@ public class DiceGameSession extends GameSession {
 		int test = RandomUtils.nextInt(2);
 		for (int i = 0; i < DICE_COUNT; i++) {
 			int number = 0;
-			//For test
-			if ( test == 1) {
-				number = i+1;// produce snake dices
+			if ( testEnable == 1) {
+				//For test
+				if ( test == 1) {
+					number = i+1;// produce snake dices
+				}
+				else {
+					// produce net or wai dices
+					number = (RandomUtils.nextInt(2) == 1 ? 1 : 3); 
+				}
+			} else {
+				number = RandomUtil.random(DICE_6) + 1;
 			}
-			else {
-				// produce net or wai dices
-				number = (RandomUtils.nextInt(2) == 1 ? 1 : 3); 
-			}
-//			int number = RandomUtil.random(DICE_6) + 1;
 			distribution[number-1]++;
 			
 			PBDice dice = PBDice.newBuilder()
@@ -193,8 +203,9 @@ public class DiceGameSession extends GameSession {
 		this.currentDice = dice;
 		this.currentDiceNum = num;
 		this.isWilds = wilds;
+		this.playRound++;
 		
-		ServerLog.info(sessionId, "<callDice> userId=" +userId + " "+num+" X "+dice + " Wilds="+isWilds);
+		ServerLog.info(sessionId, "<callDice> userId=" +userId + " "+num+" X "+dice + ", Wilds="+isWilds+ ", playRound="+playRound);
 		return GameResultCode.SUCCESS;
 	}
 
@@ -354,10 +365,11 @@ public class DiceGameSession extends GameSession {
 		return pbDiceFinalCountList;
 	}
 
-	public void calculateCoins(int allFinalCount) {
+	public void calculateCoins(int allFinalCount, int ruleType) {
 		
 		int times = (allFinalCount > currentDiceNum ?  allFinalCount - currentDiceNum : currentDiceNum - allFinalCount) + 1;
-		int winCoins = WIN_COINS *  times * this.openDiceMultiple;
+		int ante = 50 + playRound * 50;
+		int winCoins = ( ruleType == DiceGameRuleType.RULE_SUPER_HIGH_VALUE? ante: WIN_COINS)* times * this.openDiceMultiple;
 		int lostCoins = -winCoins;
 
 		ServerLog.info(sessionId, "<diceCountSettlement> result = total "+allFinalCount + " X "+currentDice);

@@ -292,9 +292,11 @@ public class DiceGameAction{
 		@Override
 		public void execute(Object context) {
 			DiceGameSession session = (DiceGameSession)context;
-						
+			
+			int ruleType = session.getRuleType();
+			
 			// all users' dices settlement
-			List<PBDiceFinalCount> diceFinalCountList = session.diceCountSettlement(session.getRuleType());
+			List<PBDiceFinalCount> diceFinalCountList = session.diceCountSettlement(ruleType);
 			
 			if ( diceFinalCountList.size() >= 2 ) { // only meaningful for at least 2 users
 				// calculate how many coins that users gain
@@ -302,7 +304,7 @@ public class DiceGameAction{
 				for ( PBDiceFinalCount finalCount: diceFinalCountList ) {
 					allFinalCount += finalCount.getFinalDiceCount();
 				}
-				session.calculateCoins(allFinalCount);
+				session.calculateCoins(allFinalCount,ruleType );
 			}
 			
 			// save result into db
