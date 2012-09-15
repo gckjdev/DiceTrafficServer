@@ -48,8 +48,8 @@ public class DiceGameSession extends GameSession {
 	
 	int waitClaimTimeOutTimes = 0;
 	
-	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy) {
-		super(sessionId, name, password, createByUser, createBy);
+	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy, int ruleType) {
+		super(sessionId, name, password, createByUser, createBy, ruleType);
 		
 		// init state
 		this.currentState = DiceGameStateMachineBuilder.INIT_STATE;

@@ -12,8 +12,8 @@ import com.orange.network.game.protocol.constants.GameConstantsProtos.GameComman
 public class DiceGameSessionManager extends GameSessionManager {
 
 	@Override
-	public GameSession createSession(int sessionId, String name, String password, boolean createByUser, String createBy) {
-		return new DiceGameSession(sessionId, name, password, createByUser, createBy);
+	public GameSession createSession(int sessionId, String name, String password, boolean createByUser, String createBy, int ruleType) {
+		return new DiceGameSession(sessionId, name, password, createByUser, createBy, ruleType);
 	}
 
 	@Override
@@ -66,5 +66,9 @@ public class DiceGameSessionManager extends GameSessionManager {
 		return DiceGameConstant.DICE_GAME_ID;
 	}
 
+	@Override
+	public int getRuleType() {
+		return 0;
+	}
 	
 }
