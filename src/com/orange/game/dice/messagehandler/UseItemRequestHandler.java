@@ -34,7 +34,7 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 	public static ItemHandleInterface incTimeItemHandler = new IncTimeItemHandler();
 	public static ItemHandleInterface decTimeItemHandler = new DecTimeItemHandler();
 	public static ItemHandleInterface skipCallItemHandler = new SkipCallItemHandler();
-	public static ItemHandleInterface doubleKillItemHandler = new doubleKillItemHandler();
+//	public static ItemHandleInterface doubleKillItemHandler = new DoubleKillItemHandler();
 	
 	public UseItemRequestHandler(MessageEvent messageEvent) {
 		super(messageEvent);
@@ -132,7 +132,7 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 				break;
 
 			case DiceGameConstant.Dice_DOUBLE_KILL:
-				itemHandler = doubleKillItemHandler;
+//				itemHandler = doubleKillItemHandler;
 				break;
 
 			case DiceGameConstant.Dice_FLOWER:
