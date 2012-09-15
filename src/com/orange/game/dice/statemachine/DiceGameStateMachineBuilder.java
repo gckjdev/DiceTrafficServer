@@ -197,8 +197,19 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)
 			.addTransition(GameCommandType.LOCAL_CALL_DICE, GameStateKey.PLAYER_CALL_DICE)		
 			.addTransition(GameCommandType.LOCAL_OPEN_DICE, GameStateKey.CHECK_OPEN_DICE)		
-			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.AUTO_ROLL_DICE)				
+			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.AUTO_ROLL_DICE)
+			.addTransition(GameCommandType.LOCAL_USER_SKIP, GameStateKey.SKIP_USER)
 			.addAction(clearTimer);		
+		
+		sm.addState(new GameState(GameStateKey.SKIP_USER))
+			.addAction(selectPlayUser)
+			.setDecisionPoint(new DecisionPoint(null){
+				@Override
+				public Object decideNextState(Object context){
+						return GameStateKey.CHECK_NEXT_PLAYER_PLAY;						
+				}
+		});			
+		
 
 		sm.addState(new GameState(GameStateKey.PLAYER_CALL_DICE))
 			.addAction(selectPlayUser)

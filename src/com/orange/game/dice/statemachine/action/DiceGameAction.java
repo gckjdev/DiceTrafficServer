@@ -276,12 +276,14 @@ public class DiceGameAction{
 			// all users' dices settlement
 			List<PBDiceFinalCount> diceFinalCountList = session.diceCountSettlement(session.getRuleType());
 			
-			// calculate how many coins that users gain
-			int allFinalCount = 0 ; // all user total final count
-			for ( PBDiceFinalCount finalCount: diceFinalCountList ) {
+			if ( diceFinalCountList.size() < 2 ) {
+				// calculate how many coins that users gain
+				int allFinalCount = 0 ; // all user total final count
+				for ( PBDiceFinalCount finalCount: diceFinalCountList ) {
 					allFinalCount += finalCount.getFinalDiceCount();
+				}
+				session.calculateCoins(allFinalCount);
 			}
-			session.calculateCoins(allFinalCount);
 			
 			// save result into db
 			saveUserResultIntoDB(session);

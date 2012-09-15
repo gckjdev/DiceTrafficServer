@@ -2,6 +2,7 @@ package com.orange.game.dice.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,6 +22,7 @@ import com.orange.network.game.protocol.model.DiceProtos.PBDiceFinalCount;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceType;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserDice;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
+
 
 public class DiceGameSession extends GameSession {
 
@@ -268,8 +270,8 @@ public class DiceGameSession extends GameSession {
 		
 		Collection<PBUserDice> allUserDices = userDices.values();
 		if (allUserDices.size() < 2 || (callDiceUserId == null || openDiceUserId == null)){
-			ServerLog.info(sessionId, "<calculateCoins> but user dice count="+allUserDices.size()+" callDiceUserId="+callDiceUserId+", openDiceUserId"+openDiceUserId);
-			return null;
+			ServerLog.info(sessionId, "<diceCountSettlement> but user dice count="+allUserDices.size()+", callDiceUserId="+callDiceUserId+", openDiceUserId="+openDiceUserId);
+			return Collections.emptyList();
 		}
 		
 		List<PBDiceFinalCount> pbDiceFinalCountList = new ArrayList<DiceProtos.PBDiceFinalCount>();

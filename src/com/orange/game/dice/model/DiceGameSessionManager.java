@@ -30,7 +30,7 @@ public class DiceGameSessionManager extends GameSessionManager {
 	// RULE_SUPER_HIGH_VALUE = 2;
 	public int getRuleType() {
 		String ruleType = System.getProperty("ruletype");
-		if (!ruleType.isEmpty()){
+		if (ruleType != null && !ruleType.isEmpty()){
 			return Integer.parseInt(ruleType);
 		}
 		return DiceGameRuleType.RULE_NORMAL_VALUE; // default

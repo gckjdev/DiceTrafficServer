@@ -13,6 +13,7 @@ import com.orange.game.dice.messagehandler.item.IncTimeItemHandler;
 import com.orange.game.dice.messagehandler.item.ReverseCallItemHandler;
 import com.orange.game.dice.messagehandler.item.RollDiceItemHandler;
 import com.orange.game.dice.messagehandler.item.SkipCallItemHandler;
+import com.orange.game.dice.messagehandler.item.doubleKillItemHandler;
 import com.orange.game.dice.model.DiceGameConstant;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
@@ -33,10 +34,13 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 	public static ItemHandleInterface incTimeItemHandler = new IncTimeItemHandler();
 	public static ItemHandleInterface decTimeItemHandler = new DecTimeItemHandler();
 	public static ItemHandleInterface skipCallItemHandler = new SkipCallItemHandler();
+	public static ItemHandleInterface doubleKillItemHandler = new doubleKillItemHandler();
 	
 	public UseItemRequestHandler(MessageEvent messageEvent) {
 		super(messageEvent);
 	}
+
+
 
 
 
@@ -120,6 +124,7 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 				break;
 
 			case DiceGameConstant.Dice_CALL_HINT:
+				itemHandler = defaultItemHandler;
 				break;
 
 			case DiceGameConstant.DICE_SKIP_CALL:
@@ -127,12 +132,15 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 				break;
 
 			case DiceGameConstant.Dice_DOUBLE_KILL:
+				itemHandler = doubleKillItemHandler;
 				break;
 
 			case DiceGameConstant.Dice_FLOWER:
+				itemHandler = decTimeItemHandler;
 				break;
 
 			case DiceGameConstant.Dice_TOMATO:
+				itemHandler = decTimeItemHandler;
 				break;
 
 			default:
