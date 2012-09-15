@@ -367,7 +367,9 @@ public class DiceGameSession extends GameSession {
 
 	public void calculateCoins(int allFinalCount, int ruleType) {
 		
-		int times = (allFinalCount > currentDiceNum ?  allFinalCount - currentDiceNum : currentDiceNum - allFinalCount) + 1;
+		
+		int times = (ruleType == DiceGameRuleType.RULE_NORMAL_VALUE? 
+				1 :(allFinalCount > currentDiceNum ?  allFinalCount - currentDiceNum : currentDiceNum - allFinalCount) + 1);
 		int ante = 50 + playRound * 50;
 		int winCoins = ( ruleType == DiceGameRuleType.RULE_SUPER_HIGH_VALUE? ante: WIN_COINS)* times * this.openDiceMultiple;
 		int lostCoins = -winCoins;
