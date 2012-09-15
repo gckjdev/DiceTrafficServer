@@ -99,6 +99,7 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 	private ItemHandleInterface getItemHandler(int itemId) {
 		ItemHandleInterface itemHandler = null;
 		switch (itemId){
+<<<<<<< HEAD
 			case DiceGameConstant.DICE_ITEM_ROLL_DICE_AGAIN:
 				itemHandler = rollDiceItemHandler;
 				break;
@@ -146,6 +147,19 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 			default:
 				itemHandler = defaultItemHandler;
 				break;
+=======
+		case DiceGameConstant.DICE_ITEM_ROLL_DICE_AGAIN:
+			itemHandler = rollDiceItemHandler;				
+			break;
+			
+		case DiceGameConstant.DICE_ITEM_DOUBLE_COIN:
+			itemHandler = doubleCoinItemHandler;
+			break;
+			
+		default:		
+			itemHandler = defaultItemHandler;
+			break;
+>>>>>>> b9ac52ad1f084f716cc35a38a74e6669db3574d1
 		}
 		
 		return itemHandler;
