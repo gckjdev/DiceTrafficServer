@@ -183,7 +183,6 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addEmptyTransition(GameCommandType.LOCAL_OTHER_USER_QUIT)
 			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)
 			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.AUTO_CALL_OR_OPEN_DICE)
-			.addAction(clearWaitClaimTimeOutTimes)
 			.addAction(clearTimer);
 		
 		sm.addState(new GameState(GameStateKey.WAIT_NEXT_PLAYER_PLAY))
@@ -256,7 +255,6 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 
 		
 		sm.addState(new GameState(GameStateKey.CHECK_OPEN_DICE))
-			.addAction(clearWaitClaimTimeOutTimes)		
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){

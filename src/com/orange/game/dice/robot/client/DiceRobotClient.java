@@ -159,7 +159,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 			
 		case OPEN_DICE_REQUEST:
 			// Only the callUser who challenged by others will randomly fire expression sendings
-			if ( callUserId.equals(userId) && RandomUtils.nextInt(2) == 1 ) {
+			if ( callUserId != null && callUserId.equals(userId) && RandomUtils.nextInt(2) == 1 ) {
 				if ( RandomUtils.nextInt(2) == 1 ) {
 					String[] tmp = {null, null};
 					tmp = chatContent.getExpression(DiceRobotChatContent.Expression.WORRY);
@@ -176,7 +176,10 @@ public class DiceRobotClient extends AbstractRobotClient {
 					sendChat(expression);
 				}
 			}
-			scheduleSendChat(chatFuture , 1);
+			else{
+				// send random chat
+				scheduleSendChat(chatFuture , 1);
+			}
 			openUserId = message.getUserId();
 			ServerLog.info(sessionId, "Robot "+nickName+" receive OPEN_DICE_REQUEST");
 			
