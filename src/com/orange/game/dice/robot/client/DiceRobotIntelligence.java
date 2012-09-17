@@ -122,7 +122,7 @@ public class DiceRobotIntelligence {
 		
 		/* Introspection of robot's dices, set by introspectRobotDices method.
 		 * index 0: any dice of 4 or 5 instances ? 1 for yes, 0 for no.
-		 * index 1: which dice has 4/5 instances ? Only set if index 1 is 1.
+		 * index 1: which dice has 4/5 instances ? Only set if index 0 is 1.
 		 * index 2: any dice of 3 instances ? 1 for yes, 0 for no.
 		 * index 3: which dice has 3 instances ? Only set if index 3 is 1.
 		 * index 4: any dice of 2 instances ? 1 for yes, 0 for no.
@@ -235,7 +235,7 @@ public class DiceRobotIntelligence {
 			
 			int notWild = (isWild == false? 1 : 0);
 			// How many "dice" robot have.
-			int numOfDice = distribution[dice-1] + distribution[DICE_VALUE_ONE-1] * notWild;
+			int numOfDice = distribution[dice-1] + (dice != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] * notWild : 0);
 			int difference = num - numOfDice;
 			
 			Integer diceInteger = new Integer(dice);
@@ -356,7 +356,7 @@ public class DiceRobotIntelligence {
 		
 			int notWild = (isWild == false? 1 : 0);
 			// How many "dice" robot have.
-			int numOfDice = distribution[dice-1] + distribution[DICE_VALUE_ONE-1] * notWild;
+			int numOfDice = distribution[dice-1] + ( dice != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] * notWild : 0);
 			int difference = num - numOfDice;
 
 			

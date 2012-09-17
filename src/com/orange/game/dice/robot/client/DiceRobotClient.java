@@ -138,6 +138,10 @@ public class DiceRobotClient extends AbstractRobotClient {
 		case CALL_DICE_REQUEST:
 			callUserId = message.getUserId();
 			callDice = message.getCallDiceRequest().getDice();
+			if ( callDice < 1 || callDice > 6) {
+				ServerLog.info(sessionId, "Error: <CALL_DICE_REQUEST>: dice face value is illegal:"+callDice);
+				callDice = 1;
+			}
 			callDiceNum = message.getCallDiceRequest().getNum();
 			if (message.getCallDiceRequest().hasWilds()){
 				callDiceIsWild = message.getCallDiceRequest().getWilds();
@@ -150,10 +154,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 ////			ServerLog.info(sessionId, "Robot " + nickName + " receive CALL_DICE_REQUEST");
 ////			ServerLog.info(sessionId, "The playerCount is " + playerCount + ", seatId is " + callUserSeatId 
 //						+". Robot " + nickName + "'s seatId is " + userList.get(userId).getSeatId());
-			if (diceRobotIntelligence.canOpenDice(playerCount,callUserId, callDiceNum, callDice, callDiceIsWild)) {
-					canOpenDice = true;
-			}
-			
+			canOpenDice = diceRobotIntelligence.canOpenDice(playerCount,callUserId, callDiceNum, callDice, callDiceIsWild);
 			break;
 			
 		case OPEN_DICE_REQUEST:
