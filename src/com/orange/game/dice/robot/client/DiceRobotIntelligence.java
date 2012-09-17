@@ -617,33 +617,35 @@ public class DiceRobotIntelligence {
 		else {
 			// Does robot have more than 3 ONEs?
 			if ( distribution[DICE_VALUE_ONE-1] >= 3 ){
-				if ( RandomUtils.nextInt(2) == 1 ) {
-					recordCall(distribution[DICE_VALUE_ONE-1], DICE_VALUE_ONE, 1, playerCount);
+				if ( RandomUtils.nextInt(2) == 1 && playerCount-distribution[DICE_VALUE_ONE] < UNSAFE_DIFFERENCE[playerCount-2]) {
+					recordCall(playerCount, DICE_VALUE_ONE, 1, playerCount);
 					safe = false;
 				} else {
-					recordCall(distribution[DICE_VALUE_ONE-1], RandomUtils.nextInt(5)+2, 0, playerCount);
+					recordCall(playerCount+tmp, RandomUtils.nextInt(5)+2, 0, playerCount);
 					safe = false;
 				} 
 				logger.info("<intialCall> Initially,smart, has more than 3 ONEs,just call ONE or do a random call , call "
 						+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE] );
 			}
 			else if ( introspection[NUM_MORE_THAN_FOUR] == 1 ) {
-				recordCall(distribution[introspection[DICE_MORE_THAN_FOUR]-1], introspection[DICE_MORE_THAN_FOUR], 0, playerCount);
+				recordCall(playerCount+tmp, introspection[DICE_MORE_THAN_FOUR], 0, playerCount);
 				logger.info("<intialCall> Initial call,has more than 4 " + introspection[DICE_MORE_THAN_FOUR]+
 						", so call "+ whatToCall[IDX_NUM_OF_DICE] + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 			}
 			else if ( introspection[NUM_OF_THREE] == 1) {
-				recordCall(3, introspection[DICE_OF_THREE], RandomUtils.nextInt(2), playerCount);
+				recordCall(playerCount+tmp, introspection[DICE_OF_THREE], RandomUtils.nextInt(2), playerCount);
 				logger.info("<intialCall> Initial call,has 3 " + introspection[DICE_OF_THREE]+
 						", so call "+ whatToCall[IDX_NUM_OF_DICE] + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 			}
 			else if ( introspection[NUM_OF_TWO] == 1 ){
 				if ( introspection[ANOTHER_DICE_OF_TWO] != 0 ) {
-					recordCall(2 + (introspection[ANOTHER_DICE_OF_TWO] != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] : 0), 
+					int quantity = 2 + (introspection[ANOTHER_DICE_OF_TWO] != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] : 0); 
+					recordCall( (quantity >= playerCount ? quantity : playerCount+1), 
 							introspection[ANOTHER_DICE_OF_TWO], 0, playerCount);
 				}
 				else {
-					recordCall(2 + (introspection[DICE_OF_TWO] != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] :0),
+					int quantity = 2 + (introspection[DICE_OF_TWO] != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] : 0);
+					recordCall((quantity >= playerCount ? quantity : playerCount+1) ,
 							introspection[DICE_OF_TWO], 0, playerCount);
 				}
 				logger.info("<intialCall> Initial call,has dice of 2 instances, so call "

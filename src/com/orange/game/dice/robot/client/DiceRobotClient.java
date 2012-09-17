@@ -157,7 +157,8 @@ public class DiceRobotClient extends AbstractRobotClient {
 			break;
 			
 		case OPEN_DICE_REQUEST:
-			if ( RandomUtils.nextInt(2) == 1 ) {
+			// Only the callUser who challenged by others will randomly fire expression sendings
+			if ( callUserId.equals(userId) && RandomUtils.nextInt(2) == 1 ) {
 				if ( RandomUtils.nextInt(2) == 1 ) {
 					String[] tmp = {null, null};
 					tmp = chatContent.getExpression(DiceRobotChatContent.Expression.WORRY);
