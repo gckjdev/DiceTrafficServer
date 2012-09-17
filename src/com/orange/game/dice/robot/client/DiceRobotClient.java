@@ -108,7 +108,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 				else {
 					// Make a decision what to call.
 					playerCount = userList.size();
-					diceRobotIntelligence.decideWhatToCall(playerCount, callDiceNum, callDice, callDiceIsWild, robotRollResult);
+					diceRobotIntelligence.decideWhatToCall(nickName, playerCount, callDiceNum, callDice, callDiceIsWild);
 					// Check the decision.
 					if (diceRobotIntelligence.giveUpCall()) {
 						ServerLog.info(sessionId, "[NEXT_PLAYER_START_NOTIFICATION_REQUEST] robot gives up call ,just open.");
@@ -154,7 +154,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 ////			ServerLog.info(sessionId, "Robot " + nickName + " receive CALL_DICE_REQUEST");
 ////			ServerLog.info(sessionId, "The playerCount is " + playerCount + ", seatId is " + callUserSeatId 
 //						+". Robot " + nickName + "'s seatId is " + userList.get(userId).getSeatId());
-			canOpenDice = diceRobotIntelligence.canOpenDice(playerCount,callUserId, callDiceNum, callDice, callDiceIsWild);
+			canOpenDice = diceRobotIntelligence.canOpenDice(nickName, playerCount,callUserId, callDiceNum, callDice, callDiceIsWild);
 			break;
 			
 		case OPEN_DICE_REQUEST:
