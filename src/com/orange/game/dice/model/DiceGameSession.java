@@ -140,7 +140,8 @@ public class DiceGameSession extends GameSession {
 				}
 				else {
 					// produce net or wai dices
-					number = (RandomUtils.nextInt(2) == 1 ? 1 : 3); 
+					int dice = RandomUtil.random(DICE_6);
+					number = (RandomUtils.nextInt(2) == 1 ? 1 : dice); 
 				}
 			} else {
 				number = RandomUtil.random(DICE_6) + 1;
@@ -254,8 +255,9 @@ public class DiceGameSession extends GameSession {
 			return true;
 		
 		int playUserCount = getPlayUserCount();		
-
-		int maxCallCount = playUserCount * 5;
+		int ruleType = getRuleType();
+		
+		int maxCallCount = playUserCount * (ruleType == DiceGameRuleType.RULE_NORMAL_VALUE ? 5 :7);
 		if (currentDiceNum > maxCallCount){
 			return false;
 		}
