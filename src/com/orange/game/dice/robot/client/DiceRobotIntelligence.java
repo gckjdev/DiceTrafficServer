@@ -349,8 +349,8 @@ public class DiceRobotIntelligence {
 				return ;
 			}
 			
-			logger.info("Now the IQ is " + intelligence +", playerCount is " + playerCount+", benchmark is " + benchmark[playerCount-2]);
-			logger.info("Current round is Round " + (round +1) );
+			logger.info("Current round is Round " + (round +1)+"Robot["+nickName+"'s IQ is " + intelligence 
+					+", playerCount is " + playerCount+", benchmark is " + benchmark[playerCount-2]);
 		
 			int notWild = (isWild == false? 1 : 0);
 			// How many "dice" robot have.
