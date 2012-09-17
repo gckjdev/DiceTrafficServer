@@ -34,25 +34,40 @@ import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
 
 public class DiceGameAction{
 
+	public static class KickWaitTimeOutUsers implements Action {
+
+		@Override
+		public void execute(Object context) {
+			DiceGameSession session = (DiceGameSession)context;
+			
+			List<String> timeOutUsersList = session.getWaitTimeOutUsers();
+			ServerLog.info(session.getSessionId(), "<KickWaitTimeOutUsers> users="+timeOutUsersList.toString());
+			for (String userId : timeOutUsersList){
+				SessionUserService.getInstance().removeUser(session, userId);
+				session.clearWaitClaimTimeOutTimes(userId);
+			}
+		}
+
+	}
 	public static class ClearWaitClaimTimeOutTimes implements Action {
 
 		@Override
 		public void execute(Object context) {
 			DiceGameSession session = (DiceGameSession)context;
-//			session.clearWaitClaimTimeOutTimes();
+			session.clearWaitClaimTimeOutTimes(session.getCurrentPlayUserId());
 		}
 
 	}
-	public static class IncWaitClaimTimeOutTimes implements Action {
-
-		@Override
-		public void execute(Object context) {
-			DiceGameSession session = (DiceGameSession)context;			
-//			session.incWaitClaimTimeOutTimes();
-			
-			// TODO not clean yet
-		}
-	}
+//	public static class IncWaitClaimTimeOutTimes implements Action {
+//
+//		@Override
+//		public void execute(Object context) {
+//			DiceGameSession session = (DiceGameSession)context;			
+////			session.incWaitClaimTimeOutTimes();
+//			
+//			// TODO not clean yet
+//		}
+//	}
 
 	public enum DiceTimerType{
 		START, ROLL_DICE, WAIT_CLAIM, SHOW_RESULT, TAKEN_OVER_USER_WAIT
@@ -198,6 +213,8 @@ public class DiceGameAction{
 				ServerLog.warn(sessionId, "<autoCallOrOpen> but callDiceUserId is already current user");
 				return;			
 			}
+			
+			session.incWaitClaimTimeOutTimes(currentPlayUserId);
 			
 			GameResultCode resultCode = GameResultCode.SUCCESS;
 			if (session.canContinueCall()){			

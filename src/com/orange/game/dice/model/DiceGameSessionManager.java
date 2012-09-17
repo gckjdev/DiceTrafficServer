@@ -28,7 +28,7 @@ public class DiceGameSessionManager extends GameSessionManager {
 			ServerLog.info(sessionId, "user "+userId+" quit, but user not found in session");
 			return;
 		}
-		
+				
 		boolean removeUser = (user.isPlaying() == false || sessionUserCount == 1);
 		
 		if (!removeUser){
@@ -38,15 +38,12 @@ public class DiceGameSessionManager extends GameSessionManager {
 		GameCommandType command = null;		
 		if (session.isCurrentPlayUser(userId)){
 			command = GameCommandType.LOCAL_PLAY_USER_QUIT;			
-//			session.setCompleteReason(GameCompleteReason.REASON_DRAW_USER_QUIT);			
 		}
 		else if (sessionUserCount <= 2){
 			command = GameCommandType.LOCAL_ALL_OTHER_USER_QUIT;			
-//			session.setCompleteReason(GameCompleteReason.REASON_ONLY_ONE_USER);			
 		}
 		else {
 			command = GameCommandType.LOCAL_OTHER_USER_QUIT;						
-//			updateCurrentPlayer(session);			
 		}			
 		
 		// broadcast user exit message to all other users

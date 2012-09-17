@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.math.RandomUtils;
+import org.apache.lucene.analysis.CharArrayMap.EntrySet;
 
 import com.orange.common.log.ServerLog;
 import com.orange.common.utils.RandomUtil;
@@ -40,9 +43,12 @@ public class DiceGameSession extends GameSession {
 	public static final int DICE_OPEN_TYPE_CUT = 2;
 
 	private static final int WIN_COINS = 100;
+
+	private static final int MAX_AUTO_TIME_OUT = 15;
 	
 	ConcurrentHashMap<String, PBUserDice> userDices = new ConcurrentHashMap<String, PBUserDice>();
-	ConcurrentHashMap<String, PBUserResult> userResults = new ConcurrentHashMap<String, PBUserResult>(); 
+	ConcurrentHashMap<String, PBUserResult> userResults = new ConcurrentHashMap<String, PBUserResult>();
+	ConcurrentHashMap<String, Integer> userAutoCallTimesMap = new ConcurrentHashMap<String, Integer>();
 	
 	volatile int currentDiceNum = -1;
 	volatile int currentDice = -1;
@@ -71,7 +77,8 @@ public class DiceGameSession extends GameSession {
 		super.resetGame();
 	}
 	
-	@Override	public void restartGame(){	
+	@Override	
+	public void restartGame(){	
 		clearTimer();
 		userDices.clear();
 		userResults.clear();
@@ -187,6 +194,11 @@ public class DiceGameSession extends GameSession {
 		}
 		
 		String currentPlayUserId = getCurrentPlayUserId();		
+		if (currentPlayUserId == null){
+			ServerLog.warn(sessionId, "<callDice> but current play user is null?");
+			return GameResultCode.ERROR_CURRENT_PLAY_USER_NULL;
+		}
+		
 		synchronized (currentPlayUserId) {
 			if (!userId.equals(currentPlayUserId)){
 				ServerLog.warn(sessionId, "<callDice> but userId "+userId + " is not currentUserId "+currentPlayUserId);
@@ -455,15 +467,44 @@ public class DiceGameSession extends GameSession {
 		return userDice;
 	}
 
-	public void incWaitClaimTimeOutTimes() {
-		waitClaimTimeOutTimes ++;
+	public void incWaitClaimTimeOutTimes(String userId) {
+		if (userId == null)
+			return;
+		
+		Integer times = userAutoCallTimesMap.get(userId);
+		if (times == null){
+			times = Integer.valueOf(1);
+		}
+		else{
+			times = Integer.valueOf(times.intValue()+1);
+		}
+		userAutoCallTimesMap.put(userId, times);
+		ServerLog.info(sessionId, "Update userId "+userId+" timeout times to "+times.intValue());
 	}
 
-	public void clearWaitClaimTimeOutTimes() {
-		waitClaimTimeOutTimes = 0;
+	public void clearWaitClaimTimeOutTimes(String userId) {
+		if (userId == null)
+			return;
+
+		userAutoCallTimesMap.remove(userId);
+		ServerLog.info(sessionId, "Clear userId "+userId+" timeout times");
 	}
 
+	public void clearAllUserTimeOutTimes(){
+		userAutoCallTimesMap.clear();
+	}
 
+	public List<String> getWaitTimeOutUsers() {
+		Set<Entry<String, Integer>> set =  userAutoCallTimesMap.entrySet();
+		List<String> retList = new ArrayList<String>();		
+		for (Entry<String, Integer> obj : set){
+			String userId = obj.getKey();
+			if (obj.getValue().intValue() > MAX_AUTO_TIME_OUT && userList.getUser(userId) != null){
+				retList.add(userId);
+			}
+		}
+		return retList;
+	}
 
 	
 }

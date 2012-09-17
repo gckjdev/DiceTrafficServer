@@ -64,8 +64,8 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action setShowResultTimer = new DiceGameAction.SetShowResultTimer();		
 		Action clearTimer = new CommonGameAction.ClearTimer();
 		Action clearRobotTimer = new DiceGameAction.ClearRobotTimer();
-		Action detectWaitClaimTimeOutTimes = new DiceGameAction.IncWaitClaimTimeOutTimes();
 		Action clearWaitClaimTimeOutTimes = new DiceGameAction.ClearWaitClaimTimeOutTimes();
+		Action kickWaitTimeOutUsers = new DiceGameAction.KickWaitTimeOutUsers();
 		
 		Action restartGame = new DiceGameAction.RestartGame();
 		Action selectLoserAsCurrentPlayerUser = new DiceGameAction.SelectLoserAsCurrentPlayerUser();
@@ -182,7 +182,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addEmptyTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT)
 			.addEmptyTransition(GameCommandType.LOCAL_OTHER_USER_QUIT)
 			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)
-			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.AUTO_ROLL_DICE)
+			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.AUTO_CALL_OR_OPEN_DICE)
 			.addAction(clearWaitClaimTimeOutTimes)
 			.addAction(clearTimer);
 		
@@ -195,11 +195,12 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)
 			.addTransition(GameCommandType.LOCAL_CALL_DICE, GameStateKey.PLAYER_CALL_DICE)		
 			.addTransition(GameCommandType.LOCAL_OPEN_DICE, GameStateKey.CHECK_OPEN_DICE)		
-			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.AUTO_ROLL_DICE)
+			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.AUTO_CALL_OR_OPEN_DICE)
 			.addTransition(GameCommandType.LOCAL_USER_SKIP, GameStateKey.SKIP_USER)
 			.addAction(clearTimer);		
 		
 		sm.addState(new GameState(GameStateKey.SKIP_USER))
+			.addAction(clearWaitClaimTimeOutTimes)				
 			.addAction(selectPlayUser)
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
@@ -225,8 +226,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 				}
 			});			
 		
-		sm.addState(new GameState(GameStateKey.AUTO_ROLL_DICE))
-			.addAction(detectWaitClaimTimeOutTimes)		
+		sm.addState(new GameState(GameStateKey.AUTO_CALL_OR_OPEN_DICE))
 			.addAction(autoCallOrOpen)
 			.addAction(selectPlayUser)
 			.setDecisionPoint(new DecisionPoint(null){
@@ -273,6 +273,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 				}
 			});
 		
+		
 		sm.addState(new GameState(GameStateKey.SHOW_RESULT))
 			.addAction(setShowResultTimer)
 			.addEmptyTransition(GameCommandType.LOCAL_PLAY_USER_QUIT)
@@ -282,6 +283,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.CHECK_USER_COUNT)
 			.addAction(kickTakenOverUser)
 			.addAction(clearAllUserPlaying)
+			.addAction(kickWaitTimeOutUsers)
 			.addAction(selectLoserAsCurrentPlayerUser)
 			.addAction(restartGame);
 		
