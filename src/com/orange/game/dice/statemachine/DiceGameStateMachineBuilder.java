@@ -38,6 +38,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 	public static final int ROLL_DICE_TIMEOUT = 3;
 	public static final int SHOW_RESULT_TIMEOUT = 10;
 	public static final int TAKEN_OVER_USER_WAIT_TIMEOUT = 1;
+	public static final int WAIT_USER_BET_TIMEOUT = 5;
     	
     @Override
 	public StateMachine buildStateMachine() {
@@ -62,6 +63,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action setWaitClaimTimer = new CommonGameAction.CommonTimer(WAIT_CLAIM_TIMEOUT, DiceGameAction.DiceTimerType.WAIT_CLAIM);
 		Action setTakenOverUserWaitTimer = new CommonGameAction.CommonTimer(TAKEN_OVER_USER_WAIT_TIMEOUT, DiceGameAction.DiceTimerType.TAKEN_OVER_USER_WAIT);
 		Action setShowResultTimer = new DiceGameAction.SetShowResultTimer();		
+		Action setWaitBetTimer = new CommonGameAction.CommonTimer(WAIT_USER_BET_TIMEOUT, DiceGameAction.DiceTimerType.WAIT_USER_BET);
 		Action clearTimer = new CommonGameAction.ClearTimer();
 		Action clearRobotTimer = new DiceGameAction.ClearRobotTimer();
 		Action clearWaitClaimTimeOutTimes = new DiceGameAction.ClearWaitClaimTimeOutTimes();
@@ -233,10 +235,12 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 				public Object decideNextState(Object context){
 					DiceGameSession session = (DiceGameSession)context;
 					if (session.isAllUserTakenOver()){
-						return GameStateKey.COMPLETE_GAME;
+//						return GameStateKey.COMPLETE_GAME;
+						return GameStateKey.WAIT_BET;
 					}
 					else if (session.isOpen()){
-						return GameStateKey.COMPLETE_GAME;
+//						return GameStateKey.COMPLETE_GAME;
+						return GameStateKey.WAIT_BET;
 					}
 					else{
 						return GameStateKey.CHECK_NEXT_PLAYER_PLAY;	// goto check user count state directly
@@ -249,7 +253,8 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
-					return GameStateKey.COMPLETE_GAME;	
+//					return GameStateKey.COMPLETE_GAME;	
+					return GameStateKey.WAIT_BET;
 				}
 			});			
 
@@ -258,9 +263,20 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
-					return GameStateKey.COMPLETE_GAME;	
+//					return GameStateKey.COMPLETE_GAME;	
+					return GameStateKey.WAIT_BET;
 				}
 			});			
+		
+		sm.addState(new GameState(GameStateKey.WAIT_BET))
+			.addAction(setWaitBetTimer)
+			.addEmptyTransition(GameCommandType.LOCAL_PLAY_USER_QUIT)
+			.addEmptyTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT)
+			.addEmptyTransition(GameCommandType.LOCAL_OTHER_USER_QUIT)
+			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)			
+			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.COMPLETE_GAME)
+			.addAction(clearTimer);
+		
 		
 		sm.addState(new GameState(GameStateKey.COMPLETE_GAME))
 			.addAction(completeGame)

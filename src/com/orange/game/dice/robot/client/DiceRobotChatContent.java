@@ -44,11 +44,11 @@ public class DiceRobotChatContent {
 	}
 	
 	String[] expressionId = {
-			"@smile@",
-			"@proud@",
-			"@embarrass@",
-			"@wry@",
-			"@anger@",
+			"[smile]",
+			"[proud]",
+			"[embarrass]",
+			"[wry]",
+			"[anger]",
 	};
 	
 	String[] contentVoiceId = {

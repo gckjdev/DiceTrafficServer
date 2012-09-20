@@ -25,7 +25,7 @@ public class IncTimeItemHandler implements ItemHandleInterface {
 			gameResultCode = GameResultCode.ERROR_EXCESS_TIME_LIMIT;
 		}
 		
-		int newInterval = session.getRemainTime() + extendTime;
+		int newInterval = session.getRemainTime(DiceGameAction.DiceTimerType.WAIT_CLAIM) + extendTime;
 		ServerLog.info(session.getSessionId(), userId + " uses [IncTime] item, new interval is " + newInterval + " seconds");
 		GameEventExecutor.getInstance().startTimer(session, newInterval, DiceGameAction.DiceTimerType.WAIT_CLAIM);
 		

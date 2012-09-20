@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +22,8 @@ import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.network.game.protocol.constants.GameConstantsProtos;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRuleType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
+import com.orange.network.game.protocol.message.GameMessageProtos;
+import com.orange.network.game.protocol.message.GameMessageProtos.BetDiceRequest;
 import com.orange.network.game.protocol.model.DiceProtos;
 import com.orange.network.game.protocol.model.DiceProtos.PBDice;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceFinalCount;
@@ -49,6 +52,7 @@ public class DiceGameSession extends GameSession {
 	ConcurrentHashMap<String, PBUserDice> userDices = new ConcurrentHashMap<String, PBUserDice>();
 	ConcurrentHashMap<String, PBUserResult> userResults = new ConcurrentHashMap<String, PBUserResult>();
 	ConcurrentHashMap<String, Integer> userAutoCallTimesMap = new ConcurrentHashMap<String, Integer>();
+	ConcurrentHashMap<String, GameMessageProtos.BetDiceRequest> userBetMap = new ConcurrentHashMap<String, GameMessageProtos.BetDiceRequest>();
 	
 	volatile int currentDiceNum = -1;
 	volatile int currentDice = -1;
@@ -82,6 +86,7 @@ public class DiceGameSession extends GameSession {
 		clearTimer();
 		userDices.clear();
 		userResults.clear();
+		userBetMap.clear();
 		isWilds = false;
 		clearCallDice();				
 		clearOpenDice();
@@ -283,11 +288,11 @@ public class DiceGameSession extends GameSession {
 			return;
 		}
 		
-		PBUserResult result = PBUserResult.newBuilder().
-		setWin(isWon).
-		setUserId(userId).
-		setGainCoins(gainCoins).
-		build();
+		PBUserResult result = PBUserResult.newBuilder()
+				.setWin(isWon)
+				.setUserId(userId)
+				.setGainCoins(gainCoins)
+				.build();
 	
 		userResults.put(userId, result);		
 	}
@@ -314,7 +319,7 @@ public class DiceGameSession extends GameSession {
 	         }  
 	         
 			String userId = userDice.getUserId();
-			ServerLog.info(sessionId, "The distribution of dices of user[" + userId + "] is "+ distribution);
+//			ServerLog.info(sessionId, "The distribution of dices of user[" + userId + "] is "+ distribution.toString());
 			int finalDiceCount = 0;
 			PBDiceType diceType = null;
 			
@@ -392,15 +397,44 @@ public class DiceGameSession extends GameSession {
 		
 		// now check who wins			
 		if (allFinalCount >= currentDiceNum){
-			// call dice wins
+			// call-dice user wins
 			addUserResult(callDiceUserId, winCoins, true);
 			addUserResult(openDiceUserId, lostCoins, false);		
 		}
 		else{
-			// open dice wins
+			// open-dice user wins
 			addUserResult(openDiceUserId, winCoins, true);
 			addUserResult(callDiceUserId, lostCoins, false);
 		}
+		
+		// for the gamblers
+		for ( Map.Entry<String, BetDiceRequest> entry : userBetMap.entrySet()) {
+			String userId = entry.getKey();
+			BetDiceRequest request = entry.getValue();
+			int gainCoins = (int)(request.getOdds()*request.getAnte());
+			// open-dice user loses
+			if ( allFinalCount >= currentDice) {
+				// bet the open-dice user loses
+				if ( request.getOption() == 1) {
+					addUserResult(userId, gainCoins, true);
+				}
+				// bet the open-dice user wins
+				else {
+					addUserResult(userId, -request.getAnte(), false);
+				}
+			}
+			// open-dice user wins
+			else {
+				// bet the open-dice user wins
+				if ( request.getOption() == 0 ) {
+					addUserResult(userId, gainCoins, true);
+				} 
+				// bet the open-dice user loses
+				else {
+					addUserResult(userId, -request.getAnte(), false);
+				}
+			}
+		}// end for
 	}
 	
 	public Collection<PBUserResult> getUserResults(){
@@ -508,5 +542,12 @@ public class DiceGameSession extends GameSession {
 		return retList;
 	}
 
+	public void recordUserBet(String userId, BetDiceRequest betDiceRequest) {
+		if ( userBetMap.contains(userId) ) 
+			return;
+		else 
+			userBetMap.put(userId, betDiceRequest);
+		
+	}
 	
 }

@@ -3,6 +3,7 @@ package com.orange.game.dice.server;
 import org.jboss.netty.channel.MessageEvent;
 
 import com.orange.common.log.ServerLog;
+import com.orange.game.dice.messagehandler.BetRequestHandler;
 import com.orange.game.dice.messagehandler.CallDiceRequestHandler;
 import com.orange.game.dice.messagehandler.DiceJoinGameRequestHandler;
 import com.orange.game.dice.messagehandler.OpenDiceRequestHandler;
@@ -58,6 +59,9 @@ public class DiceGameServerHandler extends GameServerHandler {
 				
 			case USE_ITEM_REQUEST:
 				return new UseItemRequestHandler(messageEvent);
+				
+			case BET_DICE_REQUEST:
+				return new BetRequestHandler(messageEvent);
 		}
 		
 		return null;

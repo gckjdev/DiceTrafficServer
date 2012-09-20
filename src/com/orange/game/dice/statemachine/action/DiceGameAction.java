@@ -5,6 +5,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.antlr.misc.Interval;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.orange.common.log.ServerLog;
@@ -33,6 +37,7 @@ import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
 
 public class DiceGameAction{
+
 
 	public static class KickWaitTimeOutUsers implements Action {
 
@@ -70,7 +75,7 @@ public class DiceGameAction{
 //	}
 
 	public enum DiceTimerType{
-		START, ROLL_DICE, WAIT_CLAIM, SHOW_RESULT, TAKEN_OVER_USER_WAIT
+		START, ROLL_DICE, WAIT_CLAIM, SHOW_RESULT, TAKEN_OVER_USER_WAIT, WAIT_USER_BET,
 	};
 	
 	public static class SetShowResultTimer implements Action {
@@ -315,8 +320,8 @@ public class DiceGameAction{
 			// all users' dices settlement
 			List<PBDiceFinalCount> diceFinalCountList = session.diceCountSettlement(ruleType);
 			
+			// calculate how many coins that users gain
 			if ( diceFinalCountList.size() >= 2 ) { // only meaningful for at least 2 users
-				// calculate how many coins that users gain
 				int allFinalCount = 0 ; // all user total final count
 				for ( PBDiceFinalCount finalCount: diceFinalCountList ) {
 					allFinalCount += finalCount.getFinalDiceCount();
