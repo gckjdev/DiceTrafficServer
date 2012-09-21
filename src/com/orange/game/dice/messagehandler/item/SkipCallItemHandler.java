@@ -33,6 +33,10 @@ public class SkipCallItemHandler implements ItemHandleInterface {
 			return resultCode;
 		}
 		
+		// set the callUserId to self to pretend I have did the call.
+		// Or in DiceGameSession.call(), the check of callDiceUserId's
+		// eqaulity with userId will failed.
+		session.setCallDiceUserId(userId);
 		GameEventExecutor.getInstance().fireAndDispatchEvent(GameCommandType.LOCAL_USER_SKIP, sessionId, userId);
 		// the currentDice, currentDiceNum, isWilds remain the same, needn't change.
 		

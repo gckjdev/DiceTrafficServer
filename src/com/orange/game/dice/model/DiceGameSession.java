@@ -206,6 +206,7 @@ public class DiceGameSession extends GameSession {
 		}
 		
 		synchronized (currentPlayUserId) {
+			ServerLog.info(sessionId, "callDiceUserId="+callDiceUserId+",userId="+userId);
 			if (!userId.equals(currentPlayUserId)){
 				ServerLog.warn(sessionId, "<callDice> but userId "+userId + " is not currentUserId "+currentPlayUserId);
 				return GameResultCode.ERROR_USER_NOT_CURRENT_PLAY_USER;
@@ -214,8 +215,8 @@ public class DiceGameSession extends GameSession {
 				ServerLog.warn(sessionId, "<callDice> but userId "+userId + " already call dice");
 				return GameResultCode.ERROR_USER_ALREADY_CALL_DICE;				
 			}
-
-			this.callDiceUserId = currentPlayUserId;
+//			this.callDiceUserId = currentPlayUserId;
+			setCallDiceUserId(currentPlayUserId);
 		}
 		
 		this.currentDice = dice;
@@ -548,6 +549,12 @@ public class DiceGameSession extends GameSession {
 		else 
 			userBetMap.put(userId, betDiceRequest);
 		
+	}
+
+
+
+	public void setCallDiceUserId(String userId) {
+		callDiceUserId = userId;
 	}
 	
 }
