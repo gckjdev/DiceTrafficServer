@@ -234,12 +234,17 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 				@Override
 				public Object decideNextState(Object context){
 					DiceGameSession session = (DiceGameSession)context;
+					int playUserCount = session.getPlayUserCount();
 					if (session.isAllUserTakenOver()){
-//						return GameStateKey.COMPLETE_GAME;
+						if (playUserCount == 2 ) {
+							return GameStateKey.COMPLETE_GAME;
+						} 
 						return GameStateKey.WAIT_BET;
 					}
 					else if (session.isOpen()){
-//						return GameStateKey.COMPLETE_GAME;
+						if (playUserCount == 2) {
+							return GameStateKey.COMPLETE_GAME;
+						}
 						return GameStateKey.WAIT_BET;
 					}
 					else{
@@ -253,7 +258,11 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
-//					return GameStateKey.COMPLETE_GAME;	
+					DiceGameSession session =(DiceGameSession)context;
+					int playUserCount = session.getPlayUserCount();
+					if (playUserCount == 2) {
+						return GameStateKey.COMPLETE_GAME;	
+					}
 					return GameStateKey.WAIT_BET;
 				}
 			});			
@@ -263,7 +272,11 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.setDecisionPoint(new DecisionPoint(null){
 				@Override
 				public Object decideNextState(Object context){
-//					return GameStateKey.COMPLETE_GAME;	
+					DiceGameSession session =(DiceGameSession)context;
+					int playUserCount = session.getPlayUserCount();
+					if (playUserCount == 2) {
+						return GameStateKey.COMPLETE_GAME;	
+					}
 					return GameStateKey.WAIT_BET;
 				}
 			});			
