@@ -413,7 +413,7 @@ public class DiceGameSession extends GameSession {
 			BetDiceRequest request = entry.getValue();
 			int gainCoins = (int)(request.getOdds()*request.getAnte());
 			// open-dice user loses
-			if ( allFinalCount >= currentDice) {
+			if ( allFinalCount >= currentDiceNum) {
 				// bet the open-dice user loses
 				if ( request.getOption() == 1) {
 					addUserResult(userId, gainCoins, true);
