@@ -250,7 +250,7 @@ public class DiceGameSession extends GameSession {
 			openDiceType = DICE_OPEN_TYPE_NORMAL;
 		}
 		else {
-			openDiceType = DICE_OPEN_TYPE_NORMAL;
+			openDiceType = DICE_OPEN_TYPE_QUICK;
 		}
 		
 		return GameResultCode.SUCCESS;
