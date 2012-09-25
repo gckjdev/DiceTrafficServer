@@ -437,7 +437,7 @@ public class DiceRobotIntelligence {
 			else {
 				int quotient = (int)(IQ_THRESHOLD/intelligence);
 				int extra = (num > playerCount*5* 2/3)? 0 : 
-					(quotient ==0 ? 0 : (quotient > 3 ? 1+RandomUtils.nextInt(2) + (playerCount/3) : (3 + playerCount/4 )/(round+1)+ RandomUtils.nextInt(2))); 
+					(quotient ==0 ? 0 : (quotient > 3 ? 1+RandomUtils.nextInt(2) + (playerCount/3) : (1 + playerCount/4 )/(round+1)+ RandomUtils.nextInt(2))); 
 				// Does robot have more than 3 ONEs?
 				if ( distribution[DICE_VALUE_ONE-1] >= 3 ){
 						// YES, call ONE(auto wild)
