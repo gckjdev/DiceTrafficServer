@@ -347,6 +347,9 @@ public class DiceGameSession extends GameSession {
 			}
 			
 			// Decide what finalDiceCount is and what diceType is 
+			if ( currentDice < 1 || currentDice > 6 ) {
+				return Collections.emptyList();
+			}
 			finalDiceCount = distribution[currentDice-1] + (currentDice == DICE_1 ? 0 : distribution[DICE_1-1]*(isWilds ? 0 : 1));
 			if ( ruleType == DiceGameRuleType.RULE_NORMAL_VALUE ) {
 				diceType = PBDiceType.DICE_NORMAL;

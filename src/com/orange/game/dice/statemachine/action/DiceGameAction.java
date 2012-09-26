@@ -1,6 +1,7 @@
 package com.orange.game.dice.statemachine.action;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -321,7 +322,7 @@ public class DiceGameAction{
 			List<PBDiceFinalCount> diceFinalCountList = session.diceCountSettlement(ruleType);
 			
 			// calculate how many coins that users gain
-			if ( diceFinalCountList.size() >= 2 ) { // only meaningful for at least 2 users
+			if ( ! diceFinalCountList.equals(Collections.emptyList()) && diceFinalCountList.size() >= 2 ) { // only meaningful for at least 2 users
 				int allFinalCount = 0 ; // all user total final count
 				for ( PBDiceFinalCount finalCount: diceFinalCountList ) {
 					allFinalCount += finalCount.getFinalDiceCount();
