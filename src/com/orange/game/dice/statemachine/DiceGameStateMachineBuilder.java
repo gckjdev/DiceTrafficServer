@@ -288,6 +288,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addEmptyTransition(GameCommandType.LOCAL_OTHER_USER_QUIT)
 			.addEmptyTransition(GameCommandType.LOCAL_NEW_USER_JOIN)			
 			.addTransition(GameCommandType.LOCAL_TIME_OUT, GameStateKey.COMPLETE_GAME)
+			.addTransition(GameCommandType.LOCAL_ALL_USER_BET, GameStateKey.COMPLETE_GAME)
 			.addAction(clearTimer);
 		
 		

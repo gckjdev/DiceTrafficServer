@@ -9,6 +9,7 @@ import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.dice.statemachine.action.DiceGameAction;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
 import com.orange.game.traffic.model.dao.GameSession;
+import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
@@ -52,8 +53,7 @@ public class BetRequestHandler extends AbstractMessageHandler {
 			resultCode = GameResultCode.ERROR_EXCESS_TIME_LIMIT;
 		} else {
 			((DiceGameSession)session).recordUserBet(userId, betDiceRequest);
-			ServerLog.info(session.getSessionId(), "the odds is " + betDiceRequest.getOdds()
-					+ " , the ante is "+ betDiceRequest.getAnte());
+			((DiceGameSession)session).incUserBetCount();
 		}
 		
 		GameMessage response = GameMessage.newBuilder()
@@ -66,6 +66,11 @@ public class BetRequestHandler extends AbstractMessageHandler {
 		if (resultCode == GameResultCode.SUCCESS){
 			// broadcast call dice		
 			NotificationUtils.broadcastBetNotification(session, betDiceRequest,userId, false);
+		}
+		
+		// if all players have bet, we can move on to next state
+		if ( ((DiceGameSession)session).getUserBetCount() == ((DiceGameSession)session).getPlayUserCount() -2 ) {
+			GameEventExecutor.getInstance().fireAndDispatchEvent(GameCommandType.LOCAL_ALL_USER_BET, session.getSessionId(), userId);
 		}
 	}
 

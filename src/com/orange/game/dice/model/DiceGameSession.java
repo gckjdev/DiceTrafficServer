@@ -60,6 +60,10 @@ public class DiceGameSession extends GameSession {
 	// how many rounds this game has go for?
 	private int playRound = 0 ;
 	
+	// how many players have bet?
+	volatile int userBetCount = 0;
+	
+
 	String callDiceUserId;	
 	String openDiceUserId;
 	volatile int openDiceMultiple = 1;	
@@ -87,9 +91,10 @@ public class DiceGameSession extends GameSession {
 		userDices.clear();
 		userResults.clear();
 		userBetMap.clear();
-		isWilds = false;
 		clearCallDice();				
 		clearOpenDice();
+		isWilds = false;
+		userBetCount = 0;
 	}
 	
 	private void clearCallDice() {
@@ -556,5 +561,16 @@ public class DiceGameSession extends GameSession {
 	public void setCallDiceUserId(String userId) {
 		callDiceUserId = userId;
 	}
+	
+
+	public int getUserBetCount() {
+		return userBetCount;
+	}
+
+	synchronized public void incUserBetCount() {
+		userBetCount++;
+	}
+
+
 	
 }
