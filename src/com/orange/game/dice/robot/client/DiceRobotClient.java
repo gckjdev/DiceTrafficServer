@@ -160,24 +160,6 @@ public class DiceRobotClient extends AbstractRobotClient {
 		case OPEN_DICE_REQUEST:
 			// Only the callUser who challenged by others will randomly fire expression sendings
 			if ( callUserId != null && callUserId.equals(userId) && RandomUtils.nextInt(2) == 1 ) {
-				if ( RandomUtils.nextInt(2) == 1 ) {
-					String[] tmp = {null, null};
-					tmp = chatContent.getExpression(DiceRobotChatContent.Expression.WORRY);
-					String[] expression = {null, null, Integer.toString(EXPRESSION)};
-					expression[0] = tmp[0];
-					expression[1] = tmp[1];
-					sendChat(expression);
-				} else {
-					String[] tmp = {null, null};
-					tmp = chatContent.getExpression(DiceRobotChatContent.Expression.ANGER);
-					String[] expression = {null, null, Integer.toString(EXPRESSION)};
-					expression[0] = tmp[0];
-					expression[1] = tmp[1];
-					sendChat(expression);
-				}
-			}
-			else{
-				// send random chat
 				scheduleSendChat(chatFuture , 1);
 			}
 			openUserId = message.getUserId();
@@ -308,31 +290,19 @@ public class DiceRobotClient extends AbstractRobotClient {
 			chatFuture.cancel(false);
 		}
 		
-//		// index 0: contentType
-//		// index 1: content( only valid for TEXT)
-//		// index 2: contentVoiceId or expressionId,depent on contentType
-//		final String[] content = diceRobotChatContent.prepareChatContent();
+		// index 0: contentType
+		// index 1: content( only valid for TEXT)
+		// index 2: contentVoiceId or expressionId,depent on contentType
 		
 		chatFuture = scheduleService.schedule(new Runnable() {			
 			@Override
 			public void run() {
-				if ( RandomUtils.nextInt(2) == 1 ) {
-					if ( RandomUtils.nextInt(2) == 1 ) {
-						String[] tmp = {null, null};
-						tmp = chatContent.getExpression(DiceRobotChatContent.Expression.WORRY);
-						String[] expression = {null, null, Integer.toString(EXPRESSION)};
-						expression[0] = tmp[0];
-						expression[1] = tmp[1];
-						sendChat(expression);
-					} else {
-						String[] tmp = {null, null};
-						tmp = chatContent.getExpression(DiceRobotChatContent.Expression.ANGER);
-						String[] expression = {null, null, Integer.toString(EXPRESSION)};
-						expression[0] = tmp[0];
-						expression[1] = tmp[1];
-						sendChat(expression);
-					}
-				}
+				String[] tmp = {null, null};
+				tmp = chatContent.getExpressionByMeaning("NEGATIVE");
+				String[] expression = {null, null, Integer.toString(EXPRESSION)};
+				expression[0] = tmp[0];
+				expression[1] = tmp[1];
+				sendChat(expression);
 			}
 		}, 
 		delay, TimeUnit.SECONDS);
@@ -354,6 +324,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 		pbDiceList = null;
 		
 		openDiceFuture = null;
+		chatFuture = null;
 		
 		this.robotWinThisGame = robotWinThisGame;
 		firstRound = false;

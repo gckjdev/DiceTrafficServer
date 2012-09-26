@@ -1,6 +1,8 @@
 
 package com.orange.game.dice.robot.client;
 
+import org.apache.commons.lang.math.RandomUtils;
+
 
 
 public class DiceRobotChatContent {
@@ -12,6 +14,9 @@ public class DiceRobotChatContent {
 	private final static int IDX_CONTENT = 0;
 	private final static int IDX_CONTENTID = 1;
 //	private final static int IDX_CONTNET_TYPE = 2;
+	
+	private final static int POSITIVE = 0;
+	private final static int NEGATIVE = 1;
 	
 
 	DiceRobotChatContent() {
@@ -36,19 +41,39 @@ public class DiceRobotChatContent {
 	}
 	
 	enum Expression {
+		// positive meaning
 		SMILE,
+		HAPPY,
 		PROUND,
+		LOVELY,
+		// negative meaning
+		CRY,
 		EMBARRASS,
-		WORRY,
 		ANGER,
+		RANDY,
+		SHOCK,
+		SHY,
+		SLEEP,
+		CRAZY,
+		WORRY,
 	}
 	
 	String[] expressionId = {
+			// positive meaning, keep order consitent with Expression plz!
 			"[smile]",
+			"@happy@",
 			"[proud]",
+			"@lovely@",
+			// negative meaning, keep order consitent with Expression plz!
+			"@cry@",
 			"[embarrass]",
-			"[wry]",
 			"[anger]",
+			"@randy@",
+			"@shock@",
+			"@shy@",
+			"@sleep@",
+			"@crazy@",
+			"[wry]",
 	};
 	
 	String[] contentVoiceId = {
@@ -90,21 +115,66 @@ public class DiceRobotChatContent {
 				result[IDX_CONTENTID] = "[smile]";
 				break;
 			case 1:
-				result[IDX_CONTENTID] =  "[proud]";
+				result[IDX_CONTENTID] =  "@happy@";
 				break;
 			case 2:
-				result[IDX_CONTENTID] = "[embarrass]";
+				result[IDX_CONTENTID] = "[proud]";
 				break;
 			case 3:
-				result[IDX_CONTENTID] = "[wry]";
+				result[IDX_CONTENTID] = "@lovely@";
 				break;
 			case 4:
+				result[IDX_CONTENTID] = "@cry@";
+				break;
+			case 5:
+				result[IDX_CONTENTID] = "[embarrass]";
+				break;
+			case 6:
 				result[IDX_CONTENTID] = "[anger]";
+				break;
+			case 7:
+				result[IDX_CONTENTID] = "@randy@";
+				break;
+			case 8:
+				result[IDX_CONTENTID] = "@shock@";
+				break;		
+			case 9:
+				result[IDX_CONTENTID] = "@shy@";
+				break;
+			case 10:
+				result[IDX_CONTENTID] = "@sleep@";
+				break;
+			case 11:
+				result[IDX_CONTENTID] = "@crazy@";
+				break;
+			case 12:
+				result[IDX_CONTENTID] = "[wry]";
 				break;
 		}
 		
 		return result;
 	};
+	
+	public String[] getExpressionByMeaning(String meaning) {
+		
+		String[] result = {null, null};
+		result[IDX_CONTENT] = "NULL";
+		int tmp = -1;
+		
+		if (meaning.equals("POSITIVE")) {
+			tmp = RandomUtils.nextInt(4); // reference to expression array! 
+		} 
+		else if (meaning.equals("NEGATIVE") ) {
+			tmp = RandomUtils.nextInt(9)+4;
+		}
+		else {
+			tmp = RandomUtils.nextInt(expressionId.length);
+		}
+		
+		result[IDX_CONTENTID] = expressionId[tmp];
+		
+		return result;
+	}
 	
 	public  String[] getContent(VoiceContent voice) {
 			

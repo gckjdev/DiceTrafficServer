@@ -487,7 +487,7 @@ public class DiceRobotIntelligence {
 							} else {
 								recordCall(num + (introspection[ANOTHER_DICE_OF_TWO]> dice ? 0 : 1)+extra,introspection[ANOTHER_DICE_OF_TWO], 0, playerCount);
 							}
-							logger.info("<DiceRobotIntelligence>Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart, has 2 X "+introspection[DICE_OF_TWO]+ " and 2 X 1, call "
+							logger.info("<DiceRobotIntelligence>(1) Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart, has 2 X "+introspection[DICE_OF_TWO]+ " and 2 X 1, call "
 									+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 							round++;
 							return;
@@ -506,26 +506,26 @@ public class DiceRobotIntelligence {
 						}
 						else {
 							giveUpCalling = true;
-							logger.info("<DiceRobotIntelligence>Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ 
+							logger.info("<DiceRobotIntelligence>(2) Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ 
 									"smart,has 2 instances of dice, but not safe to call, give up calling");
 							return;
 						}
-						logger.info("<DiceRobotIntelligence> Not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart, has 2 X "+introspection[ANOTHER_DICE_OF_TWO]+ ", call "
+						logger.info("<DiceRobotIntelligence>(3) Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart, has 2 X "+introspection[ANOTHER_DICE_OF_TWO]+ ", call "
 								+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 					} 
 					else {
 						if ( introspection[DICE_OF_TWO] == DICE_VALUE_ONE ) {
-							for ( int i = 1; i <= distribution.length; i++ ) {
-								if ( distribution[i-1] == 1 && probability[BASE[playerCount-2] + num+1-(introspection[DICE_OF_TWO]+1)] > benchmark[playerCount-2]) {
-									recordCall(num+1+extra, introspection[DICE_OF_TWO], 0, playerCount);
-									logger.info("<DiceRobotIntelligence>Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart,has 2 X 1, call "
+							for ( int i = distribution.length; i >= 1; i-- ) {
+								if ( distribution[i-1] != 0 && probability[BASE[playerCount-2] + num+1-(introspection[DICE_OF_TWO]+1)] > benchmark[playerCount-2]) {
+									recordCall(num+1+extra, distribution[i-1], 0, playerCount);
+									logger.info("<DiceRobotIntelligence>(4) Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart,has 2 X 1, call "
 											+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 									round++;
 									return;
 								}
 							}
 							recordCall(num+1+extra, dice, 0, playerCount);
-							logger.info("<DiceRobotIntelligence>Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart, has 2 X 1, call "
+							logger.info("<DiceRobotIntelligence>(5) Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart, has 2 X 1, call "
 									+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 						}
 						else if ( introspection[DICE_OF_TWO] > dice ) {
@@ -536,11 +536,11 @@ public class DiceRobotIntelligence {
 						}
 						else {
 							giveUpCalling = true;
-							logger.info("<DiceRobotIntelligence>Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ 
+							logger.info("<DiceRobotIntelligence>(6) Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ 
 									"smart,has 2 X "+introspection[DICE_OF_TWO]+ ", but not safe to call, give up calling");
 							return;
 						}
-						logger.info("<DiceRobotIntelligence>Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ 
+						logger.info("<DiceRobotIntelligence>(7) Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ 
 								"smart, has 2 X "+introspection[ANOTHER_DICE_OF_TWO]+ ", call "
 								+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 					}
@@ -585,7 +585,7 @@ public class DiceRobotIntelligence {
 //		}
 		if ( RandomUtils.nextInt(3) == 1 ) {
 			if ( safe == true ) {
-				setChatContent(EXPRESSION, chatContent.getExpression(DiceRobotChatContent.Expression.PROUND));
+				setChatContent(EXPRESSION, chatContent.getExpressionByMeaning("POSITIVE"));
 			} 
 			else if ( RandomUtils.nextInt(2) == 0 ) {
 				setChatContent(EXPRESSION, chatContent.getExpression(DiceRobotChatContent.Expression.SMILE));
