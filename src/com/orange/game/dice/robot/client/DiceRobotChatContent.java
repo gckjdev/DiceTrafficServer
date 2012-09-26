@@ -15,10 +15,6 @@ public class DiceRobotChatContent {
 	private final static int IDX_CONTENTID = 1;
 //	private final static int IDX_CONTNET_TYPE = 2;
 	
-	private final static int POSITIVE = 0;
-	private final static int NEGATIVE = 1;
-	
-
 	DiceRobotChatContent() {
 		
 	}

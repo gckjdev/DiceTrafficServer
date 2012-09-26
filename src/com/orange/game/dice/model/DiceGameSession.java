@@ -10,16 +10,11 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.math.RandomUtils;
-import org.apache.lucene.analysis.CharArrayMap.EntrySet;
-
 import com.orange.common.log.ServerLog;
 import com.orange.common.utils.RandomUtil;
 import com.orange.game.dice.statemachine.DiceGameStateMachineBuilder;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.model.dao.GameUser;
-import com.orange.game.traffic.model.manager.GameSessionManager;
-import com.orange.game.traffic.server.GameEventExecutor;
-import com.orange.network.game.protocol.constants.GameConstantsProtos;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRuleType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
 import com.orange.network.game.protocol.message.GameMessageProtos;
@@ -66,10 +61,12 @@ public class DiceGameSession extends GameSession {
 
 	String callDiceUserId;	
 	String openDiceUserId;
+	String loserUserId = null;
 	volatile int openDiceMultiple = 1;	
 	volatile int openDiceType = DICE_OPEN_TYPE_NORMAL;
 
 	private int waitClaimTimeOutTimes;
+
 
 	
 	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy, int ruleType,int testEnable) {
@@ -408,12 +405,14 @@ public class DiceGameSession extends GameSession {
 		if (allFinalCount >= currentDiceNum){
 			// call-dice user wins
 			addUserResult(callDiceUserId, winCoins, true);
-			addUserResult(openDiceUserId, lostCoins, false);		
+			addUserResult(openDiceUserId, lostCoins, false);	
+			loserUserId = openDiceUserId;
 		}
 		else{
 			// open-dice user wins
 			addUserResult(openDiceUserId, winCoins, true);
 			addUserResult(callDiceUserId, lostCoins, false);
+			loserUserId = callDiceUserId;
 		}
 		
 		// for the gamblers
@@ -478,13 +477,14 @@ public class DiceGameSession extends GameSession {
 	}
 
 	public String getLoserUserId(){
-		for (PBUserResult result : userResults.values()){
-			if (result.getWin() == false){
-				return result.getUserId();
-			}
-		}
-		
-		return null;
+//		for (PBUserResult result : userResults.values()){
+//			if (result.getWin() == false){
+//				return result.getUserId();
+//			}
+//		}
+//		
+//		return null;
+		return loserUserId;
 	}
 
 	public boolean reachMaxDice(int diceNum) {
