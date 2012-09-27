@@ -67,6 +67,9 @@ public class DiceGameSession extends GameSession {
 
 	private int waitClaimTimeOutTimes;
 
+	// Does next player's timer get decreased? 
+	private boolean decreaseTimeForNextPlayUser = false;
+
 
 	
 	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy, int ruleType,int testEnable) {
@@ -111,7 +114,7 @@ public class DiceGameSession extends GameSession {
 		
 		userDices.clear();
 		
-		List<GameUser> users = userList.getUserList();
+		List<GameUser> users = gameSessionUserList.getUserList();
 		for (GameUser user : users){
 			// random dice for the user and create UserDice
 			if (user.isPlaying()){
@@ -499,7 +502,7 @@ public class DiceGameSession extends GameSession {
 	}
 
 	public void setCurrentPlayUser(int index) {
-		userList.selectCurrentPlayUser(index);
+		gameSessionUserList.selectCurrentPlayUser(index);
 	}
 
 	public boolean getIsWilds() {
@@ -544,7 +547,7 @@ public class DiceGameSession extends GameSession {
 		List<String> retList = new ArrayList<String>();		
 		for (Entry<String, Integer> obj : set){
 			String userId = obj.getKey();
-			if (obj.getValue().intValue() > MAX_AUTO_TIME_OUT && userList.getUser(userId) != null){
+			if (obj.getValue().intValue() > MAX_AUTO_TIME_OUT && gameSessionUserList.getUser(userId) != null){
 				retList.add(userId);
 			}
 		}
@@ -572,6 +575,16 @@ public class DiceGameSession extends GameSession {
 
 	synchronized public void incUserBetCount() {
 		userBetCount++;
+	}
+
+
+	public void setDecreaseTimeForNextPlayUser() {
+		decreaseTimeForNextPlayUser  = true;		
+	}
+
+
+	public boolean getDecreaseTimeForNextPlayUser() {
+		return decreaseTimeForNextPlayUser;
 	}
 
 

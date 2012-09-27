@@ -40,10 +40,6 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 	}
 
 
-
-
-
-
 	public void handleRequest(GameMessage message, Channel channel,
 			GameSession gameSession) {
 		DiceGameSession session = (DiceGameSession)gameSession;
@@ -78,7 +74,15 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 		ServerLog.info(session.getSessionId(), "<UseItem> itemId="+itemId+",result="+resultCode.toString());
 		
 		// send use item response
-		UseItemResponse useItemResponse = useItemResponseBuilder.build();		
+		int playDirection = session.getPlayDirection();
+		String nextPlayerId = session.peekNextPlayerId();
+		boolean decreaseTimerForNextPlayUser = session.getDecreaseTimeForNextPlayUser();
+		UseItemResponse useItemResponse = useItemResponseBuilder
+				.setItemId(itemId)
+				.setDirection(playDirection)
+				.setNextPlayUserId(nextPlayerId)
+				.setDecreaseTimeForNextPlayUser(decreaseTimerForNextPlayUser)
+				.build();		
 		GameMessage response = GameMessage.newBuilder()
 			.setCommand(GameCommandType.USE_ITEM_RESPONSE)
 			.setMessageId(message.getMessageId())
@@ -91,7 +95,15 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 		
 		// broadcast to all other users in the session for use item request
 		if (resultCode == GameResultCode.SUCCESS){
-			NotificationUtils.broadcastNotification(session, userId, message);
+			UseItemRequest wrappedRequest = UseItemRequest.newBuilder(request)
+					.setDirection(playDirection)
+					.setNextPlayUserId(nextPlayerId)
+					.setDecreaseTimeForNextPlayUser(decreaseTimerForNextPlayUser)
+					.build();
+			GameMessage wrappedMessage = GameMessage.newBuilder(message)
+					.setUseItemRequest(wrappedRequest)
+					.build();
+			NotificationUtils.broadcastNotification(session, userId, wrappedMessage);
 		}
 	}   
 	    

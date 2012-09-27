@@ -26,6 +26,9 @@ public class DecTimeItemHandler implements ItemHandleInterface {
 
 		int newTime = DiceGameStateMachineBuilder.WAIT_CLAIM_TIMEOUT + extendTime;
 		session.setNewInternal(newTime);
+
+		// To indicate the state that next player's timer get decreased.
+		session.setDecreaseTimeForNextPlayUser();
 		
 		return gameResultCode;
 	}
