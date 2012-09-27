@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.math.RandomUtils;
 import com.orange.common.log.ServerLog;
+import com.orange.game.model.dao.User;
 import com.orange.game.traffic.robot.client.AbstractRobotClient;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.message.GameMessageProtos.CallDiceRequest;
@@ -56,10 +57,13 @@ public class DiceRobotClient extends AbstractRobotClient {
 	DiceRobotChatContent diceRobotChatContent = DiceRobotChatContent.getInstance();
 	
 	
-	public DiceRobotClient(String userId, String nickName, String avatar,
-			boolean gender, String location, int sessionId, int index) {
-		super(userId, nickName, avatar, gender, location, sessionId, index);
-		
+//	public DiceRobotClient(String userId, String nickName, String avatar,
+//			boolean gender, String location, int sessionId, int index) {
+//		super(userId, nickName, avatar, gender, location, sessionId, index);
+//	}
+	
+	public DiceRobotClient(User user, int sessionId, int index) {
+		super(user, sessionId,index);
 	}
 	
 	@Override
