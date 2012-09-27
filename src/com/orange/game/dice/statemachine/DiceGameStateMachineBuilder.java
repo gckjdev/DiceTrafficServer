@@ -179,6 +179,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			});				
 
 		sm.addState(new GameState(GameStateKey.TAKEN_OVER_USER_WAIT))
+			.addAction(broadcastNextPlayerNotification)
 			.addAction(setTakenOverUserWaitTimer)
 			.addEmptyTransition(GameCommandType.LOCAL_PLAY_USER_QUIT)
 			.addEmptyTransition(GameCommandType.LOCAL_ALL_OTHER_USER_QUIT)
