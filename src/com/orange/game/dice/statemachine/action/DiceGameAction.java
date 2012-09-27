@@ -55,6 +55,48 @@ public class DiceGameAction{
 		}
 
 	}
+	
+	public static class SetWaitClaimTimer implements Action {
+
+		int interval;
+		final Object timerType;
+		final int normalInterval;
+		
+		public SetWaitClaimTimer(int interval, Object timerType){
+			this.interval = interval;
+			this.timerType = timerType;
+			this.normalInterval = interval;
+		}
+		
+		private void  getNewInterval(GameSession session) {
+			int newInterval = 0;
+			if ((newInterval = session.getNewInterval()) != 0) {
+				interval = newInterval; 
+			}
+			interval = normalInterval;
+			
+		}
+		
+		private void clearNewInterval(GameSession session) {
+			session.setNewInternal(0);
+		}
+		
+		@Override
+		public void execute(Object context) {
+			DiceGameSession session = (DiceGameSession)context;
+			// check to see if the interval is changed(by last user using decTime item)
+			getNewInterval(session);
+			GameEventExecutor.getInstance().startTimer(session, interval, timerType);
+			// clear it, so the intervel won't influence next user.
+			clearNewInterval(session);
+			// correctly set the  decreaseTimeForNextPlayUser 
+			if ( session.getDecreaseTimeForNextPlayUser() == true ) {
+				session.setDecreaseTimeForNextPlayUser(false);
+			}
+		}
+	}
+
+	
 	public static class ClearWaitClaimTimeOutTimes implements Action {
 
 		@Override
