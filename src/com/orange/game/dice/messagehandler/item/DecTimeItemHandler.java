@@ -28,7 +28,7 @@ public class DecTimeItemHandler implements ItemHandleInterface {
 		session.setNewInternal(newTime);
 
 		// To indicate the state that next player's timer get decreased.
-		session.setDecreaseTimeForNextPlayUser();
+		session.setDecreaseTimeForNextPlayUser(true);
 		
 		return gameResultCode;
 	}

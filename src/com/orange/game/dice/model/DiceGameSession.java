@@ -95,6 +95,7 @@ public class DiceGameSession extends GameSession {
 		clearOpenDice();
 		isWilds = false;
 		userBetCount = 0;
+		decreaseTimeForNextPlayUser = false;
 	}
 	
 	private void clearCallDice() {
@@ -578,15 +579,12 @@ public class DiceGameSession extends GameSession {
 	}
 
 
-	public void setDecreaseTimeForNextPlayUser() {
-		decreaseTimeForNextPlayUser  = true;		
+	public void setDecreaseTimeForNextPlayUser(boolean b) {
+		decreaseTimeForNextPlayUser  = b;		
 	}
 
 
 	public boolean getDecreaseTimeForNextPlayUser() {
 		return decreaseTimeForNextPlayUser;
 	}
-
-
-	
 }

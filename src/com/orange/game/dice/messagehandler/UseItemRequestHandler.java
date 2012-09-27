@@ -77,6 +77,8 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 		int playDirection = session.getPlayDirection();
 		String nextPlayerId = session.peekNextPlayerId();
 		boolean decreaseTimerForNextPlayUser = session.getDecreaseTimeForNextPlayUser();
+		// get out its value, and we should clear it.
+		session.setDecreaseTimeForNextPlayUser(false);
 		UseItemResponse useItemResponse = useItemResponseBuilder
 				.setItemId(itemId)
 				.setDirection(playDirection)
