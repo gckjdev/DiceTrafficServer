@@ -45,6 +45,7 @@ public class CallDiceRequestHandler extends AbstractMessageHandler {
 			.setCommand(GameCommandType.CALL_DICE_RESPONSE)
 			.setMessageId(message.getMessageId())
 			.setResultCode(resultCode)
+			.setCallDiceRequest(request)
 			.build();
 		sendResponse(response);
 		

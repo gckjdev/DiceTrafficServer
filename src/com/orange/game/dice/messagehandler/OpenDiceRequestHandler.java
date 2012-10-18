@@ -42,6 +42,7 @@ public class OpenDiceRequestHandler extends AbstractMessageHandler {
 			.setCommand(GameCommandType.OPEN_DICE_RESPONSE)
 			.setMessageId(message.getMessageId())
 			.setResultCode(result)
+			.setOpenDiceRequest(request)
 			.build();
 		sendResponse(response);
 		
