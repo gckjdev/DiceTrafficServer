@@ -46,6 +46,7 @@ public class CallDiceRequestHandler extends AbstractMessageHandler {
 			.setMessageId(message.getMessageId())
 			.setResultCode(resultCode)
 			.setCallDiceRequest(request)
+			.setUserId(userId)
 			.build();
 		sendResponse(response);
 		

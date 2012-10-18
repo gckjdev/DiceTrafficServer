@@ -43,6 +43,7 @@ public class OpenDiceRequestHandler extends AbstractMessageHandler {
 			.setMessageId(message.getMessageId())
 			.setResultCode(result)
 			.setOpenDiceRequest(request)
+			.setUserId(userId)
 			.build();
 		sendResponse(response);
 		
