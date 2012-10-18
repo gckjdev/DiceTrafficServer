@@ -27,16 +27,19 @@ public class SkipCallItemHandler implements ItemHandleInterface {
 
 		// Only in current play user's round shall he/she use this item!
 		if ( ! session.isCurrentPlayUser(userId) ) {
-			resultCode = GameResultCode.ERROR_USER_NOT_IN_SESSION;
+			resultCode = GameResultCode.ERROR_USER_NOT_CURRENT_PLAY_USER;
 			ServerLog.info(sessionId, userId + "wants to use [skip call] item, "
 					+ "but he/she is not the current user!!!");
 			return resultCode;
 		}
 		
-		// set the callUserId to self to pretend I have did the call.
-		// Or in DiceGameSession.call(), the check of callDiceUserId's
-		// eqaulity with userId will failed.
-		session.setCallDiceUserId(userId);
+		// Bugfix: We should not set current user as the calluser
+		//         since he/she uses [skip]. Otherwise if the next
+		//         player challenges, current user would be blamed!
+		//         However, if there are only two players, [skip]
+		//         MUST be prohbited, or the calluser will remains
+		//         and the game could not move on.
+//		session.setCallDiceUserId(userId);
 		GameEventExecutor.getInstance().fireAndDispatchEvent(GameCommandType.LOCAL_USER_SKIP, sessionId, userId);
 		// the currentDice, currentDiceNum, isWilds remain the same, needn't change.
 		
