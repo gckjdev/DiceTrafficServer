@@ -9,10 +9,15 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
 import org.apache.commons.lang.math.RandomUtils;
 import com.orange.common.log.ServerLog;
+import com.orange.common.mongodb.MongoDBClient;
 import com.orange.common.utils.RandomUtil;
+import com.orange.game.constants.DBConstants;
 import com.orange.game.dice.statemachine.DiceGameStateMachineBuilder;
+import com.orange.game.model.dao.User;
+import com.orange.game.model.manager.UserManager;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRuleType;
@@ -48,6 +53,8 @@ public class DiceGameSession extends GameSession {
 	ConcurrentHashMap<String, PBUserResult> userResults = new ConcurrentHashMap<String, PBUserResult>();
 	ConcurrentHashMap<String, Integer> userAutoCallTimesMap = new ConcurrentHashMap<String, Integer>();
 	ConcurrentHashMap<String, GameMessageProtos.BetDiceRequest> userBetMap = new ConcurrentHashMap<String, GameMessageProtos.BetDiceRequest>();
+
+	MongoDBClient mongoDBClient = new MongoDBClient(DBConstants.D_GAME);
 	
 	volatile int currentDiceNum = -1;
 	volatile int currentDice = -1;
@@ -400,6 +407,11 @@ public class DiceGameSession extends GameSession {
 		int times = (ruleType == DiceGameRuleType.RULE_NORMAL_VALUE? 
 				1 :(allFinalCount > currentDiceNum ?  allFinalCount - currentDiceNum : currentDiceNum - allFinalCount) + 1);
 		int ante = 50 + playRound * 50;
+		
+		// TODO: should move this code to another place
+		User callUser = UserManager.findUserByUserId(mongoDBClient, callDiceUserId);
+		User openUser = UserManager.findUserByUserId(mongoDBClient, openDiceUserId);
+		
 		int winCoins = ( ruleType == DiceGameRuleType.RULE_SUPER_HIGH_VALUE? ante: WIN_COINS)* times * this.openDiceMultiple;
 		int lostCoins = -winCoins;
 
@@ -408,12 +420,20 @@ public class DiceGameSession extends GameSession {
 		// now check who wins			
 		if (allFinalCount >= currentDiceNum){
 			// call-dice user wins
+			if ( openUser.getBalance() < -lostCoins )  {
+				lostCoins = -openUser.getBalance();
+				winCoins = -lostCoins;
+			}
 			addUserResult(callDiceUserId, winCoins, true);
 			addUserResult(openDiceUserId, lostCoins, false);	
 			loserUserId = openDiceUserId;
 		}
 		else{
 			// open-dice user wins
+			if ( callUser.getBalance() < -lostCoins ) {
+				lostCoins = -callUser.getBalance();
+				winCoins = -lostCoins;
+			}
 			addUserResult(openDiceUserId, winCoins, true);
 			addUserResult(callDiceUserId, lostCoins, false);
 			loserUserId = callDiceUserId;
