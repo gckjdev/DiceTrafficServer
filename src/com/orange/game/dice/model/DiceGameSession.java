@@ -420,8 +420,9 @@ public class DiceGameSession extends GameSession {
 		// now check who wins			
 		if (allFinalCount >= currentDiceNum){
 			// call-dice user wins
-			if ( openUser.getBalance() < -lostCoins )  {
-				lostCoins = -openUser.getBalance();
+			int balance = openUser.getBalance() ;
+			if ( balance > 0 && balance < -lostCoins )  {
+				lostCoins = -balance;
 				winCoins = -lostCoins;
 			}
 			addUserResult(callDiceUserId, winCoins, true);
@@ -430,8 +431,9 @@ public class DiceGameSession extends GameSession {
 		}
 		else{
 			// open-dice user wins
-			if ( callUser.getBalance() < -lostCoins ) {
-				lostCoins = -callUser.getBalance();
+			int balance = callUser.getBalance();
+			if ( balance >0 && balance < -lostCoins ) {
+				lostCoins = -balance;
 				winCoins = -lostCoins;
 			}
 			addUserResult(openDiceUserId, winCoins, true);
