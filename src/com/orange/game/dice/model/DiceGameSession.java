@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
 import org.apache.commons.lang.math.RandomUtils;
 import com.orange.common.log.ServerLog;
 import com.orange.common.mongodb.MongoDBClient;
@@ -408,9 +407,15 @@ public class DiceGameSession extends GameSession {
 				1 :(allFinalCount > currentDiceNum ?  allFinalCount - currentDiceNum : currentDiceNum - allFinalCount) + 1);
 		int ante = 50 + playRound * 50;
 		
-		// TODO: should move this code to another place
-		User callUser = UserManager.findUserByUserId(mongoDBClient, callDiceUserId);
-		User openUser = UserManager.findUserByUserId(mongoDBClient, openDiceUserId);
+		// TODO: should move this code to another place, db operation may block the thread running
+		User callUser = UserManager.findUserAccountInfoByUserId(mongoDBClient, callDiceUserId);
+		User openUser = UserManager.findUserAccountInfoByUserId(mongoDBClient, openDiceUserId);
+		
+		if (callUser == null || openUser == null){
+			ServerLog.warn(sessionId, "<calculateCoins> but callUserId "+callDiceUserId+
+					" or openUserId "+openDiceUserId+" not found");
+			return;
+		}		
 		
 		int winCoins = ( ruleType == DiceGameRuleType.RULE_SUPER_HIGH_VALUE? ante: WIN_COINS)* times * this.openDiceMultiple;
 		int lostCoins = -winCoins;

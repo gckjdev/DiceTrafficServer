@@ -6,9 +6,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import org.antlr.misc.Interval;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
