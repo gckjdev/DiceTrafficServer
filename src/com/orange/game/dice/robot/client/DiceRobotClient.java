@@ -9,6 +9,7 @@ import com.orange.common.log.ServerLog;
 import com.orange.common.mongodb.MongoDBClient;
 import com.orange.game.constants.DBConstants;
 import com.orange.game.model.dao.User;
+import com.orange.game.model.manager.UserManager;
 import com.orange.game.traffic.robot.client.AbstractRobotClient;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.message.GameMessageProtos.CallDiceRequest;
@@ -59,15 +60,11 @@ public class DiceRobotClient extends AbstractRobotClient {
 	DiceRobotChatContent diceRobotChatContent = DiceRobotChatContent.getInstance();
 	
 	
-//	public DiceRobotClient(String userId, String nickName, String avatar,
-//			boolean gender, String location, int sessionId, int index) {
-//		super(userId, nickName, avatar, gender, location, sessionId, index);
-//	}
-	
 	public DiceRobotClient(User user, int sessionId, int index) {
 		super(user, sessionId,index);
 		oldExp = experience = user.getExpByAppId(DBConstants.DICE_APP_ID);
 		level = user.getLevelByAppId(DBConstants.DICE_APP_ID); 
+		balance = user.getBalance();
 		dbclient = new MongoDBClient(DBConstants.GAME_ID_DICE);
 	}
 	
@@ -368,6 +365,20 @@ public class DiceRobotClient extends AbstractRobotClient {
 	@Override
 	public void incExperience() {
 		experience += 5;
+	}
+
+	
+	@Override
+	public void chargeBalance() {
+		// if robot has less than 5,000 coins, charge it 1,5000 -20,000  coins.
+		int coinsToChargeMin = 15000;
+		int coinsToChargeMax = 20000;
+		int toCharge ;
+		
+		if ( balance < 5000) {
+			toCharge = RandomUtils.nextInt(coinsToChargeMax-coinsToChargeMin) + coinsToChargeMin;
+			UserManager.updateUserBalance(dbclient, userId, toCharge);
+		}
 	}
 	
 	
