@@ -173,7 +173,6 @@ public class DiceGameSession extends GameSession {
 		}
 		
 		// Decide the diceType
-		ServerLog.info(sessionId, "The distribution of dices of user[" + userId + "] is "+ distribution.toString());
 		int count = 0; // dice category count
 		for ( int i: distribution ) {
 			if ( i != 0 ) 
@@ -191,7 +190,7 @@ public class DiceGameSession extends GameSession {
 		
 		// Complete the PBUserDice building.
 		PBUserDice pbUserDice = builder.setType(diceType).build();
-		ServerLog.info(sessionId, "User[" + userId + "]'s PBUserDice is " + pbUserDice.toString());
+		ServerLog.info(sessionId, "<DiceGameSession>User[" + userId + "]'s PBUserDice is " + pbUserDice.toString());
 		
 		return pbUserDice;
 	}
@@ -332,7 +331,6 @@ public class DiceGameSession extends GameSession {
 	         }  
 	         
 			String userId = userDice.getUserId();
-//			ServerLog.info(sessionId, "The distribution of dices of user[" + userId + "] is "+ distribution.toString());
 			int finalDiceCount = 0;
 			PBDiceType diceType = null;
 			
