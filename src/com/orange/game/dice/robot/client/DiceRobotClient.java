@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.math.RandomUtils;
 import com.orange.common.log.ServerLog;
+import com.orange.common.mongodb.MongoDBClient;
+import com.orange.game.constants.DBConstants;
 import com.orange.game.model.dao.User;
 import com.orange.game.traffic.robot.client.AbstractRobotClient;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
@@ -64,6 +66,9 @@ public class DiceRobotClient extends AbstractRobotClient {
 	
 	public DiceRobotClient(User user, int sessionId, int index) {
 		super(user, sessionId,index);
+		oldExp = experience = user.getExpByAppId(DBConstants.DICE_APP_ID);
+		level = user.getLevelByAppId(DBConstants.DICE_APP_ID); 
+		dbclient = new MongoDBClient(DBConstants.GAME_ID_DICE);
 	}
 	
 	@Override
@@ -334,5 +339,37 @@ public class DiceRobotClient extends AbstractRobotClient {
 		firstRound = false;
 		rollEndChatLock = 2;
 	}
+
+
+
+	
+	@Override
+	public int calNewLevel(long experience) {
+		
+		if ( levExpTable[level] < experience )
+			level++;
+		
+		return level;
+	}
+
+	
+	@Override
+	public String getAppId() {
+		return DBConstants.APPID_DICE;
+	}
+
+	
+	@Override
+	public MongoDBClient getMongoDBClient() {
+		return dbclient;
+	}
+
+
+	@Override
+	public void incExperience() {
+		experience += 5;
+	}
+	
+	
 
 }
