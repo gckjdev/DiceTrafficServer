@@ -5,6 +5,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.math.RandomUtils;
+import org.apache.log4j.Logger;
+
 import com.orange.common.log.ServerLog;
 import com.orange.common.mongodb.MongoDBClient;
 import com.orange.game.constants.DBConstants;
@@ -21,6 +23,8 @@ import com.orange.network.game.protocol.model.DiceProtos.PBUserDice;
 
 public class DiceRobotClient extends AbstractRobotClient {
 
+	private final static Logger logger = Logger.getLogger(DiceRobotClient.class.getName());
+	
 	String openUserId = null;
 	String callUserId = null;
 	int callDice = -1;
@@ -378,6 +382,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 		if ( balance < 5000) {
 			toCharge = RandomUtils.nextInt(coinsToChargeMax-coinsToChargeMin) + coinsToChargeMin;
 			UserManager.updateUserBalance(dbclient, userId, toCharge);
+			logger.info("<DiceRobotClient>Robot["+nickName+"] gets charged "+toCharge+"coins");
 		}
 	}
 	
