@@ -69,7 +69,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 		oldExp = experience = user.getExpByAppId(DBConstants.DICE_APP_ID);
 		level = user.getLevelByAppId(DBConstants.DICE_APP_ID); 
 		balance = user.getBalance();
-		dbclient = new MongoDBClient(DBConstants.GAME_ID_DICE);
+		dbclient = new MongoDBClient(DBConstants.D_GAME);
 	}
 	
 	@Override
@@ -347,7 +347,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	@Override
 	public int calNewLevel(long experience) {
 		
-		if ( levExpTable[level+1] < experience )
+		if ( levExpTable[level+1] <= experience )
 			level++;
 		
 		return level;
@@ -367,8 +367,10 @@ public class DiceRobotClient extends AbstractRobotClient {
 
 
 	@Override
-	public void incExperience() {
+	public long incExperience() {
 		experience += 5;
+		
+		return experience;
 	}
 
 	
