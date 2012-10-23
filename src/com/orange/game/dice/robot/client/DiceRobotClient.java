@@ -347,7 +347,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	@Override
 	public int calNewLevel(long experience) {
 		
-		if ( levExpTable[level] < experience )
+		if ( levExpTable[level+1] < experience )
 			level++;
 		
 		return level;
