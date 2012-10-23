@@ -6,8 +6,11 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.apache.commons.lang.math.RandomUtils;
 
+import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRuleType;
+
 public class DiceRobotIntelligence {
 	
+		private int ruleType ;
 		private static final Logger logger = Logger.getLogger(DiceRobotIntelligence.class
 			.getName());
 		private DiceRobotChatContent chatContent = DiceRobotChatContent.getInstance();
@@ -180,11 +183,12 @@ public class DiceRobotIntelligence {
 			}
 		}
 		
-		public DiceRobotIntelligence() {
+		public DiceRobotIntelligence(int rule) {
 				intelligence = HIGHEST_IQ;
 				round = 0;
 				winGame = 0;
 				loseGame = 0;
+				ruleType = rule;
 		}
 		
 		// Mainly adjust robot's IQ and the probability benchmark.
@@ -252,7 +256,7 @@ public class DiceRobotIntelligence {
 			}
 
 			// Make a decision...
-			if ( intelligence < IQ_THRESHOLD ) {
+			if ( intelligence < IQ_THRESHOLD  && ruleType == DiceGameRuleType.RULE_NORMAL_VALUE ) {
 				canOpen = ((int)HIGHEST_IQ/intelligence >= 2 && difference > UNSAFE_DIFFERENCE[playerCount-2] ? true : false);
 				if(canOpen) {
 					logger.info("Robot["+nickName+"] is not smart, it decides to open!");
@@ -361,7 +365,7 @@ public class DiceRobotIntelligence {
 			// Make decision...
 			if (isWild){
 				// Not so intelligent, just add 1
-				if ( intelligence < IQ_THRESHOLD ){
+				if ( intelligence < IQ_THRESHOLD && ruleType == DiceGameRuleType.RULE_NORMAL_VALUE){
 					if (num + 1 - distribution[dice-1] <= UNSAFE_DIFFERENCE[playerCount-2] ) {
 						recordCall(num+1, dice,1, playerCount);
 						safe = false;
@@ -436,8 +440,14 @@ public class DiceRobotIntelligence {
 			// Not wild~
 			else {
 				int quotient = (int)(IQ_THRESHOLD/intelligence);
-				int extra = (num > playerCount*5* 2/3)? 0 : 
-					(quotient ==0 ? 0 : (quotient > 3 ? 1+RandomUtils.nextInt(2) + (playerCount/3) : (1 + playerCount/4 )/(round+1)+ RandomUtils.nextInt(2))); 
+				int extra;
+				if ( ruleType != DiceGameRuleType.RULE_NORMAL_VALUE ) {
+					extra = 0;
+				} else {
+					extra = (num > playerCount*5* 2/3)? 0 : 
+					  (quotient ==0 ? 0 : (quotient > 3 ? 1+RandomUtils.nextInt(2) + (playerCount/3) : (1 + playerCount/4 )/(round+1)+ RandomUtils.nextInt(2))); 
+				}
+				
 				// Does robot have more than 3 ONEs?
 				if ( distribution[DICE_VALUE_ONE-1] >= 3 ){
 						// YES, call ONE(auto wild)

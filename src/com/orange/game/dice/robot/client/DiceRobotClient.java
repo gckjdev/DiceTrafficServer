@@ -10,9 +10,12 @@ import org.apache.log4j.Logger;
 import com.orange.common.log.ServerLog;
 import com.orange.common.mongodb.MongoDBClient;
 import com.orange.game.constants.DBConstants;
+import com.orange.game.dice.model.DiceGameSession;
+import com.orange.game.dice.model.DiceGameSessionManager;
 import com.orange.game.model.dao.User;
 import com.orange.game.model.manager.UserManager;
 import com.orange.game.traffic.robot.client.AbstractRobotClient;
+import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.message.GameMessageProtos.CallDiceRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameChatRequest;
@@ -60,7 +63,8 @@ public class DiceRobotClient extends AbstractRobotClient {
 	volatile static int rollEndChatLock = 2;
 	private ScheduledFuture<?> chatFuture = null;
 	
-	DiceRobotIntelligence diceRobotIntelligence = new DiceRobotIntelligence();
+	int ruleType = GameEventExecutor.getInstance().getSessionManager().getRuleType();
+	DiceRobotIntelligence diceRobotIntelligence = new DiceRobotIntelligence(ruleType);
 	DiceRobotChatContent diceRobotChatContent = DiceRobotChatContent.getInstance();
 	
 	
