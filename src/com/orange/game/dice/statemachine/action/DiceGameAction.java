@@ -32,7 +32,7 @@ import com.orange.network.game.protocol.message.GameMessageProtos.OpenDiceReques
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceEndNotificationRequest;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceFinalCount;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
-import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
+import com.orange.network.game.protocol.model.GameBasicProtos.PBUserResult;
 
 public class DiceGameAction{
 

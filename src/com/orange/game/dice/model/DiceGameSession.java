@@ -28,7 +28,7 @@ import com.orange.network.game.protocol.model.DiceProtos.PBDice;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceFinalCount;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceType;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserDice;
-import com.orange.network.game.protocol.model.DiceProtos.PBUserResult;
+import com.orange.network.game.protocol.model.GameBasicProtos.PBUserResult;
 
 
 public class DiceGameSession extends GameSession {
