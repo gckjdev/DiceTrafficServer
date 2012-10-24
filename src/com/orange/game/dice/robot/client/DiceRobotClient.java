@@ -388,7 +388,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 		if ( balance < 5000) {
 			toCharge = RandomUtils.nextInt(coinsToChargeMax-coinsToChargeMin) + coinsToChargeMin;
 			UserManager.updateUserBalance(dbclient, userId, toCharge);
-			logger.info("<DiceRobotClient>Robot["+nickName+"] gets charged "+toCharge+"coins");
+			logger.info("<DiceRobotClient>Robot["+nickName+"] gets charged "+toCharge+" coins");
 		}
 	}
 	
