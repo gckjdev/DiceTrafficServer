@@ -519,7 +519,9 @@ public class DiceGameSession extends GameSession {
 	public boolean reachMaxDice(int diceNum) {
 		int playUserCount = getPlayUserCount();		
 
-		int maxCallCount = playUserCount * 5;
+		int ruleType = getRuleType();
+		int maxCallCount = playUserCount * (ruleType == DiceGameRuleType.RULE_NORMAL_VALUE ? 5 :7);
+		
 		if (diceNum >= maxCallCount){
 			return true;
 		}
