@@ -271,10 +271,8 @@ public class DiceGameSession extends GameSession {
 		if (currentDice == -1)
 			return true;
 		
-		int playUserCount = getPlayUserCount();		
-		int ruleType = getRuleType();
+		int maxCallCount = getDiceCallCeiling();
 		
-		int maxCallCount = playUserCount * (ruleType == DiceGameRuleType.RULE_NORMAL_VALUE ? 5 :7);
 		if (currentDiceNum > maxCallCount){
 			return false;
 		}
@@ -517,10 +515,8 @@ public class DiceGameSession extends GameSession {
 	}
 
 	public boolean reachMaxDice(int diceNum) {
-		int playUserCount = getPlayUserCount();		
-
-		int ruleType = getRuleType();
-		int maxCallCount = playUserCount * (ruleType == DiceGameRuleType.RULE_NORMAL_VALUE ? 5 :7);
+		
+		int maxCallCount = getDiceCallCeiling();
 		
 		if (diceNum >= maxCallCount){
 			return true;
@@ -613,5 +609,14 @@ public class DiceGameSession extends GameSession {
 
 	public boolean getDecreaseTimeForNextPlayUser() {
 		return decreaseTimeForNextPlayUser;
+	}
+	
+	private int getDiceCallCeiling() {
+		
+		int ruleType = getRuleType();
+		int playUserCount = getPlayUserCount();
+		
+		return playUserCount * (ruleType == DiceGameRuleType.RULE_NORMAL_VALUE ? 5 :7);
+		
 	}
 }
