@@ -2,7 +2,6 @@ package com.orange.game.dice.messagehandler;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.MessageEvent;
-import org.omg.CORBA.PRIVATE_MEMBER;
 
 import com.orange.common.log.ServerLog;
 import com.orange.game.dice.model.DiceGameSession;
@@ -43,7 +42,6 @@ public class BetRequestHandler extends AbstractMessageHandler {
 
 		ServerLog.info(session.getSessionId(), "<BetRequestHandler> Receive bet request from "
 					+ message.getUserId());
-		final int MAX_TIME_LIMIT = 4;
 		
 		String userId = message.getUserId();
 		BetDiceRequest betDiceRequest = message.getBetDiceRequest();

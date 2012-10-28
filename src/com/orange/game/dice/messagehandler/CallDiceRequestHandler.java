@@ -4,14 +4,12 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.MessageEvent;
 
 import com.orange.game.dice.model.DiceGameSession;
-import com.orange.game.dice.statemachine.action.DiceGameAction.BroadcastNextPlayerNotification;
 import com.orange.game.traffic.messagehandler.AbstractMessageHandler;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
-import com.orange.network.game.protocol.message.GameMessageProtos;
 import com.orange.network.game.protocol.message.GameMessageProtos.CallDiceRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 
@@ -19,7 +17,6 @@ public class CallDiceRequestHandler extends AbstractMessageHandler {
 
 	public CallDiceRequestHandler(MessageEvent messageEvent) {
 		super(messageEvent);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

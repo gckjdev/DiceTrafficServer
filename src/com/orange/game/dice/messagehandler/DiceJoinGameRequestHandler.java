@@ -8,6 +8,7 @@ import com.orange.game.traffic.messagehandler.room.JoinGameRequestHandler;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
+import com.orange.network.game.protocol.message.GameMessageProtos.JoinGameResponse;
 import com.orange.network.game.protocol.message.GameMessageProtos.UserDiceNotification;
 
 public class DiceJoinGameRequestHandler extends JoinGameRequestHandler {
@@ -32,5 +33,16 @@ public class DiceJoinGameRequestHandler extends JoinGameRequestHandler {
 			NotificationUtils.sendUserDiceNotification(session, message.getUserId(), channel, diceNotification);
 		}
 	}
+
+	@Override
+	public JoinGameResponse fullfillResponse(JoinGameResponse.Builder builder,GameSession session) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+
+	
 
 }
