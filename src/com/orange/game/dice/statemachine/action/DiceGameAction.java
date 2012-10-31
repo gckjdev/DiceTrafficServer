@@ -439,7 +439,7 @@ public class DiceGameAction{
 					MongoDBClient dbClient = dbService.getMongoDBClient(sessionId);
 					
 					Collection<PBUserResult> resultList = session.getUserResults();
-					List<GameUser> gameUserList = session.getUserList().getUserList();
+					List<GameUser> gameUserList = session.getUserList().getAllUsers();
 					
 					Set<String> gameResultUserIdSet = new HashSet<String>();
 					

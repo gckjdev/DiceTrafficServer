@@ -121,7 +121,7 @@ public class DiceGameSession extends GameSession {
 		
 		userDices.clear();
 		
-		List<GameUser> users = gameSessionUserList.getUserList();
+		List<GameUser> users = gameSessionUserList.getAllUsers();
 		for (GameUser user : users){
 			// random dice for the user and create UserDice
 			if (user.isPlaying()){
