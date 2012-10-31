@@ -372,7 +372,9 @@ public class DiceRobotClient extends AbstractRobotClient {
 
 	@Override
 	public long incExperience() {
-		experience += 5;
+		
+		long EXP_GAINED_PER_GAME = 10;
+		experience += EXP_GAINED_PER_GAME;
 		
 		return experience;
 	}
