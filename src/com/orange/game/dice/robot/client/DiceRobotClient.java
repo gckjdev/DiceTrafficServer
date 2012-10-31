@@ -112,12 +112,16 @@ public class DiceRobotClient extends AbstractRobotClient {
 			if (message.getCurrentPlayUserId().equals(userId)){
 				
 				if ( this.sessionRealUserCount() == 0 || canOpenDice ){
+					int multiple = 1;
 					ServerLog.info(sessionId, "[NEXT_PLAYER_START_NOTIFICATION_REQUEST] robot dicides to open.");
 					if ( diceRobotIntelligence.hasSetChat()) {
 						sendChat(diceRobotIntelligence.getChatContent());
 						diceRobotIntelligence.resetHasSetChat();
 					}
-					scheduleSendOpenDice(0);
+					if (diceRobotIntelligence.getCanCut()) { 
+						multiple = 2;
+					}
+					scheduleSendOpenDice(0, multiple);
 				}
 				else {
 					// Make a decision what to call.
@@ -130,7 +134,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 							sendChat(diceRobotIntelligence.getChatContent());
 							diceRobotIntelligence.resetHasSetChat();
 						}
-						scheduleSendOpenDice(0);
+						scheduleSendOpenDice(0, 1); 
 					} else {
 						scheduleSendCallDice(diceRobotIntelligence.getWhatTocall());
 						if ( diceRobotIntelligence.hasSetChat()) {
@@ -142,10 +146,12 @@ public class DiceRobotClient extends AbstractRobotClient {
 			}
 			// 抢开
 			else if ( canOpenDice ) {
+					boolean canCut = diceRobotIntelligence.getCanCut();
+					int multiple = (canCut == true ? 2 :1);
 					ServerLog.info(sessionId, "!!!!!The callUserSeatId is " + callUserSeatId + ", Robot "+nickName
 							+ "'s seatId is " + userList.get(userId).getSeatId());
 					ServerLog.info(sessionId, "[CALL_DICE_RUQUET] *****Robot " + nickName + "rush to open!!!*****");
-					sendOpenDice(1);
+					sendOpenDice(1, multiple);
 			}
 			break;
 			
@@ -227,7 +233,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 	}
 
 	
-	private void scheduleSendOpenDice(final int openType) {
+	private void scheduleSendOpenDice(final int openType, final int multiple) {
 		
 		if (openDiceFuture != null){
 			openDiceFuture.cancel(false);
@@ -236,13 +242,13 @@ public class DiceRobotClient extends AbstractRobotClient {
 		openDiceFuture = scheduleService.schedule(new Runnable() {			
 			@Override
 			public void run() {
-				sendOpenDice(openType);
+				sendOpenDice(openType, multiple);
 			}
 		}, 
 		RandomUtils.nextInt(2)+1, TimeUnit.SECONDS);
 	}
 
-	private void sendOpenDice(int openType) {
+	private void sendOpenDice(int openType, int multiple) {
 		ServerLog.info(sessionId, "Robot "+nickName+" open dice");
 		
 		OpenDiceRequest request = OpenDiceRequest.newBuilder()

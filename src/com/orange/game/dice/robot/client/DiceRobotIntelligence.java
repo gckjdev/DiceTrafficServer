@@ -117,6 +117,7 @@ public class DiceRobotIntelligence {
 		private final static int IDX_CALL_WILD 		= 2;
 		private int[] whatToCall = {0, 0, 0};
 		private int[] lastRoundCall = {0, 0, 0};
+		private boolean catCut;
 		
 		// What each player last calls
 		private Map<String, Integer> lastCall = new HashMap<String, Integer>();
@@ -176,6 +177,7 @@ public class DiceRobotIntelligence {
 		private final static int IDX_CONTNET_TYPE = 2;
 		private String[ ] whatToChat = {"关注我吧。","1", "1"};
 		private boolean setChat = false;
+		private boolean canCut;
 		
 		private void reset(int[] array) {
 			for ( int i = 0; i< array.length; i++) {
@@ -227,6 +229,7 @@ public class DiceRobotIntelligence {
 			lying = false;
 			lieDice = 0;
 			setChat = false;
+			canCut = false;
 //			hasSendCallWilds = false;
 			reset(whatToCall);
 			reset(introspection);
@@ -240,6 +243,11 @@ public class DiceRobotIntelligence {
 			int notWild = (isWild == false? 1 : 0);
 			// How many "dice" robot have.
 			int numOfDice = distribution[dice-1] + (dice != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] * notWild : 0);
+			// If robot gets SNAKE DICE ? 
+			if ( introspection[DISTRIBUTE_UNIFORMLY] == 1) {
+					numOfDice -= (distribution[dice-1] == 0 ? 0 : 1); // if has dice, substract 1
+					numOfDice -= (distribution[DICE_VALUE_ONE-1] == 0 ? 0 :1); // if has DICE ONE, substract 1, regardless of wilds or not.
+			}
 			int difference = num - numOfDice;
 			
 			Integer diceInteger = new Integer(dice);
@@ -258,6 +266,7 @@ public class DiceRobotIntelligence {
 			// Make a decision...
 			if ( intelligence < IQ_THRESHOLD  && ruleType == DiceGameRuleType.RULE_NORMAL_VALUE ) {
 				canOpen = ((int)HIGHEST_IQ/intelligence >= 2 && difference > UNSAFE_DIFFERENCE[playerCount-2] ? true : false);
+				catCut = ( difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
 				if(canOpen) {
 					logger.info("Robot["+nickName+"] is not smart, it decides to open!");
 //					setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));
@@ -279,22 +288,26 @@ public class DiceRobotIntelligence {
 			if ( difference > 0 ) {
 				if ( difference > UNSAFE_DIFFERENCE[playerCount-2] ) {
 					canOpen = true;
+					catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
 					logger.info("Robot["+nickName+"]: Call to much, open!");
 				}
 				// Distributed uniformly & quantity is too big, it's not safe to call.
 				else if ( introspection[DISTRIBUTE_UNIFORMLY] == 1 && difference >= UNSAFE_DIFFERENCE[playerCount-2]) {
 					canOpen = true;
+					catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
 					logger.info("Robot["+nickName+"]: Distributed uniformly & call too much, open!");
 				}
 				else if ( probability[BASE[playerCount-2] + difference]  < benchmark[playerCount-2] ) {
 					if ( round <= 2 ){
 						canOpen = ( difference > UNSAFE_DIFFERENCE[playerCount-2] ?  true : false );
+						catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
 						if (canOpen)
 							logger.info("Robot["+nickName+"]: round <=2, call too much, open!");
 					}
 					if (round == 2 || round == 3) {
 						if ( changeDiceValue.get(userId) == true) {
 							canOpen = (round + RandomUtils.nextInt(2) > 2 ? true : false);
+							catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
 							if(canOpen) {
 								logger.info("Robot["+nickName+"]: round 2 or round 3, player changes dice face value, he/she may be cheating, open!");
 //								setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));	
@@ -303,17 +316,20 @@ public class DiceRobotIntelligence {
 						}
 						if ( difference >= UNSAFE_DIFFERENCE[playerCount-2] ) {
 							canOpen = (round + RandomUtils.nextInt(2) > 2 ? true : false);
+							catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
 							if(canOpen)
 								logger.info("Robot["+nickName+"]: round 2 or round 3, call too much, open!");
 						}
 						else if ( !safe ){
 							canOpen = (RandomUtils.nextInt(2) == 1 ? true : false );
+							catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
 							if(canOpen)
 								logger.info("Robot["+nickName+"]: Not safe, open!");
 						}
 					}
 					else if ( round > 4) {
 						canOpen = true;
+						catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
 						logger.info("Robot["+nickName+"]: Too much round, calling is dangerous, open!");
 					}
 				}	
@@ -359,6 +375,11 @@ public class DiceRobotIntelligence {
 			int notWild = (isWild == false? 1 : 0);
 			// How many "dice" robot have.
 			int numOfDice = distribution[dice-1] + ( dice != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] * notWild : 0);
+			// If robot gets SNAKE DICE ? 
+			if ( introspection[DISTRIBUTE_UNIFORMLY] == 1) {
+				numOfDice -= (distribution[dice-1] == 0 ? 0 : 1); // if has dice, substract 1
+				numOfDice -= (distribution[DICE_VALUE_ONE-1] == 0 ? 0 :1); // if has DICE ONE, substract 1, regardless of wilds or not.
+			}
 			int difference = num - numOfDice;
 
 			
@@ -771,6 +792,12 @@ public class DiceRobotIntelligence {
 			whatToChat[IDX_CONTENT] = content[IDX_CONTENT];
 			whatToChat[IDX_CONTENTID] = content[IDX_CONTENTID];
 			whatToChat[IDX_CONTNET_TYPE] = Integer.toString(contentType);
+		}
+
+	
+		public boolean getCanCut() {
+			
+			return canCut;
 		}
 
 }
