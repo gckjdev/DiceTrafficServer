@@ -36,13 +36,25 @@ public class DiceJoinGameRequestHandler extends JoinGameRequestHandler {
 
 	@Override
 	public JoinGameResponse fullfillResponse(JoinGameResponse.Builder builder,GameSession session) {
-		// TODO Auto-generated method stub
-		return null;
+		
+	JoinGameResponse response;
+		
+		if (session.isGamePlaying()) {
+			//TODO : to be completed
+			response = builder.build();
+			return response;
+	
+	   
+		} else {	
+			response = builder.build();
+			return response;
+		}
 	}
+
+}
 
 
 
 
 	
 
-}

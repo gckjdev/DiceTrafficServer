@@ -53,7 +53,7 @@ public class DiceGameSession extends GameSession {
 	ConcurrentHashMap<String, Integer> userAutoCallTimesMap = new ConcurrentHashMap<String, Integer>();
 	ConcurrentHashMap<String, GameMessageProtos.BetDiceRequest> userBetMap = new ConcurrentHashMap<String, GameMessageProtos.BetDiceRequest>();
 
-	MongoDBClient mongoDBClient = new MongoDBClient(DBConstants.D_GAME);
+	
 	
 	volatile int currentDiceNum = -1;
 	volatile int currentDice = -1;
@@ -404,6 +404,7 @@ public class DiceGameSession extends GameSession {
 		int ante = 50 + playRound * 50;
 		
 		// TODO: should move this code to another place, db operation may block the thread running
+		MongoDBClient mongoDBClient = getDBInstance();
 		User callUser = UserManager.findUserAccountInfoByUserId(mongoDBClient, callDiceUserId);
 		User openUser = UserManager.findUserAccountInfoByUserId(mongoDBClient, openDiceUserId);
 		
