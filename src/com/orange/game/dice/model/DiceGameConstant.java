@@ -20,6 +20,16 @@ public class DiceGameConstant {
 	public static final int Dice_FLOWER = 2010;
 	public static final int Dice_TOMATO = 2011;
 
+	public static final int DICE_NUM = 6;
+
+	public static final int DICE_WAI_FINAL_COUNT = 6;
+
+	public static final int DICE_NET_FINAL_COUNT = 7;
+
+	public static final int DICE_SN_FINAL_COUNT = 0;
+
+	public static final int DICE_SNAKE_FINAL_COUNT = 0;
+
 	
 	
 }

@@ -1,27 +1,16 @@
 package com.orange.game.dice.statemachine.action;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.orange.common.log.ServerLog;
-import com.orange.common.mongodb.MongoDBClient;
 import com.orange.common.statemachine.Action;
-import com.orange.game.constants.DBConstants;
 import com.orange.game.dice.model.DiceGameSession;
-import com.orange.game.model.manager.UserManager;
 import com.orange.game.traffic.model.dao.GameSession;
-import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.game.traffic.robot.client.RobotService;
 import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.NotificationUtils;
-import com.orange.game.traffic.service.GameDBService;
 import com.orange.game.traffic.service.SessionUserService;
+import com.orange.game.traffic.service.UserGameResultService;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
 import com.orange.network.game.protocol.message.GameMessageProtos;
@@ -32,7 +21,6 @@ import com.orange.network.game.protocol.message.GameMessageProtos.OpenDiceReques
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceEndNotificationRequest;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceFinalCount;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceGameResult;
-import com.orange.network.game.protocol.model.GameBasicProtos.PBUserResult;
 
 public class DiceGameAction{
 
@@ -351,6 +339,8 @@ public class DiceGameAction{
 	
 	public static class CompleteGame implements Action {
 
+		private UserGameResultService service = UserGameResultService.getInstance();
+		
 		@Override
 		public void execute(Object context) {
 			DiceGameSession session = (DiceGameSession)context;
@@ -369,11 +359,11 @@ public class DiceGameAction{
 				session.calculateCoins(allFinalCount,ruleType );
 			}
 			
-			// save result into db
-			saveUserResultIntoDB(session);
+			// write game result(playtimes, wintime, losetimes, etc) into db
+			service.writeUserGameResultIntoDB(session);
 			
 			// charge/deduct coins
-			writeUserCoinsIntoDB(session);
+			service.writeUserCoinsIntoDB(session);
 			
 			// broadcast complete complete with result
 			PBDiceGameResult result = PBDiceGameResult.newBuilder()
@@ -399,98 +389,6 @@ public class DiceGameAction{
 			ServerLog.info(session.getSessionId(), "send game over="+message.toString());
 			NotificationUtils.broadcastNotification(session, null, message);
 				
-		}
-
-		private void writeUserCoinsIntoDB(final DiceGameSession session) {
-			final GameDBService dbService = GameDBService.getInstance();
-			dbService.executeDBRequest(session.getSessionId()	, new Runnable() {
-				
-				@Override
-				public void run() {
-					
-					MongoDBClient dbClient = dbService.getMongoDBClient(session.getSessionId());
-					
-					Collection<PBUserResult> resultList = session.getUserResults();
-					for (PBUserResult result : resultList){
-						boolean win = result.getWin();
-						String userId = result.getUserId();
-						int amount = result.getGainCoins();
-						
-						if (win){
-							UserManager.chargeAccount(dbClient, userId, amount, DBConstants.C_CHARGE_SOURCE_DICE_WIN, null, null);
-						}
-						else{
-							UserManager.deductAccount(dbClient, userId, -amount, DBConstants.C_CHARGE_SOURCE_DICE_WIN);
-						}
-					}
-				}
-			});
-			
-		}
-
-		private void saveUserResultIntoDB(final DiceGameSession session) {
-			final GameDBService dbService = GameDBService.getInstance();
-			dbService.executeDBRequest(session.getSessionId()	, new Runnable() {
-				
-				@Override
-				public void run() {
-
-					int sessionId = session.getSessionId();
-					MongoDBClient dbClient = dbService.getMongoDBClient(sessionId);
-					
-					Collection<PBUserResult> resultList = session.getUserResults();
-					List<GameUser> gameUserList = session.getUserList().getAllUsers();
-					
-					Set<String> gameResultUserIdSet = new HashSet<String>();
-					
-					// update the winner and loser
-					for ( PBUserResult result : resultList ) {
-						String userId = result.getUserId();
-						// record which two users get userResults
-						gameResultUserIdSet.add(userId);
-						
- 						queryAndUpdate(sessionId, dbClient, userId, result);
-					}
-					
-					// update other players
-					for(GameUser gameUser : gameUserList) {
-						String userId = gameUser.getUserId();
-						if ( gameUser.isPlaying() == true  && !gameResultUserIdSet.contains(userId)) {
-							queryAndUpdate(sessionId, dbClient, userId, null);
-						}
-					}
-					
-				}
-
-				private void queryAndUpdate(int sessionId, MongoDBClient dbClient, String userIdString, PBUserResult result) {
-					
-					// query by user_id and game_id
-					DBObject query = new BasicDBObject();
-					query.put(DBConstants.F_USERID, userIdString);
-					query.put(DBConstants.F_GAMEID, DBConstants.GAME_ID_DICE);
-
-					// update
-					DBObject update = new BasicDBObject();
-					DBObject incUpdate = new BasicDBObject();
-					DBObject dateUpdate = new BasicDBObject();
-					
-					incUpdate.put(DBConstants.F_PLAY_TIMES, 1);
-					if ( result != null ) {
-						if (result.getWin() == true) {
-							incUpdate.put(DBConstants.F_WIN_TIMES, 1);
-						} else {
-							incUpdate.put(DBConstants.F_LOSE_TIMES, 1);
-						}
-					}
-					dateUpdate.put(DBConstants.F_MODIFY_DATE, new Date());
-					
-					update.put("$inc", incUpdate);
-					update.put("$set", dateUpdate);
-
-					ServerLog.info(sessionId, "<updateUserResult> query="+query.toString()+", update="+update.toString());
-					dbClient.upsertAll(DBConstants.T_USER_GAME_RESULT, query, update);
-				}
-			});
 		}
 
 	}

@@ -13,7 +13,6 @@ import org.apache.commons.lang.math.RandomUtils;
 import com.orange.common.log.ServerLog;
 import com.orange.common.mongodb.MongoDBClient;
 import com.orange.common.utils.RandomUtil;
-import com.orange.game.constants.DBConstants;
 import com.orange.game.dice.statemachine.DiceGameStateMachineBuilder;
 import com.orange.game.model.dao.User;
 import com.orange.game.model.manager.UserManager;
@@ -28,7 +27,6 @@ import com.orange.network.game.protocol.model.DiceProtos.PBDice;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceFinalCount;
 import com.orange.network.game.protocol.model.DiceProtos.PBDiceType;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserDice;
-import com.orange.network.game.protocol.model.GameBasicProtos.PBUserResult;
 
 
 public class DiceGameSession extends GameSession {
@@ -49,7 +47,7 @@ public class DiceGameSession extends GameSession {
 	private static final int MAX_AUTO_TIME_OUT = 15;
 	
 	ConcurrentHashMap<String, PBUserDice> userDices = new ConcurrentHashMap<String, PBUserDice>();
-	ConcurrentHashMap<String, PBUserResult> userResults = new ConcurrentHashMap<String, PBUserResult>();
+	
 	ConcurrentHashMap<String, Integer> userAutoCallTimesMap = new ConcurrentHashMap<String, Integer>();
 	ConcurrentHashMap<String, GameMessageProtos.BetDiceRequest> userBetMap = new ConcurrentHashMap<String, GameMessageProtos.BetDiceRequest>();
 
@@ -71,8 +69,6 @@ public class DiceGameSession extends GameSession {
 	volatile int openDiceMultiple = 1;	
 	volatile int openDiceType = DICE_OPEN_TYPE_NORMAL;
 
-	private int waitClaimTimeOutTimes;
-
 	// Does next player's timer get decreased? 
 	private boolean decreaseTimeForNextPlayUser = false;
 
@@ -80,7 +76,6 @@ public class DiceGameSession extends GameSession {
 	
 	public DiceGameSession(int sessionId, String name, String password, boolean createByUser, String createBy, int ruleType,int testEnable) {
 		super(sessionId, name, password, createByUser, createBy, ruleType, testEnable);
-		waitClaimTimeOutTimes = 0;
 		// init state
 		this.currentState = DiceGameStateMachineBuilder.INIT_STATE;
 	}
@@ -291,22 +286,6 @@ public class DiceGameSession extends GameSession {
 	}
 
 
-	private void addUserResult(String userId, int gainCoins, boolean isWon){
-		
-		if (userId == null){
-			ServerLog.warn(sessionId, "<addUserResult> but userId is null");
-			return;
-		}
-		
-		PBUserResult result = PBUserResult.newBuilder()
-				.setWin(isWon)
-				.setUserId(userId)
-				.setGainCoins(gainCoins)
-				.build();
-	
-		userResults.put(userId, result);		
-	}
-	
 	
 	public List<PBDiceFinalCount> diceCountSettlement(int ruleType) {
 		
@@ -323,8 +302,8 @@ public class DiceGameSession extends GameSession {
 		for (PBUserDice userDice : allUserDices){
 			
 			// How six dice's  face value distributed, initial value is 0
-			int[] distribution = new int[DICE_6] ;  
-	      for(int i = 0 ; i < DICE_6 ; i++) {  
+			int[] distribution = new int[DiceGameConstant.DICE_NUM] ;  
+	      for(int i = 0 ; i < DiceGameConstant.DICE_NUM ; i++) {  
 	         distribution[i] = 0 ;  
 	         }  
 	         
@@ -350,7 +329,7 @@ public class DiceGameSession extends GameSession {
 			}
 			
 			// Decide what finalDiceCount is and what diceType is 
-			if ( currentDice < 1 || currentDice > 6 ) {
+			if ( currentDice < DICE_1 || currentDice > DICE_6 ) {
 				return Collections.emptyList();
 			}
 			finalDiceCount = distribution[currentDice-1] + (currentDice == DICE_1 ? 0 : distribution[DICE_1-1]*(isWilds ? 0 : 1));
@@ -360,19 +339,19 @@ public class DiceGameSession extends GameSession {
 			else if ( ruleType == DiceGameRuleType.RULE_HIGH_VALUE || ruleType == DiceGameRuleType.RULE_SUPER_HIGH_VALUE) {
 				if ( count == 1 && finalDiceCount == 5 ) {
 					if (distribution[DICE_1-1] == 5 && currentDice != DICE_1) {
-						finalDiceCount = 6;
+						finalDiceCount = DiceGameConstant.DICE_WAI_FINAL_COUNT;
 						diceType = PBDiceType.DICE_WAI;
 					} else {
-						finalDiceCount = 7;
+						finalDiceCount = DiceGameConstant.DICE_NET_FINAL_COUNT;
 						diceType = PBDiceType.DICE_NET;
 					}
 				}
 				else if ( count == 2 && finalDiceCount == 5 ) {
-					finalDiceCount = 6;
+					finalDiceCount = DiceGameConstant.DICE_WAI_FINAL_COUNT;
 					diceType = PBDiceType.DICE_WAI;
 				}
 				else if ( count == 5 ) {
-					finalDiceCount = 0;
+					finalDiceCount = DiceGameConstant.DICE_SNAKE_FINAL_COUNT;
 					diceType = PBDiceType.DICE_SNAKE;
 				}
 				else  {
@@ -472,10 +451,7 @@ public class DiceGameSession extends GameSession {
 			}
 		}// end for
 	}
-	
-	public Collection<PBUserResult> getUserResults(){
-		return userResults.values();
-	}
+
 
 	public void autoCallOrOpen() {
 	}
@@ -505,13 +481,6 @@ public class DiceGameSession extends GameSession {
 	}
 
 	public String getLoserUserId(){
-//		for (PBUserResult result : userResults.values()){
-//			if (result.getWin() == false){
-//				return result.getUserId();
-//			}
-//		}
-//		
-//		return null;
 		return loserUserId;
 	}
 
