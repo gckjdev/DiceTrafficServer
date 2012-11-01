@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.apache.cassandra.cli.CliParser.incrementValue_return;
 import org.apache.commons.lang.math.RandomUtils;
 
 import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRuleType;
@@ -242,12 +243,7 @@ public class DiceRobotIntelligence {
 			
 			int notWild = (isWild == false? 1 : 0);
 			// How many "dice" robot have.
-			int numOfDice = distribution[dice-1] + (dice != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] * notWild : 0);
-			// If robot gets SNAKE DICE ? 
-			if ( introspection[DISTRIBUTE_UNIFORMLY] == 1) {
-					numOfDice -= (distribution[dice-1] == 0 ? 0 : 1); // if has dice, substract 1
-					numOfDice -= (distribution[DICE_VALUE_ONE-1] == 0 ? 0 :1); // if has DICE ONE, substract 1, regardless of wilds or not.
-			}
+			int numOfDice = howManyDices(dice, notWild);
 			int difference = num - numOfDice;
 			
 			Integer diceInteger = new Integer(dice);
@@ -374,12 +370,7 @@ public class DiceRobotIntelligence {
 		
 			int notWild = (isWild == false? 1 : 0);
 			// How many "dice" robot have.
-			int numOfDice = distribution[dice-1] + ( dice != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] * notWild : 0);
-			// If robot gets SNAKE DICE ? 
-			if ( introspection[DISTRIBUTE_UNIFORMLY] == 1) {
-				numOfDice -= (distribution[dice-1] == 0 ? 0 : 1); // if has dice, substract 1
-				numOfDice -= (distribution[DICE_VALUE_ONE-1] == 0 ? 0 :1); // if has DICE ONE, substract 1, regardless of wilds or not.
-			}
+			int numOfDice = howManyDices(dice, notWild);
 			int difference = num - numOfDice;
 
 			
@@ -505,9 +496,16 @@ public class DiceRobotIntelligence {
 				}
 				// We have dice of 3 instances...(not ONE, otherwise this branch won't be executed)
 				else if ( introspection[NUM_OF_THREE] == 1 ){ //&& distribution[DICE_VALUE_ONE-1] == 2) {
-						recordCall(num + 1+extra, introspection[DICE_OF_THREE], 0, playerCount);
-						logger.info("<DiceRobotIntelligence>Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart, has 3 "+introspection[DICE_OF_THREE]+ " & 2 ONEs, call "
+					if ( introspection[DICE_OF_THREE] + distribution[DICE_VALUE_ONE-1]* notWild + UNSAFE_DIFFERENCE[playerCount-2] <= num+1) {
+						recordCall(num + 1 + distribution[DICE_VALUE_ONE-1], introspection[DICE_OF_THREE], 0, playerCount);
+						logger.info("<DiceRobotIntelligence>Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart, has 3 "+introspection[DICE_OF_THREE]+ ", call "
 								+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
+					} else {
+						giveUpCalling = true;
+						logger.info("<DiceRobotIntelligence> Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ 
+								"smart,has 3 instances of dice, but not safe to call, give up calling");
+						return;
+					}
 				}
 				// We have dice of 2 intances...
 				else if ( introspection[NUM_OF_TWO] == 1) {
@@ -577,16 +575,36 @@ public class DiceRobotIntelligence {
 					}
 				
 				}
-				// We have our dices distributed uniformly,do a safe call.
+				// We have our dices distributed uniformly.
 				else {
-					recordCall(num + 1 + extra, dice, 0, playerCount);
-					logger.info("<DiceRobotIntelligence>Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart,dices distributed uniformly, just do a safe call , call "
+					if ( ruleType == DiceGameRuleType.RULE_NORMAL_VALUE &&  num+1 - 2 < UNSAFE_DIFFERENCE[playerCount-2]) {
+						recordCall(num + 1, dice, 0, playerCount);
+						logger.info("<DiceRobotIntelligence>Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ "smart,dices distributed uniformly, just do a safe call , call "
 							+ whatToCall[IDX_NUM_OF_DICE]  + " X " + whatToCall[IDX_DICE_FACE_VALUE] );
+					} else {
+						giveUpCalling = true;
+						logger.info("<DiceRobotIntelligence> Robot["+nickName+"] not Wild & " + (intelligence< IQ_THRESHOLD? "not ":"")+ 
+								"smart,dices distributed uniformly, give up calling");
+						return;
+					}
 				}
 			} // end of not Wild
 			
 			round++;
 		}
+
+
+	private int howManyDices(int dice, int notWild) {
+		
+		int numOfDice = distribution[dice-1] + ( dice != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] * notWild : 0);
+		// If robot gets SNAKE DICE ? 
+		if ( ruleType != DiceGameRuleType.RULE_NORMAL_VALUE && introspection[DISTRIBUTE_UNIFORMLY] == 1) {
+			numOfDice -= (distribution[dice-1] == 0 ? 0 : 1); // if has dice, substract 1
+			numOfDice -= (distribution[DICE_VALUE_ONE-1] == 0 ? 0 :1); // if has DICE ONE, substract 1, regardless of wilds or not.
+		}
+		
+		return numOfDice;
+	}
 
 	// Record what robot wants to call
 	private void recordCall(int num, int dice, int isWild,int playerCount) {
