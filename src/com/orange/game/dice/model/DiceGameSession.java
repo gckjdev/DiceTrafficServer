@@ -97,6 +97,7 @@ public class DiceGameSession extends GameSession {
 		isWilds = false;
 		userBetCount = 0;
 		decreaseTimeForNextPlayUser = false;
+		directionChanged = false;
 	}
 	
 	private void clearCallDice() {
@@ -217,7 +218,8 @@ public class DiceGameSession extends GameSession {
 				ServerLog.warn(sessionId, "<callDice> but userId "+userId + " is not currentUserId "+currentPlayUserId);
 				return GameResultCode.ERROR_USER_NOT_CURRENT_PLAY_USER;
 			}
-			else if (callDiceUserId != null && callDiceUserId.equals(userId)){
+			// why should check directionChanged is explained in the ReverCallItemHandler.
+			else if (callDiceUserId != null && directionChanged == false &&callDiceUserId.equals(userId) ){
 				ServerLog.warn(sessionId, "<callDice> but userId "+userId + " already call dice");
 				return GameResultCode.ERROR_USER_ALREADY_CALL_DICE;				
 			}

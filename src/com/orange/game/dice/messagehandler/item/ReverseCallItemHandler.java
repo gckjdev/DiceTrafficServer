@@ -29,6 +29,14 @@ public class ReverseCallItemHandler implements ItemHandleInterface {
 		
 	    // change the directions
 		session.alternateSetPlayDirection();
+		// Must set the directionChanged flag to true.
+		// Think about this:
+		// If B changes directon and then skip, it's A's
+		// turn to play, but since the callUserId is A,
+		// then A pass without calling, this is a bug. So we set
+		//  the flag and check this flag at the same time check
+		// the callUserId in DiceGameSession.call().
+		session.setDirectionChanged(true);
 		
 		return resultCode;
 	}
