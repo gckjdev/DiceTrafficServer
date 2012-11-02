@@ -97,7 +97,6 @@ public class DiceGameSession extends GameSession {
 		isWilds = false;
 		userBetCount = 0;
 		decreaseTimeForNextPlayUser = false;
-		directionChanged = false;
 	}
 	
 	private void clearCallDice() {
