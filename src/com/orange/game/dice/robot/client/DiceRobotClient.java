@@ -7,9 +7,11 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.log4j.Logger;
 
+import com.mongodb.DBObject;
 import com.orange.common.log.ServerLog;
 import com.orange.common.mongodb.MongoDBClient;
 import com.orange.game.constants.DBConstants;
+import com.orange.game.constants.ServiceConstant;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.dice.model.DiceGameSessionManager;
 import com.orange.game.model.dao.User;
@@ -332,8 +334,6 @@ public class DiceRobotClient extends AbstractRobotClient {
 
 	@Override
 	public void resetPlayData(boolean robotWinThisGame) {
-		// MUST call super class 's version to write robot's level info back to db.
-		super.resetPlayData(robotWinThisGame);
 		
 		openUserId = null;
 		callUserId = null;
@@ -358,6 +358,18 @@ public class DiceRobotClient extends AbstractRobotClient {
 	@Override
 	public String getAppId() {
 		return DBConstants.APPID_DICE;
+	}
+
+	@Override
+	public boolean updateLevelAndExp() {
+		
+		 boolean result = false;
+			   
+		 DBObject object = UserManager.updateLevelAndExp(dbclient, userId, DBConstants.DICE_GAME_ID, experience, level, true, ServiceConstant.CONST_SYNC_TYPE_UPDATE, 0);  
+		 if ( object != null) {
+			 result = true;
+		 }
+		 return result;
 	}
 	
 
