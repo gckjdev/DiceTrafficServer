@@ -351,55 +351,11 @@ public class DiceRobotClient extends AbstractRobotClient {
 		rollEndChatLock = 2;
 	}
 
-
-
-	
-	@Override
-	public int calNewLevel(long experience) {
-		
-		if ( levExpTable[level+1] <= experience )
-			level++;
-		
-		return level;
-	}
-
 	
 	@Override
 	public String getAppId() {
 		return DBConstants.APPID_DICE;
 	}
-
-	
-	@Override
-	public MongoDBClient getMongoDBClient() {
-		return dbclient;
-	}
-
-
-	@Override
-	public long incExperience() {
-		
-		long EXP_GAINED_PER_GAME = 10;
-		experience += EXP_GAINED_PER_GAME;
-		
-		return experience;
-	}
-
-	
-	@Override
-	public void chargeBalance() {
-		// if robot has less than 5,000 coins, charge it 1,5000 -20,000  coins.
-		int coinsToChargeMin = 15000;
-		int coinsToChargeMax = 20000;
-		int toCharge ;
-		
-		if ( balance < 5000) {
-			toCharge = RandomUtils.nextInt(coinsToChargeMax-coinsToChargeMin) + coinsToChargeMin;
-			UserManager.updateUserBalance(dbclient, userId, toCharge);
-			logger.info("<DiceRobotClient>Robot["+nickName+"] gets charged "+toCharge+" coins");
-		}
-	}
-	
 	
 
 }

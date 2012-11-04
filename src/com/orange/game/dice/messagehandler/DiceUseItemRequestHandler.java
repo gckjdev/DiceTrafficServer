@@ -24,7 +24,7 @@ import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 import com.orange.network.game.protocol.message.GameMessageProtos.UseItemRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.UseItemResponse;
 
-public class UseItemRequestHandler extends AbstractMessageHandler {
+public class DiceUseItemRequestHandler extends AbstractMessageHandler {
 
 	public static ItemHandleInterface doubleCoinItemHandler = new DoubleCoinItemHandler();
 	public static ItemHandleInterface rollDiceItemHandler = new RollDiceItemHandler();
@@ -35,7 +35,7 @@ public class UseItemRequestHandler extends AbstractMessageHandler {
 	public static ItemHandleInterface skipCallItemHandler = new SkipCallItemHandler();
 //	public static ItemHandleInterface doubleKillItemHandler = new DoubleKillItemHandler();
 	
-	public UseItemRequestHandler(MessageEvent messageEvent) {
+	public DiceUseItemRequestHandler(MessageEvent messageEvent) {
 		super(messageEvent);
 	}
 
