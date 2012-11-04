@@ -332,6 +332,9 @@ public class DiceRobotClient extends AbstractRobotClient {
 
 	@Override
 	public void resetPlayData(boolean robotWinThisGame) {
+		// MUST call super class 's version to write robot's level info back to db.
+		super.resetPlayData(robotWinThisGame);
+		
 		openUserId = null;
 		callUserId = null;
 		callDice = -1;
