@@ -35,7 +35,7 @@ public class DiceJoinGameRequestHandler extends JoinGameRequestHandler {
 	}
 
 	@Override
-	public JoinGameResponse fullfillResponse(JoinGameResponse.Builder builder,GameSession session) {
+	public JoinGameResponse responseSpecificPart(JoinGameResponse.Builder builder,GameSession session) {
 		
 	JoinGameResponse response;
 		

@@ -12,8 +12,7 @@ import com.orange.common.log.ServerLog;
 import com.orange.common.mongodb.MongoDBClient;
 import com.orange.game.constants.DBConstants;
 import com.orange.game.constants.ServiceConstant;
-import com.orange.game.dice.model.DiceGameSession;
-import com.orange.game.dice.model.DiceGameSessionManager;
+import com.orange.game.model.dao.Item;
 import com.orange.game.model.dao.User;
 import com.orange.game.model.manager.UserManager;
 import com.orange.game.traffic.robot.client.AbstractRobotClient;
@@ -25,6 +24,9 @@ import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 import com.orange.network.game.protocol.message.GameMessageProtos.OpenDiceRequest;
 import com.orange.network.game.protocol.model.DiceProtos.PBDice;
 import com.orange.network.game.protocol.model.DiceProtos.PBUserDice;
+import com.orange.network.game.protocol.model.GameBasicProtos.PBGameUser;
+import com.orange.network.game.protocol.model.GameBasicProtos.PBKeyValue;
+import com.orange.network.game.protocol.model.GameBasicProtos.PBGameUser.Builder;
 
 public class DiceRobotClient extends AbstractRobotClient {
 
@@ -41,6 +43,9 @@ public class DiceRobotClient extends AbstractRobotClient {
 	private boolean robotWinThisGame = false;
 	private boolean firstRound = true;
 	
+	// for itemType
+	private final static int ITEM_TYPE_DICE_MIN = 2500;
+	private final static int ITEM_TYPE_DICE_MAX = 2512;
 	
 	// chatContent type
 	private final static int TEXT = 1;
@@ -370,6 +375,32 @@ public class DiceRobotClient extends AbstractRobotClient {
 			 result = true;
 		 }
 		 return result;
+	}
+
+	
+	@Override
+	public PBGameUser toPBGameUserSpecificPart(Builder builder) {
+		
+		List<Item> items = user.getItems();
+		if ( items.size() > 0 ) {
+			int diceItemType = ITEM_TYPE_DICE_MIN;
+			for ( Item item: items ) {
+				int itemType = item.getItemType();
+				if ( itemType > ITEM_TYPE_DICE_MIN && itemType < ITEM_TYPE_DICE_MAX ) {
+					diceItemType = item.getItemType();
+					break;
+				}
+			}
+			PBKeyValue pbKeyValue = PBKeyValue.newBuilder()
+					.setName("CUSTOM_DICE")
+					.setValue(Integer.toString(diceItemType-2500)) // should substract by 2500, required by the client
+					.build();
+			
+			builder.addAttributes(pbKeyValue);
+			logger.info("<DiceRobotClient.toPBGameUserSpecificPart> Robot["+ nickName+"] adds a dice item, itemType is " + diceItemType);
+		}
+		
+		return builder.build();
 	}
 	
 
