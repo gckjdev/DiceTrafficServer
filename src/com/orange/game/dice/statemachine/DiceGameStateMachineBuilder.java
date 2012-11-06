@@ -50,7 +50,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action selectPlayUser = new CommonGameAction.SelectPlayUser();
 		Action kickPlayUser = new CommonGameAction.KickPlayUser();
 //		Action playGame = new GameAction.PlayGame();
-		Action prepareRobot = new DiceGameAction.PrepareRobot();
+		Action prepareRobot = new CommonGameAction.PrepareRobot();
 		Action rollDiceAndBroadcast = new DiceGameAction.RollDiceAndBroadcast();
 		Action broadcastRollDiceBegin = new DiceGameAction.BroadcastRollDiceBegin();
 		Action broadcastNextPlayerNotification = new DiceGameAction.BroadcastNextPlayerNotification();
@@ -65,7 +65,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 		Action setShowResultTimer = new DiceGameAction.SetShowResultTimer();		
 		Action setWaitBetTimer = new CommonGameAction.CommonTimer(WAIT_USER_BET_TIMEOUT, DiceGameAction.DiceTimerType.WAIT_USER_BET);
 		Action clearTimer = new CommonGameAction.ClearTimer();
-		Action clearRobotTimer = new DiceGameAction.ClearRobotTimer();
+		Action clearRobotTimer = new CommonGameAction.ClearRobotTimer();
 		Action clearWaitClaimTimeOutTimes = new DiceGameAction.ClearWaitClaimTimeOutTimes();
 		Action kickWaitTimeOutUsers = new DiceGameAction.KickWaitTimeOutUsers();
 		

@@ -166,24 +166,6 @@ public class DiceGameAction{
 		}
 
 	}
-	public static class ClearRobotTimer implements Action {
-
-		@Override
-		public void execute(Object context) {
-			GameSession session = (GameSession)context;
-			session.clearRobotTimer();
-		}
-
-	}
-	public static class PrepareRobot implements Action {
-
-		@Override
-		public void execute(Object context) {
-			GameSession session = (GameSession)context;
-			GameEventExecutor.getInstance().prepareRobotTimer(session, RobotService.getInstance());
-		}
-
-	}
 	
 	public static GameResultCode openDiceAndBroadcast(DiceGameSession session,
 			String userId, int openType, int openMultiple) {
