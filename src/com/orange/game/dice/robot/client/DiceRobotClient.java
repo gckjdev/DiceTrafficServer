@@ -260,6 +260,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 		
 		OpenDiceRequest request = OpenDiceRequest.newBuilder()
 				.setOpenType(openType)
+				.setMultiple(multiple)
 				.build();
 		GameMessage message = GameMessage.newBuilder()
 			.setOpenDiceRequest(request)
