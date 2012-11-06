@@ -262,7 +262,7 @@ public class DiceRobotIntelligence {
 			// Make a decision...
 			if ( intelligence < IQ_THRESHOLD  && ruleType == DiceGameRuleType.RULE_NORMAL_VALUE ) {
 				canOpen = ((int)HIGHEST_IQ/intelligence >= 2 && difference > UNSAFE_DIFFERENCE[playerCount-2] ? true : false);
-				catCut = ( difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
+				catCut = ( difference > (UNSAFE_DIFFERENCE[playerCount-2]+1) ? true : false);
 				if(canOpen) {
 					logger.info("Robot["+nickName+"] is not smart, it decides to open!");
 //					setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));
@@ -274,6 +274,7 @@ public class DiceRobotIntelligence {
 			// lying means robot call a dice value that it even doesn't have one!
 			if ( lying && dice == lieDice && difference >= UNSAFE_DIFFERENCE[playerCount-2]) {
 					canOpen = RandomUtils.nextInt(2) == 1? true : false;
+					catCut = ( difference > (UNSAFE_DIFFERENCE[playerCount-2]+1) ? true : false);
 					logger.info("Robot["+nickName+"] is lying and player is fooled,open!");
 //					setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.YOU_ARE_FOOL));
 					setChatContent(EXPRESSION, chatContent.getExpression(DiceRobotChatContent.Expression.PROUND));
@@ -284,26 +285,26 @@ public class DiceRobotIntelligence {
 			if ( difference > 0 ) {
 				if ( difference > UNSAFE_DIFFERENCE[playerCount-2] ) {
 					canOpen = true;
-					catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
+					catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+1) ? true : false);
 					logger.info("Robot["+nickName+"]: Call to much, open!");
 				}
 				// Distributed uniformly & quantity is too big, it's not safe to call.
 				else if ( introspection[DISTRIBUTE_UNIFORMLY] == 1 && difference >= UNSAFE_DIFFERENCE[playerCount-2]) {
 					canOpen = true;
-					catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
+					catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+1) ? true : false);
 					logger.info("Robot["+nickName+"]: Distributed uniformly & call too much, open!");
 				}
 				else if ( probability[BASE[playerCount-2] + difference]  < benchmark[playerCount-2] ) {
 					if ( round <= 2 ){
 						canOpen = ( difference > UNSAFE_DIFFERENCE[playerCount-2] ?  true : false );
-						catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
+						catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+1) ? true : false);
 						if (canOpen)
 							logger.info("Robot["+nickName+"]: round <=2, call too much, open!");
 					}
 					if (round == 2 || round == 3) {
 						if ( changeDiceValue.get(userId) == true) {
 							canOpen = (round + RandomUtils.nextInt(2) > 2 ? true : false);
-							catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
+							catCut = ( RandomUtils.nextInt(2) == 0 && difference >= (UNSAFE_DIFFERENCE[playerCount-2]+1) ? true : false);
 							if(canOpen) {
 								logger.info("Robot["+nickName+"]: round 2 or round 3, player changes dice face value, he/she may be cheating, open!");
 //								setChatContent(TEXT,chatContent.getContent(DiceRobotChatContent.VoiceContent.DONT_FOOL_ME));	
@@ -312,20 +313,20 @@ public class DiceRobotIntelligence {
 						}
 						if ( difference >= UNSAFE_DIFFERENCE[playerCount-2] ) {
 							canOpen = (round + RandomUtils.nextInt(2) > 2 ? true : false);
-							catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
+							catCut = ( RandomUtils.nextInt(2) == 0 && difference >= (UNSAFE_DIFFERENCE[playerCount-2]+1) ? true : false);
 							if(canOpen)
 								logger.info("Robot["+nickName+"]: round 2 or round 3, call too much, open!");
 						}
 						else if ( !safe ){
 							canOpen = (RandomUtils.nextInt(2) == 1 ? true : false );
-							catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
+							catCut = ( RandomUtils.nextInt(2) == 0 && difference >= (UNSAFE_DIFFERENCE[playerCount-2]+1) ? true : false);
 							if(canOpen)
 								logger.info("Robot["+nickName+"]: Not safe, open!");
 						}
 					}
 					else if ( round > 4) {
 						canOpen = true;
-						catCut = ( RandomUtils.nextInt(2) == 0 && difference > (UNSAFE_DIFFERENCE[playerCount-2]+2) ? true : false);
+						catCut = ( RandomUtils.nextInt(2) == 0 && difference >= (UNSAFE_DIFFERENCE[playerCount-2]) ? true : false);
 						logger.info("Robot["+nickName+"]: Too much round, calling is dangerous, open!");
 					}
 				}	

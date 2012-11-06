@@ -77,8 +77,8 @@ public class DiceRobotClient extends AbstractRobotClient {
 	
 	public DiceRobotClient(User user, int sessionId, int index) {
 		super(user, sessionId,index);
-		oldExp = experience = user.getExpByAppId(DBConstants.DICE_APP_ID);
-		level = user.getLevelByAppId(DBConstants.DICE_APP_ID); 
+		oldExp = experience = user.getExpByAppId(DBConstants.APPID_DICE);
+		level = user.getLevelByAppId(DBConstants.APPID_DICE); 
 		balance = user.getBalance();
 		dbclient = new MongoDBClient(DBConstants.D_GAME);
 	}
