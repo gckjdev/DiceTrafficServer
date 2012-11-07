@@ -128,7 +128,7 @@ public class DiceGameAction{
 		public void execute(Object context) {
 			// make all user not playing
 			DiceGameSession session = (DiceGameSession)context;
-			session.getUserList().clearAllPlayerLoseGameToFalse();
+			session.getUserList().clearAllUserPlaying();
 		}
 
 	}
