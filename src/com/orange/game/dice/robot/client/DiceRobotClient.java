@@ -371,7 +371,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 		
 		 boolean result = false;
 			   
-		 DBObject object = UserManager.updateLevelAndExp(dbclient, userId, DBConstants.DICE_GAME_ID, experience, level, true, ServiceConstant.CONST_SYNC_TYPE_UPDATE, 0);  
+		 DBObject object = UserManager.updateLevelAndExp(dbclient, userId, DBConstants.GAME_ID_DICE, experience, level, true, ServiceConstant.CONST_SYNC_TYPE_UPDATE, 0);  
 		 if ( object != null) {
 			 result = true;
 		 }
