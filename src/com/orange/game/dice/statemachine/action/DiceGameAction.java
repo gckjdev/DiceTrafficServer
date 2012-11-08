@@ -37,7 +37,7 @@ public class DiceGameAction{
 			List<String> timeOutUsersList = session.getWaitTimeOutUsers();
 			ServerLog.info(session.getSessionId(), "<KickWaitTimeOutUsers> users="+timeOutUsersList.toString());
 			for (String userId : timeOutUsersList){
-				SessionUserService.getInstance().removeUser(session, userId);
+				SessionUserService.getInstance().removeUser(session, userId, true);
 				session.clearWaitClaimTimeOutTimes(userId);
 			}
 		}

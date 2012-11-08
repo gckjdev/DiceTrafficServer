@@ -71,7 +71,7 @@ public class DiceGameServerHandler extends GameServerHandler {
 	public void userQuitSession(String userId,
 			GameSession session, boolean needFireEvent) {
 		
-		GameEventExecutor.getInstance().getSessionManager().userQuitSession(session, userId, needFireEvent);
+		GameEventExecutor.getInstance().getSessionManager().userQuitSession(session, userId, needFireEvent, true);
 				
 		
 		

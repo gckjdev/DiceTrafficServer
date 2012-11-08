@@ -240,6 +240,9 @@ public class DiceRobotIntelligence {
 		public boolean canOpenDice(String nickName, int playerCount,String userId, int num, int dice, boolean isWild) {
 			
 			boolean canOpen = false;
+			if (userId == null){
+				return false;
+			}
 			
 			int notWild = (isWild == false? 1 : 0);
 			// How many "dice" robot have.

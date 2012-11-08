@@ -242,6 +242,11 @@ public class DiceGameSession extends GameSession {
 			return GameResultCode.ERROR_DICE_ALREADY_OPEN;
 		}
 		
+		if (callDiceUserId == null){
+			ServerLog.info(sessionId, "<openDice> but callDiceUserId not exists");
+			return GameResultCode.ERROR_DICE_ALREADY_OPEN;			
+		}
+		
 		if (callDiceUserId != null && callDiceUserId.equals(userId)){
 			ServerLog.info(sessionId, "<openDice> but you are the call user in last round, userId="+userId);
 			return GameResultCode.ERROR_DICE_OPEN_SELF;			
@@ -391,7 +396,6 @@ public class DiceGameSession extends GameSession {
 		if (callUser == null || openUser == null){
 			ServerLog.warn(sessionId, "<calculateCoins> but callUserId "+callDiceUserId+
 					" or openUserId "+openDiceUserId+" not found");
-			return;
 		}		
 		
 		int winCoins = ( ruleType == DiceGameRuleType.RULE_SUPER_HIGH_VALUE? ante: WIN_COINS)* times * this.openDiceMultiple;
@@ -402,7 +406,7 @@ public class DiceGameSession extends GameSession {
 		// now check who wins			
 		if (allFinalCount >= currentDiceNum){
 			// call-dice user wins
-			int balance = openUser.getBalance() ;
+			int balance = (openUser != null) ? openUser.getBalance() : Integer.MAX_VALUE;
 			if ( balance > 0 && balance < -lostCoins )  {
 				lostCoins = -balance;
 				winCoins = -lostCoins;
@@ -413,7 +417,7 @@ public class DiceGameSession extends GameSession {
 		}
 		else{
 			// open-dice user wins
-			int balance = callUser.getBalance();
+			int balance = (callUser != null) ? callUser.getBalance() : Integer.MAX_VALUE;
 			if ( balance >0 && balance < -lostCoins ) {
 				lostCoins = -balance;
 				winCoins = -lostCoins;

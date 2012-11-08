@@ -80,7 +80,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 		oldExp = experience = user.getExpByAppId(DBConstants.APPID_DICE);
 		level = user.getLevelByAppId(DBConstants.APPID_DICE); 
 		balance = user.getBalance();
-		dbclient = new MongoDBClient(DBConstants.D_GAME);
+//		dbclient = new MongoDBClient(DBConstants.D_GAME);
 	}
 	
 	@Override
@@ -118,7 +118,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 			ServerLog.info(sessionId, "Robot "+nickName+" receive NEXT_PLAYER_START_NOTIFICATION_REQUEST");
 			if (message.getCurrentPlayUserId().equals(userId)){
 				
-				if ( this.sessionRealUserCount() == 0 || canOpenDice ){
+				if ( (callUserId != null && this.sessionRealUserCount() == 0) || canOpenDice ){
 					int multiple = 1;
 					ServerLog.info(sessionId, "[NEXT_PLAYER_START_NOTIFICATION_REQUEST] robot dicides to open.");
 					if ( diceRobotIntelligence.hasSetChat()) {
