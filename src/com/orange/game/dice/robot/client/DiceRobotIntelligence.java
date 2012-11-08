@@ -69,7 +69,7 @@ public class DiceRobotIntelligence {
 		
 
 		// If difference is >= unsafe_difference[playerCount-2], it's not safe
-		private final static int[] UNSAFE_DIFFERENCE = {3, 5, 7, 8, 10};
+		private final static int[] UNSAFE_DIFFERENCE = {3, 6, 8, 9, 10};
 		// Initial benchmark probability
 		// 5:  0.160751;   10: 0.0542659;  15: 0.0207905;  20: 0.0258821;	25: 0.0109648
 		private static final double INI_BENCHMARK[] = {0.16, 0.05, 0.02,	0.02,  0.01} ;
