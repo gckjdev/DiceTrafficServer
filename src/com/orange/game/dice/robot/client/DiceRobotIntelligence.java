@@ -603,8 +603,7 @@ public class DiceRobotIntelligence {
 		int numOfDice = distribution[dice-1] + ( dice != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] * notWild : 0);
 		// If robot gets SNAKE DICE ? 
 		if ( ruleType != DiceGameRuleType.RULE_NORMAL_VALUE && introspection[DISTRIBUTE_UNIFORMLY] == 1) {
-			numOfDice -= (distribution[dice-1] == 0 ? 0 : 1); // if has dice, substract 1
-			numOfDice -= (distribution[DICE_VALUE_ONE-1] == 0 ? 0 :1); // if has DICE ONE, substract 1, regardless of wilds or not.
+			numOfDice = 0;
 		}
 		
 		return numOfDice;
