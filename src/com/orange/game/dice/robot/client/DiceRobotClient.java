@@ -366,18 +366,9 @@ public class DiceRobotClient extends AbstractRobotClient {
 		return DBConstants.APPID_DICE;
 	}
 
-	@Override
-	public boolean updateLevelAndExp() {
-		
-		 boolean result = false;
-			   
-		 DBObject object = UserManager.updateLevelAndExp(dbclient, userId, DBConstants.GAME_ID_DICE, experience, level, true, ServiceConstant.CONST_SYNC_TYPE_UPDATE, 0);  
-		 if ( object != null) {
-			 result = true;
-		 }
-		 return result;
+	public String getGameId(){
+		return DBConstants.GAME_ID_DICE;
 	}
-
 	
 	@Override
 	public PBGameUser toPBGameUserSpecificPart(Builder builder) {

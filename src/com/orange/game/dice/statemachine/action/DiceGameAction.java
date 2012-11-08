@@ -122,16 +122,7 @@ public class DiceGameAction{
 		}
 
 	}
-	public static class ClearAllUserPlaying implements Action {
 
-		@Override
-		public void execute(Object context) {
-			// make all user not playing
-			DiceGameSession session = (DiceGameSession)context;
-			session.getUserList().clearAllUserPlaying();
-		}
-
-	}
 	public static class KickTakenOverUser implements Action {
 
 		@Override
@@ -166,7 +157,6 @@ public class DiceGameAction{
 		}
 
 	}
-	
 	public static GameResultCode openDiceAndBroadcast(DiceGameSession session,
 			String userId, int openType, int openMultiple) {
 		GameResultCode resultCode = session.openDice(userId, openType, openMultiple);
