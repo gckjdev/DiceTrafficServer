@@ -16,10 +16,11 @@ import com.orange.game.traffic.model.manager.GameSessionAllocationManager;
 import com.orange.game.traffic.statemachine.CommonGameAction;
 import com.orange.game.traffic.statemachine.CommonGameCondition;
 import com.orange.game.traffic.statemachine.CommonGameState;
+import com.orange.game.traffic.statemachine.CommonStateMachineBuilder;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceBeginNotificationRequest;
 
-public class DiceGameStateMachineBuilder extends StateMachineBuilder {
+public class DiceGameStateMachineBuilder extends CommonStateMachineBuilder {
 
 	// thread-safe singleton implementation
     private static DiceGameStateMachineBuilder builder = new DiceGameStateMachineBuilder();
@@ -30,53 +31,41 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
     public static DiceGameStateMachineBuilder getInstance() {         	
     	return builder; 
     } 
-    
-
-	
-   public static final int START_GAME_TIMEOUT = 3;			// 36 seconds, 20 for start, 10 for result, 6 for reserved
+    	
+    public static final int START_GAME_TIMEOUT = 3;			// 36 seconds, 20 for start, 10 for result, 6 for reserved
 	public static final int WAIT_CLAIM_TIMEOUT = 18;
 	public static final int ROLL_DICE_TIMEOUT = 3;
 	public static final int SHOW_RESULT_TIMEOUT = 10;
 	public static final int TAKEN_OVER_USER_WAIT_TIMEOUT = 1;
 	public static final int WAIT_USER_BET_TIMEOUT = 7;
     	
+	final Action completeGame = new DiceGameAction.CompleteGame();
+	final Action rollDiceAndBroadcast = new DiceGameAction.RollDiceAndBroadcast();
+	final Action broadcastRollDiceBegin = new DiceGameAction.BroadcastRollDiceBegin();
+	final Action broadcastNextPlayerNotification = new DiceGameAction.BroadcastNextPlayerNotification();
+	final Action directOpenDice = new DiceGameAction.DirectOpenDice();
+	final Action autoCallOrOpen = new DiceGameAction.AutoCallOrOpen();
+
+	// timers
+	final Action setStartGameTimer = new CommonGameAction.CommonTimer(START_GAME_TIMEOUT, DiceGameAction.DiceTimerType.START);
+	final Action setRollDiceBeginTimer = new CommonGameAction.CommonTimer(ROLL_DICE_TIMEOUT, DiceGameAction.DiceTimerType.ROLL_DICE);
+	final Action setWaitClaimTimer = new DiceGameAction.SetWaitClaimTimer(WAIT_CLAIM_TIMEOUT, DiceGameAction.DiceTimerType.WAIT_CLAIM);
+	final Action setTakenOverUserWaitTimer = new CommonGameAction.CommonTimer(TAKEN_OVER_USER_WAIT_TIMEOUT, DiceGameAction.DiceTimerType.TAKEN_OVER_USER_WAIT);
+	final Action setShowResultTimer = new DiceGameAction.SetShowResultTimer();		
+	final Action setWaitBetTimer = new CommonGameAction.CommonTimer(WAIT_USER_BET_TIMEOUT, DiceGameAction.DiceTimerType.WAIT_USER_BET);
+
+	final Action clearWaitClaimTimeOutTimes = new DiceGameAction.ClearWaitClaimTimeOutTimes();
+	final Action kickWaitTimeOutUsers = new DiceGameAction.KickWaitTimeOutUsers();
+	
+	final Action restartGame = new DiceGameAction.RestartGame();
+	final Action selectLoserAsCurrentPlayerUser = new DiceGameAction.SelectLoserAsCurrentPlayerUser();
+	final Action kickTakenOverUser = new DiceGameAction.KickTakenOverUser();
+	
     @Override
 	public StateMachine buildStateMachine() {
 		StateMachine sm = new StateMachine();
 		
-		Action initGame = new CommonGameAction.InitGame();
-		Action startPlayGame = new CommonGameAction.StartGame();
-		Action completeGame = new DiceGameAction.CompleteGame();
-		Action selectPlayUser = new CommonGameAction.SelectPlayUser();
-		Action kickPlayUser = new CommonGameAction.KickPlayUser();
-//		Action playGame = new GameAction.PlayGame();
-		Action prepareRobot = new DiceGameAction.PrepareRobot();
-		Action rollDiceAndBroadcast = new DiceGameAction.RollDiceAndBroadcast();
-		Action broadcastRollDiceBegin = new DiceGameAction.BroadcastRollDiceBegin();
-		Action broadcastNextPlayerNotification = new DiceGameAction.BroadcastNextPlayerNotification();
-		Action directOpenDice = new DiceGameAction.DirectOpenDice();
-		Action autoCallOrOpen = new DiceGameAction.AutoCallOrOpen();
-//		
-		Action setOneUserWaitTimer = new CommonGameAction.SetOneUserWaitTimer();
-		Action setStartGameTimer = new CommonGameAction.CommonTimer(START_GAME_TIMEOUT, DiceGameAction.DiceTimerType.START);
-		Action setRollDiceBeginTimer = new CommonGameAction.CommonTimer(ROLL_DICE_TIMEOUT, DiceGameAction.DiceTimerType.ROLL_DICE);
-		Action setWaitClaimTimer = new DiceGameAction.SetWaitClaimTimer(WAIT_CLAIM_TIMEOUT, DiceGameAction.DiceTimerType.WAIT_CLAIM);
-		Action setTakenOverUserWaitTimer = new CommonGameAction.CommonTimer(TAKEN_OVER_USER_WAIT_TIMEOUT, DiceGameAction.DiceTimerType.TAKEN_OVER_USER_WAIT);
-		Action setShowResultTimer = new DiceGameAction.SetShowResultTimer();		
-		Action setWaitBetTimer = new CommonGameAction.CommonTimer(WAIT_USER_BET_TIMEOUT, DiceGameAction.DiceTimerType.WAIT_USER_BET);
-		Action clearTimer = new CommonGameAction.ClearTimer();
-		Action clearRobotTimer = new DiceGameAction.ClearRobotTimer();
-		Action clearWaitClaimTimeOutTimes = new DiceGameAction.ClearWaitClaimTimeOutTimes();
-		Action kickWaitTimeOutUsers = new DiceGameAction.KickWaitTimeOutUsers();
-		
-		Action restartGame = new DiceGameAction.RestartGame();
-		Action selectLoserAsCurrentPlayerUser = new DiceGameAction.SelectLoserAsCurrentPlayerUser();
-		Action kickTakenOverUser = new DiceGameAction.KickTakenOverUser();
-		Action clearAllUserPlaying = new DiceGameAction.ClearAllUserPlaying();
-//		Action callDiceForTakenOverUser = new DiceGameAction.CallDiceForTakenOverUser();
-//		Action broadcastDrawUserChange = new GameAction.BroadcastDrawUserChange();
 
-		Condition checkUserCount = new CommonGameCondition.CheckUserCount();
 		
 		sm.addState(INIT_STATE)		
 			.addAction(initGame)
@@ -87,7 +76,6 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			.addEmptyTransition(GameCommandType.LOCAL_TIME_OUT)			
 			.addTransition(GameCommandType.LOCAL_NEW_USER_JOIN, GameStateKey.CHECK_USER_COUNT)
 			.addAction(selectPlayUser);
-//			.addAction(broadcastPlayUserChange);
 		
 		sm.addState(new GameState(GameStateKey.CHECK_USER_COUNT))
 			.setDecisionPoint(new DecisionPoint(checkUserCount){
@@ -146,7 +134,7 @@ public class DiceGameStateMachineBuilder extends StateMachineBuilder {
 			});
 		
 		sm.addState(new GameState(GameStateKey.ROLL_DICE_BEGIN))
-			.addAction(startPlayGame)
+			.addAction(startGame)
 			.addAction(broadcastRollDiceBegin)
 			.addAction(setRollDiceBeginTimer)
 //			.addTransition(GameCommandType.LOCAL_PLAY_USER_QUIT, GameStateKey.PLAY_USER_QUIT)

@@ -64,13 +64,12 @@ public class DiceGameSessionManager extends GameSessionManager {
 		return DiceGameConstant.DICE_GAME_ID;
 	}
 
-	
-	@Override
 	// from GameConstantProtos
 	// RULE_NORMAL_VALUE = 0;
 	// RULE_HIGH_VALUE = 1;
 	// RULE_SUPER_HIGH_VALUE = 2;
-	public int getRuleType() {
+	static int ruleType = loadRuleTypeFromConfig();		
+	public static int loadRuleTypeFromConfig() {
 		String ruleType = System.getProperty("ruletype");
 		if (ruleType != null && !ruleType.isEmpty()){
 			return Integer.parseInt(ruleType);
@@ -78,6 +77,10 @@ public class DiceGameSessionManager extends GameSessionManager {
 		return DiceGameRuleType.RULE_NORMAL_VALUE; // default
 	}
 
+	@Override
+	public int getRuleType() {
+		return ruleType;
+	}
 	
 	@Override
 	// On: 1, Off:0[default]
