@@ -260,6 +260,7 @@ public class DiceRobotClient extends AbstractRobotClient {
 		
 		OpenDiceRequest request = OpenDiceRequest.newBuilder()
 				.setOpenType(openType)
+				.setMultiple(multiple)
 				.build();
 		GameMessage message = GameMessage.newBuilder()
 			.setOpenDiceRequest(request)
@@ -365,8 +366,21 @@ public class DiceRobotClient extends AbstractRobotClient {
 		return DBConstants.APPID_DICE;
 	}
 
+<<<<<<< HEAD
 	public String getGameId(){
 		return DBConstants.DICE_GAME_ID;
+=======
+	@Override
+	public boolean updateLevelAndExp() {
+		
+		 boolean result = false;
+			   
+		 DBObject object = UserManager.updateLevelAndExp(dbclient, userId, DBConstants.GAME_ID_DICE, experience, level, true, ServiceConstant.CONST_SYNC_TYPE_UPDATE, 0);  
+		 if ( object != null) {
+			 result = true;
+		 }
+		 return result;
+>>>>>>> 730ea9cc14c6010840f97b40a7ccb8a9dba1c0a9
 	}
 
 	

@@ -157,8 +157,6 @@ public class DiceGameAction{
 		}
 
 	}
-
-
 	public static GameResultCode openDiceAndBroadcast(DiceGameSession session,
 			String userId, int openType, int openMultiple) {
 		GameResultCode resultCode = session.openDice(userId, openType, openMultiple);

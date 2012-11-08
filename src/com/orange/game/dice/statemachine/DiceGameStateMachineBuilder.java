@@ -63,9 +63,8 @@ public class DiceGameStateMachineBuilder extends CommonStateMachineBuilder {
 	
     @Override
 	public StateMachine buildStateMachine() {
+    	
 		StateMachine sm = new StateMachine();
-		
-
 		
 		sm.addState(INIT_STATE)		
 			.addAction(initGame)
