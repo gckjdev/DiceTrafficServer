@@ -93,8 +93,8 @@ public class DiceGameSessionManager extends GameSessionManager {
 
 	@Override
 	public boolean takeOverWhenUserQuit(GameSession session, GameUser quitUser, int sessionUserCount) {
-		return (quitUser.isPlaying() == false)		// if user is not playing, don't need to take over 
-				|| (sessionUserCount == 1);			// if only one user, dont' need to take over
+		return (quitUser.isPlaying() == true)		// if user is not playing, don't need to take over 
+				&& (sessionUserCount > 1);			// if only one user, dont' need to take over
 	}
 
 	@Override
