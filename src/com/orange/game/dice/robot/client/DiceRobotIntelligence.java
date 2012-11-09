@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.apache.cassandra.cli.CliParser.incrementValue_return;
 import org.apache.commons.lang.math.RandomUtils;
 
 import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRuleType;

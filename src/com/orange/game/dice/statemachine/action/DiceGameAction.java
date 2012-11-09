@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import com.orange.common.log.ServerLog;
 import com.orange.common.statemachine.Action;
+import com.orange.game.constants.DBConstants;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.robot.client.RobotService;
@@ -322,10 +323,10 @@ public class DiceGameAction{
 			}
 			
 			// write game result(playtimes, wintime, losetimes, etc) into db
-			service.writeUserGameResultIntoDB(session);
+			service.writeAllUserGameResultIntoDB(session, DBConstants.GAME_ID_DICE);
 			
 			// charge/deduct coins
-			service.writeUserCoinsIntoDB(session);
+			service.writeAllUserCoinsIntoDB(session,DBConstants.C_CHARGE_SOURCE_DICE_WIN);
 			
 			// broadcast complete complete with result
 			PBDiceGameResult result = PBDiceGameResult.newBuilder()

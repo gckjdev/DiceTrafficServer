@@ -45,6 +45,7 @@ public class DiceGameSession extends GameSession {
 	private static final int WIN_COINS = 100;
 
 	private static final int MAX_AUTO_TIME_OUT = 15;
+
 	
 	ConcurrentHashMap<String, PBUserDice> userDices = new ConcurrentHashMap<String, PBUserDice>();
 	
