@@ -1,14 +1,9 @@
 package com.orange.game.dice.model;
 
-import com.orange.common.log.ServerLog;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.game.traffic.model.manager.GameSessionManager;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRuleType;
-import com.orange.game.traffic.server.GameEventExecutor;
-import com.orange.game.traffic.server.NotificationUtils;
-import com.orange.game.traffic.service.SessionUserService;
-import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 
 public class DiceGameSessionManager extends GameSessionManager {
 
@@ -17,6 +12,9 @@ public class DiceGameSessionManager extends GameSessionManager {
 		return new DiceGameSession(sessionId, name, password, createByUser, createBy, ruleType,testEnable);
 	}
 
+	
+	
+	/*
 	@Override
 	public void userQuitSession(GameSession session, String userId, boolean needFireEvent, boolean needRemoveUserChannel) {
 		int sessionId = session.getSessionId();
@@ -58,6 +56,7 @@ public class DiceGameSessionManager extends GameSessionManager {
 			SessionUserService.getInstance().removeUser(session, userId, needRemoveUserChannel);
 		}
 	}
+	*/
 
 	@Override
 	public String getGameId() {
@@ -90,6 +89,16 @@ public class DiceGameSessionManager extends GameSessionManager {
 				return Integer.parseInt(testEnable);
 			}
 			return 0;
+	}
+
+	@Override
+	public boolean takeOverWhenUserQuit(GameSession session, GameUser quitUser, int sessionUserCount) {
+		return (quitUser.isPlaying() == true)		// if user is not playing, don't need to take over 
+				&& (sessionUserCount > 1);			// if only one user, dont' need to take over
+	}
+
+	@Override
+	public void updateQuitUserInfo(GameSession session, GameUser quitUser) {		
 	}
 
 
