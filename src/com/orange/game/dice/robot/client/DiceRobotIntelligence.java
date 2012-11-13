@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.apache.commons.lang.math.RandomUtils;
 
 import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRuleType;
+import com.orange.network.game.protocol.model.DiceProtos.PBDiceType;
 
 public class DiceRobotIntelligence {
 	
@@ -153,6 +154,11 @@ public class DiceRobotIntelligence {
 		private final static int DICE_VALUE_SIX 	= 6;
 		private int[] distribution = {0, 0, 0, 0, 0, 0};
 		
+		// Dice type
+		private PBDiceType diceType;
+		// For special dice : WAI NET
+		private int diceValue;
+		
 		// Is it safe for robot to call?
 		private boolean safe = true;
 		// Does robot lie?
@@ -178,6 +184,7 @@ public class DiceRobotIntelligence {
 		private String[ ] whatToChat = {"关注我吧。","1", "1"};
 		private boolean setChat = false;
 		private boolean canCut;
+		
 		
 		private void reset(int[] array) {
 			for ( int i = 0; i< array.length; i++) {
@@ -601,10 +608,15 @@ public class DiceRobotIntelligence {
 		
 		int numOfDice = distribution[dice-1] + ( dice != DICE_VALUE_ONE ? distribution[DICE_VALUE_ONE-1] * notWild : 0);
 		// If robot gets SNAKE DICE ? 
-		if ( ruleType != DiceGameRuleType.RULE_NORMAL_VALUE && introspection[DISTRIBUTE_UNIFORMLY] == 1) {
-			numOfDice = 0;
+		if ( ruleType != DiceGameRuleType.RULE_NORMAL_VALUE ) {
+			if (diceType.equals(PBDiceType.DICE_SNAKE)) {
+				numOfDice = 0;
+			} else if ( diceType.equals(PBDiceType.DICE_WAI) && diceValue == dice && notWild == 1) {
+				numOfDice = 6;
+		   } else if (diceType.equals(PBDiceType.DICE_NET) && diceValue == dice ) {
+				numOfDice = 7;
+		    }
 		}
-		
 		return numOfDice;
 	}
 
@@ -785,6 +797,23 @@ public class DiceRobotIntelligence {
 			if ( introspection[NUM_MORE_THAN_FOUR] == 0 && introspection[NUM_OF_THREE] == 0 && introspection[NUM_OF_TWO] == 0) {
 					introspection[DISTRIBUTE_UNIFORMLY] = 1;
 			}
+			
+			// which dice type
+			int count = 0; // dice category count
+			for ( int i = 0; i < distribution.length; i++ ) {
+				if ( distribution[i] != 0 ) 
+					count++;
+					diceValue = i+1;
+			}
+			if ( count == 1 ) 
+				diceType = PBDiceType.DICE_NET;
+			else if ( count == 2 && distribution[DICE_VALUE_ONE-1] != 0)
+				diceType = PBDiceType.DICE_WAI;
+			else if ( count == 5 )
+				diceType = PBDiceType.DICE_SNAKE;
+			else 
+				diceType = PBDiceType.DICE_NORMAL;
+
 		}
 		
 		public boolean hasSetChat() {
