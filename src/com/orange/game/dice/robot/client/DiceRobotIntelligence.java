@@ -421,7 +421,7 @@ public class DiceRobotIntelligence {
 						}
 						// round+1 is current round, if current round is 3, it must be true,
 						// if current round is 2, it is 50% true. 
-						if ( difference+1 < UNSAFE_DIFFERENCE[playerCount-2] && (round == 0 || round + 1 + RandomUtils.nextInt(2) > 2) ){
+						if ( difference+1 < UNSAFE_DIFFERENCE[playerCount-2] && (round == 0 || round + 1 + RandomUtils.nextInt(2) <= 2) ){
 							recordCall(num+1, dice,1,playerCount);
 							safe = false;
 							logger.info("<DiceRobotIntelligence>Robot["+nickName+"] isWild & smart, just add one, call "
