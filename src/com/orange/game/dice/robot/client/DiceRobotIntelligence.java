@@ -421,7 +421,7 @@ public class DiceRobotIntelligence {
 						}
 						// round+1 is current round, if current round is 3, it must be true,
 						// if current round is 2, it is 50% true. 
-						if ( difference+1 < UNSAFE_DIFFERENCE[playerCount-2] && (round == 0 || round + 1 + RandomUtils.nextInt(2) > 2) ){
+						if ( difference+1 < UNSAFE_DIFFERENCE[playerCount-2] && (round == 0 || round + 1 + RandomUtils.nextInt(2) <= 2) ){
 							recordCall(num+1, dice,1,playerCount);
 							safe = false;
 							logger.info("<DiceRobotIntelligence>Robot["+nickName+"] isWild & smart, just add one, call "
@@ -664,7 +664,7 @@ public class DiceRobotIntelligence {
 		
 		int tmp = (RandomUtils.nextInt(5) == 0? 0 : 1);
 		
-		if ( intelligence < IQ_THRESHOLD) {
+		if ( intelligence < IQ_THRESHOLD&& ruleType == DiceGameRuleType.RULE_NORMAL_VALUE){
 			recordCall( playerCount + tmp, 1+RandomUtils.nextInt(6), 0, playerCount );
 			safe = false;
 			logger.info("<intialCall> Initial call, Robot["+nickName+"] not smart, just do a random call , call "
@@ -694,7 +694,7 @@ public class DiceRobotIntelligence {
 						", so call "+ whatToCall[IDX_NUM_OF_DICE] + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 			}
 			else if ( introspection[NUM_OF_THREE] == 1) {
-				recordCall(playerCount+tmp, introspection[DICE_OF_THREE], RandomUtils.nextInt(2), playerCount);
+				recordCall(playerCount+tmp, introspection[DICE_OF_THREE], RandomUtils.nextInt(4) == 1? 1: 0, playerCount);
 				logger.info("<intialCall> Initial call,Robot["+nickName+"]has 3 " + introspection[DICE_OF_THREE]+
 						", so call "+ whatToCall[IDX_NUM_OF_DICE] + " X " + whatToCall[IDX_DICE_FACE_VALUE]);
 			}
