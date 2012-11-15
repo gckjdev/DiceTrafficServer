@@ -8,6 +8,8 @@ public class DiceGameConstant {
 	
 	public static final String GAME_ID_DICE = DBConstants.GAME_ID_DICE;
 	
+	public static final int SESSION_MAX_PLAYER_COUNT = 6;
+	
 	public static final int DICE_ITEM_ROLL_DICE_AGAIN = 2001;
 	public static final int DICE_ITEM_DOUBLE_COIN = 2002;
 	public static final int Dice_PEEK = 2003;
@@ -29,6 +31,7 @@ public class DiceGameConstant {
 	public static final int DICE_SN_FINAL_COUNT = 0;
 
 	public static final int DICE_SNAKE_FINAL_COUNT = 0;
+
 
 	
 	

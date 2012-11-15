@@ -11,11 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.math.RandomUtils;
 import com.orange.common.log.ServerLog;
-import com.orange.common.mongodb.MongoDBClient;
 import com.orange.common.utils.RandomUtil;
 import com.orange.game.dice.statemachine.DiceGameStateMachineBuilder;
-import com.orange.game.model.dao.User;
-import com.orange.game.model.manager.UserManager;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRuleType;
@@ -81,6 +78,22 @@ public class DiceGameSession extends GameSession {
 		this.currentState = DiceGameStateMachineBuilder.INIT_STATE;
 	}
 	
+	
+	@Override
+	public int initMaxUserPerSession() {
+		// TODO: can set by ruleType
+		int retValue;
+		String sessionMaxPlayerCount = System.getProperty("game.maxsessionuser");
+		
+		if ( sessionMaxPlayerCount != null && ! sessionMaxPlayerCount.isEmpty()) {
+			retValue = Integer.parseInt(sessionMaxPlayerCount);
+		} else {
+			retValue = DiceGameConstant.SESSION_MAX_PLAYER_COUNT; 
+		}
+		
+		ServerLog.info(sessionId, "DiceGameSession: set maxUserPerSession to "+ retValue);
+		return retValue;
+	}
 	
 
 	public void resetGame(){
