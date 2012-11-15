@@ -61,6 +61,8 @@ public class DiceGameStateMachineBuilder extends CommonStateMachineBuilder {
 	final Action selectLoserAsCurrentPlayerUser = new DiceGameAction.SelectLoserAsCurrentPlayerUser();
 	final Action kickTakenOverUser = new DiceGameAction.KickTakenOverUser();
 	
+	final Action queryUserBalance = new CommonGameAction.QueryUserBalance();
+	
     @Override
 	public StateMachine buildStateMachine() {
     	
@@ -134,6 +136,7 @@ public class DiceGameStateMachineBuilder extends CommonStateMachineBuilder {
 		
 		sm.addState(new GameState(GameStateKey.ROLL_DICE_BEGIN))
 			.addAction(startGame)
+			.addAction(queryUserBalance)
 			.addAction(broadcastRollDiceBegin)
 			.addAction(setRollDiceBeginTimer)
 //			.addTransition(GameCommandType.LOCAL_PLAY_USER_QUIT, GameStateKey.PLAY_USER_QUIT)

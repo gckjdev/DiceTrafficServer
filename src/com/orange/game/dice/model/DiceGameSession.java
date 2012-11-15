@@ -389,10 +389,8 @@ public class DiceGameSession extends GameSession {
 				1 :(allFinalCount > currentDiceNum ?  allFinalCount - currentDiceNum : currentDiceNum - allFinalCount) + 1);
 		int ante = 50 + playRound * 50;
 		
-		// TODO: should move this code to another place, db operation may block the thread running
-		MongoDBClient mongoDBClient = getDBInstance();
-		User callUser = UserManager.findUserAccountInfoByUserId(mongoDBClient, callDiceUserId);
-		User openUser = UserManager.findUserAccountInfoByUserId(mongoDBClient, openDiceUserId);
+		GameUser callUser = findUser(callDiceUserId);
+		GameUser openUser = findUser(openDiceUserId);
 		
 		if (callUser == null || openUser == null){
 			ServerLog.warn(sessionId, "<calculateCoins> but callUserId "+callDiceUserId+
