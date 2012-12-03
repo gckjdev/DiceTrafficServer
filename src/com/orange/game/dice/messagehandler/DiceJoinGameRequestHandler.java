@@ -23,7 +23,7 @@ public class DiceJoinGameRequestHandler extends JoinGameRequestHandler {
 		DiceGameSession session = (DiceGameSession)processRequest(message, channel, requestSession);
 		
 		// send user dice notification
-		if (session.isGamePlaying()){
+		if (session != null && session.isGamePlaying()){
 			UserDiceNotification diceNotification = UserDiceNotification.newBuilder()
 				.addAllUserDice(session.getUserDices())
 				.setIsWild(session.getIsWilds())
