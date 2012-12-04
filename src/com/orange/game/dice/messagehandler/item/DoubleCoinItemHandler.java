@@ -2,6 +2,7 @@ package com.orange.game.dice.messagehandler.item;
 
 import org.jboss.netty.channel.Channel;
 
+import com.orange.game.dice.model.DiceGameConstant;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.dice.statemachine.action.DiceGameAction;
 import com.orange.game.traffic.server.GameEventExecutor;
@@ -23,7 +24,7 @@ public class DoubleCoinItemHandler implements ItemHandleInterface {
 		}
 		else{
 			int multiple = 2;
-			resultCode = DiceGameAction.openDiceAndBroadcast(session, userId, DiceGameSession.DICE_OPEN_TYPE_CUT, multiple);
+			resultCode = DiceGameAction.openDiceAndBroadcast(session, userId, DiceGameConstant.DICE_OPEN_TYPE_CUT, multiple);
 		}
 							
 		if (resultCode == GameResultCode.SUCCESS){
