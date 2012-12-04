@@ -1,5 +1,6 @@
 package com.orange.game.dice.model;
 
+import com.orange.common.log.ServerLog;
 import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.model.dao.GameUser;
 import com.orange.game.traffic.model.manager.GameSessionManager;
@@ -7,13 +8,15 @@ import com.orange.network.game.protocol.constants.GameConstantsProtos.DiceGameRu
 
 public class DiceGameSessionManager extends GameSessionManager {
 
+	
 	@Override
-	public GameSession createSession(int sessionId, String name, String password, boolean createByUser, String createBy, int ruleType,int testEnable) {
-		return new DiceGameSession(sessionId, name, password, createByUser, createBy, ruleType,testEnable);
+	public GameSession createSession(int sessionId, String name,
+			String password, boolean createByUser, String createBy,
+			int ruleType, int maxPlayerCount, int testEnable) {
+		return new DiceGameSession(sessionId, name, password, createByUser, createBy, ruleType,maxPlayerCount, testEnable);
 	}
 
-	
-	
+
 	/*
 	@Override
 	public void userQuitSession(GameSession session, String userId, boolean needFireEvent, boolean needRemoveUserChannel) {
@@ -99,6 +102,23 @@ public class DiceGameSessionManager extends GameSessionManager {
 
 	@Override
 	public void updateQuitUserInfo(GameSession session, GameUser quitUser) {		
+	}
+
+	
+	@Override
+	public int getMaxPlayerCount() {
+		
+		int retValue;
+		String sessionMaxPlayerCount = System.getProperty("game.maxsessionuser");
+		
+		if ( sessionMaxPlayerCount != null && ! sessionMaxPlayerCount.isEmpty()) {
+			retValue = Integer.parseInt(sessionMaxPlayerCount);
+		} else {
+			retValue = DiceGameConstant.MAX_PLAYER_PER_SESSION; 
+		}
+		
+		ServerLog.info(0, "DiceGameSession: set maxUserPerSession to "+ retValue);
+		return retValue;
 	}
 
 
