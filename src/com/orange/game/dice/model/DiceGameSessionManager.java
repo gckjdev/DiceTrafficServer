@@ -108,17 +108,19 @@ public class DiceGameSessionManager extends GameSessionManager {
 	@Override
 	public int getMaxPlayerCount() {
 		
-		int retValue;
-		String sessionMaxPlayerCount = System.getProperty("game.maxsessionuser");
+//		int retValue;
+//		String sessionMaxPlayerCount = System.getProperty("game.maxsessionuser");
+//		
+//		if ( sessionMaxPlayerCount != null && ! sessionMaxPlayerCount.isEmpty()) {
+//			retValue = Integer.parseInt(sessionMaxPlayerCount);
+//		} else {
+//			retValue = DiceGameConstant.MAX_PLAYER_PER_SESSION; 
+//		}
+//		
+//		ServerLog.info(0, "DiceGameSession: set maxUserPerSession to "+ retValue);
+//		return retValue;
 		
-		if ( sessionMaxPlayerCount != null && ! sessionMaxPlayerCount.isEmpty()) {
-			retValue = Integer.parseInt(sessionMaxPlayerCount);
-		} else {
-			retValue = DiceGameConstant.MAX_PLAYER_PER_SESSION; 
-		}
-		
-		ServerLog.info(0, "DiceGameSession: set maxUserPerSession to "+ retValue);
-		return retValue;
+		return readMaxPlayerCount(DiceGameConstant.MAX_PLAYER_PER_SESSION);
 	}
 
 
