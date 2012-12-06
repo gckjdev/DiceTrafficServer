@@ -5,9 +5,9 @@ import java.util.List;
 import com.orange.common.log.ServerLog;
 import com.orange.common.statemachine.Action;
 import com.orange.game.constants.DBConstants;
+import com.orange.game.dice.model.DiceGameConstant;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.traffic.model.dao.GameSession;
-import com.orange.game.traffic.robot.client.RobotService;
 import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.server.NotificationUtils;
 import com.orange.game.traffic.service.SessionUserService;
@@ -184,7 +184,7 @@ public class DiceGameAction{
 	
 	public static GameResultCode openDiceAndBroadcast(DiceGameSession session,
 			String userId) {
-		int openType = DiceGameSession.DICE_OPEN_TYPE_NORMAL;
+		int openType = DiceGameConstant.DICE_OPEN_TYPE_NORMAL;
 		int openMultiple = 1;
 		return openDiceAndBroadcast(session, userId, openType, openMultiple);
 	}
@@ -217,11 +217,11 @@ public class DiceGameAction{
 			if (session.canContinueCall()){			
 				boolean wilds = session.getIsWilds();
 				if (callDiceUserId == null){
-					resultCode = session.callDice(currentPlayUserId, session.getPlayUserCount()+1, DiceGameSession.DICE_2, false); 
+					resultCode = session.callDice(currentPlayUserId, session.getPlayUserCount()+1, DiceGameConstant.DICE_VALUE_TWO, false); 
 				}				
 				else if (session.reachMaxDice(currentDiceNum)){
-					if (currentDice == DiceGameSession.DICE_6){
-						resultCode = session.callDice(currentPlayUserId, currentDiceNum, DiceGameSession.DICE_1, true);
+					if (currentDice == DiceGameConstant.DICE_VALUE_SIX){
+						resultCode = session.callDice(currentPlayUserId, currentDiceNum, DiceGameConstant.DICE_VALUE_ONE, true);
 					}
 					else{
 						resultCode = session.callDice(currentPlayUserId, currentDiceNum, currentDice+1, wilds);
