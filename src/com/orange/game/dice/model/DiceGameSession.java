@@ -237,7 +237,7 @@ public class DiceGameSession extends GameSession {
 		this.openDiceUserId = userId;
 		this.openDiceMultiple = multiple;
 		
-		String currentPlayUserId = getCurrentPlayUserId();
+		String currentPlayUserId = safeGetCurrentPlayUserId();
 		if (currentPlayUserId.equals(openDiceUserId)){
 		}
 		else {
