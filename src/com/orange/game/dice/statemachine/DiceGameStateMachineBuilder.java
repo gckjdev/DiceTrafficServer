@@ -1,24 +1,20 @@
 package com.orange.game.dice.statemachine;
 
 import com.orange.common.statemachine.Action;
-import com.orange.common.statemachine.Condition;
 import com.orange.common.statemachine.DecisionPoint;
 import com.orange.common.statemachine.State;
 import com.orange.common.statemachine.StateMachine;
-import com.orange.common.statemachine.StateMachineBuilder;
 import com.orange.game.dice.model.DiceGameSession;
 import com.orange.game.dice.statemachine.action.DiceGameAction;
-import com.orange.game.dice.statemachine.action.GameCondition;
 import com.orange.game.dice.statemachine.state.GameState;
 import com.orange.game.dice.statemachine.state.GameStateKey;
+import com.orange.game.traffic.model.dao.GameSession;
 import com.orange.game.traffic.model.dao.GameUser;
-import com.orange.game.traffic.model.manager.GameSessionAllocationManager;
+import com.orange.game.traffic.server.GameEventExecutor;
 import com.orange.game.traffic.statemachine.CommonGameAction;
-import com.orange.game.traffic.statemachine.CommonGameCondition;
 import com.orange.game.traffic.statemachine.CommonGameState;
 import com.orange.game.traffic.statemachine.CommonStateMachineBuilder;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
-import com.orange.network.game.protocol.message.GameMessageProtos.RollDiceBeginNotificationRequest;
 
 public class DiceGameStateMachineBuilder extends CommonStateMachineBuilder {
 
@@ -82,8 +78,13 @@ public class DiceGameStateMachineBuilder extends CommonStateMachineBuilder {
 			.setDecisionPoint(new DecisionPoint(checkUserCount){
 				@Override
 				public Object decideNextState(Object context){
+					GameSession session = (GameSession)context;
 					int userCount = condition.decide(context);
 					if (userCount == 0){
+						if ( session.isCreatedByUser() ) {
+							GameEventExecutor.getInstance().executeForSessionRealease(session.getSessionId());
+							return null;
+						}
 						return GameStateKey.CREATE;
 					}
 					else if (userCount == 1){ // only one user

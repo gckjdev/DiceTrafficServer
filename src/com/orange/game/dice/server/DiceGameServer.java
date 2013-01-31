@@ -10,11 +10,6 @@ import com.orange.game.traffic.server.GameServer;
 
 public class DiceGameServer {
 	
-	
-	
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
 
 		AbstractRobotManager robotManager = new DiceRobotManager();
@@ -25,12 +20,12 @@ public class DiceGameServer {
 		DiceGameSessionManager sessionManager = new DiceGameSessionManager();
 		
 		// create server
-		GameServer server = new GameServer(new DiceGameServerHandler(), diceStateMachine, sessionManager, robotManager);
+		GameServer server = new GameServer(new DiceGameServerHandler(), diceStateMachine,
+				sessionManager, robotManager);
 		
 		// start server
 		server.start();
 		
-	
 	}
 
 }
