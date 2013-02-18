@@ -68,5 +68,12 @@ public class DiceGameSessionManager extends GameSessionManager {
 	}
 
 
+
+	@Override
+	public void postActionForUserQuitSession(GameSession session,
+			GameUser quitUser) {
+	}
+
+
 	
 }
