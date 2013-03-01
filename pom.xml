@@ -5,18 +5,20 @@
 			<id>local-nexus</id>
 			<name>local nexus</name>
 			<url>http://localhost:8091/nexus/content/groups/public</url>
-		</repository> -->
+		</repository> 
 		<repository>
 			<id>nexus</id>
 			<name>local nexus</name>
 			<url>http://192.168.1.101:8091/nexus/content/groups/public</url>
 		</repository>
+-->		
 		<repository>
 			<id>repo1 central</id>
 			<name>Maven Central Repo1</name>
 			<url>http://repo1.maven.org/maven2</url>
 		</repository>
         
+<!--         
         <repository>
             <id>repository.jboss.org</id>
             <url>https://repository.jboss.org/nexus/content/repositories/releases/</url>
@@ -24,6 +26,8 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        
+-->        
         
 	</repositories>
 
@@ -144,6 +148,7 @@
 			<artifactId>commons-httpclient</artifactId>
 			<version>3.1</version>
 		</dependency>
+		<!--  
 		<dependency>
 			<groupId>tencent</groupId>
 			<artifactId>QWeibo</artifactId>
@@ -154,21 +159,11 @@
 			<artifactId>weibo4j</artifactId>
 			<version>20110610</version>
 		</dependency>
+		 -->
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>1.6.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.chenlb.mmseg4j</groupId>
-			<artifactId>mmseg4j</artifactId>
-			<version>1.8.4</version>
-			<classifier>dic</classifier>
-		</dependency>
-		<dependency>
-			<groupId>com.taobao.api</groupId>
-			<artifactId>taobao-sdk-java-online_standard</artifactId>
-			<version>20110914</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jsoup</groupId>
